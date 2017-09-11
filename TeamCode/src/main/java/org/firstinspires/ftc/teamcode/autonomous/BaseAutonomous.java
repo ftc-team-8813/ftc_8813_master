@@ -8,14 +8,15 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.List;
-//Time: 2:30P - 5:15P -aidan
-//Put your time commitment here.
-/*
- * Base autonomous class Sub-OpModes that are autonomous MUST extend this class! (Unless they are
- * utility methods, then they extend UtilOpMode)
+//Put your hours here:
+//2:30P - 5:15P -ABY
+/**
+ * Base autonomous OpMode. Sub-OpModes that are going to be used for the games must extend this.
+ *
  * ## Ideas ##
  *   * Have a number of OpModes and then use some selector switches on the robot for different run
  *     modes (i.e. Red/Blue and 1 Jewel/2 Jewels)
+ *
  * ## New Programmers ##
  *   * If you have any sub-methods in your OpModes/Tasks that you expect to wait or run for a long
  *     time (>0.1 second), please declare them as 'throws InterruptedException'. If you're not sure,
@@ -25,15 +26,12 @@ import java.util.List;
  *     robot.
  */
 //The @Autonomous annotation is required for all OpModes. This puts it in the list of autonomous
-//programs. You should specify a name for each OpMode and set group="util" for utility OpModes.
+//programs. You should specify a name for each OpMode.
 //If you want to disable any OpModes you have, you should include the @Disabled annotation.
 //If your OpMode is missing from the list of OpModes, the case is probably that you forgot to mark
 //it as @Autonomous.
-@Autonomous(name = "Autonomous")
-//The class is marked as 'unused' by the compiler, but it is actually indirectly referenced using
-//the annotation. Implementations can do this if you care about the warnings. Otherwise it's quite
-//useless.
-@SuppressWarnings("unused")
+//This one won't be listed since it's not a functional OpMode, just a base.
+// @Autonomous(name = "Autonomous")
 public abstract class BaseAutonomous extends LinearOpMode {
 
     //Queue of tasks to run
@@ -50,7 +48,7 @@ public abstract class BaseAutonomous extends LinearOpMode {
      *   * Declaring a method as 'final' will make it so that it cannot be overridden by the class
      *     that implements it.
      * @throws InterruptedException If the OpMode is trying to stop (e.g. by the stop button or 30-
-     * second timeout
+     * second timeout)
      */
     @Override
     public final void runOpMode() throws InterruptedException {
@@ -58,7 +56,7 @@ public abstract class BaseAutonomous extends LinearOpMode {
         //Need to initialize the motor/sensor handlers here once they are written.
 
         //Clear the task list in case the robot was stopped before the list was empty
-        //and the OpMode wasn't re-initialized. -aidan
+        //and the OpMode wasn't re-initialized.
         tasks.clear();
         telem = telemetry;
         initialize();
@@ -66,7 +64,7 @@ public abstract class BaseAutonomous extends LinearOpMode {
         //Must wait for start, otherwise the robot will run as soon as it is initialized, which can
         //be incredibly annoying. We could also simply override start(), but we also want to
         //initialize stuff, so it makes it simpler to use one method. This I found out last year
-        //very early in the season. -aidan
+        //very early in the season. -ABY
         waitForStart();
         //Run the tasks
         run();
