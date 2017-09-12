@@ -1,15 +1,22 @@
 package org.firstinspires.ftc.teamcode.autonomous;
-
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+//Note: Use Ctrl+Alt+O to organize and remove unused (grayed out) imports.
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.List;
 //Put your hours here:
-//2:30P - 5:15P -ABY
+//9/10: 2:30P - 5:15P -ABY
+//9/11: 6:30P - 7:30P -ABY
+
+/*
+To-Do List:
+  * FIXME: Add some simple driving tasks (To Be Assigned)
+  * TODO: Vision Processing (ABY)
+Note: You should put to-do list items in more specific places if possible.
+ */
+
 /**
  * Base autonomous OpMode. Sub-OpModes that are going to be used for the games must extend this.
  *
@@ -36,10 +43,21 @@ public abstract class BaseAutonomous extends LinearOpMode {
 
     //Queue of tasks to run
     protected final List<Task> tasks = new ArrayList<>();
+    //We're making BaseAutonomous a 'singleton' class. This means that there is always only ONE
+    //instance in use at a time. This is stored in this static field, which can be retrieved by
+    //other code without having to pass an instance to all of the methods that want to use it.
+    private static BaseAutonomous instance;
 
-    private static Telemetry telem;
-    public static Telemetry telemetry() {return telem;}
-
+    /**
+     * Get the current instance of BaseAutonomous. This is set when the OpMode is initialized.
+     * @return An instance of BaseAutonomous
+     */
+    public static final BaseAutonomous instance() {
+        return instance;
+    }
+    public static final boolean instantated() {
+        return instance != null;
+    }
 
 
     /**
@@ -52,24 +70,43 @@ public abstract class BaseAutonomous extends LinearOpMode {
      */
     @Override
     public final void runOpMode() throws InterruptedException {
-        //Run initialization operations here
-        //Need to initialize the motor/sensor handlers here once they are written.
+        //Catch any InterruptedExceptions or other unchecked exceptions so that we can unset the
+        //instance in case of an error.
+        Throwable exc = null;
+        try {
+            //Run initialization operations here
+            //Need to initialize the motor/sensor handlers here once they are written.
 
-        //Clear the task list in case the robot was stopped before the list was empty
-        //and the OpMode wasn't re-initialized.
-        tasks.clear();
-        telem = telemetry;
-        initialize();
+            //Clear the task list in case the robot was stopped before the list was empty
+            //and the OpMode wasn't re-initialized.
+            tasks.clear();
 
-        //Must wait for start, otherwise the robot will run as soon as it is initialized, which can
-        //be incredibly annoying. We could also simply override start(), but we also want to
-        //initialize stuff, so it makes it simpler to use one method. This I found out last year
-        //very early in the season. -ABY
-        waitForStart();
-        //Run the tasks
-        run();
-        //Run any leftover tasks
-        runTasks();
+            //Set the current instance
+            instance = this;
+
+            initialize();
+
+            //Must wait for start, otherwise the robot will run as soon as it is initialized, which can
+            //be incredibly annoying. We could also simply override start(), but we also want to
+            //initialize stuff, so it makes it simpler to use one method.
+            waitForStart();
+            //Run the tasks
+            run();
+            //Run any leftover tasks
+            runTasks();
+        } catch (InterruptedException | RuntimeException | Error e) {
+            exc = e;
+        } finally {
+            instance = null;
+            if (exc != null) {
+                //We can't just throw any Throwables; we need to throw either unchecked exceptions
+                //(RuntimeException and Error) or InterruptedException, which it is declared to be
+                //able to throw.
+                if (exc instanceof Error) throw (Error)exc;
+                else if (exc instanceof RuntimeException) throw (RuntimeException)exc;
+                else throw (InterruptedException)exc;
+            }
+        }
     }
 
     /**
