@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 //Note: Use Ctrl+Alt+O to organize and remove unused (grayed out) imports.
+//Guys, you should read ALL the comments! They contain some useful observations about the software!
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.Task;
@@ -12,7 +13,7 @@ import java.util.List;
 
 /*
 To-Do List:
-  * FIXME: Add some simple driving tasks (To Be Assigned)
+  * TODO: Make tasks using the REV robotics modules
   * TODO: Vision Processing (ABY)
 Note: You should put to-do list items in more specific places if possible.
  */
