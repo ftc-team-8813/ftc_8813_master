@@ -13,8 +13,8 @@ import java.util.List;
 
 /*
 To-Do List:
-  * TODO: Make tasks using the REV robotics modules
-  * TODO: Vision Processing (ABY)
+  * TODO: Make tasks using the REV robotics modules (Joe/Tarun)
+  * TODO: Vision Processing (Aidan/Joe)
 Note: You should put to-do list items in more specific places if possible.
  */
 
