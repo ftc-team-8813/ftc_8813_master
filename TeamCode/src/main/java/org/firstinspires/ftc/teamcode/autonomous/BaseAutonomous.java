@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 //Guys, you should read ALL the comments! They contain some useful observations about the software!
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.robotcontroller.internal.EventHooks;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.Task;
 
 import java.util.ArrayList;
@@ -31,7 +32,20 @@ Note: You should put to-do list items in more specific places if possible.
  *     just make it throw InterruptedException. This makes it so that if the robot tries to stop
  *     (e.g. because the 30-second autonomous period has ended or the stop button has been pressed),
  *     it stops instead of crashing with a 'The robot is stuck in stop()' message and restarting the
- *     robot.
+ *     robot. **Important**: If you have a while loop, such as this:
+ *
+ *       while (condition) {
+ *           //Stuff
+ *       }
+ *
+ *     you need to put another condition so that it will stop when the thread is interrupted, like
+ *     this:
+ *
+ *       while (condition && !Thread.interrupted()) {
+ *           //Stuff
+ *       }
+ *
+ *     This way you can avoid more 'stuck in stop()' errors.
  */
 //The @Autonomous annotation is required for all OpModes. This puts it in the list of autonomous
 //programs. You should specify a name for each OpMode.
@@ -48,6 +62,24 @@ public abstract class BaseAutonomous extends LinearOpMode {
     //instance in use at a time. This is stored in this static field, which can be retrieved by
     //other code without having to pass an instance to all of the methods that want to use it.
     private static BaseAutonomous instance;
+
+    private List<EventHooks> hooks = new ArrayList<>();
+
+    public void addEventHooks(EventHooks hook) {
+        hooks.add(hook);
+    }
+
+    private void fireStopEvent() {
+        for (EventHooks hook : hooks) {
+            hook.stop();
+        }
+    }
+
+    private void fireStartEvent() {
+        for (EventHooks hook : hooks) {
+            hook.resume();
+        }
+    }
 
     /**
      * Get the current instance of BaseAutonomous. This is set when the OpMode is initialized.
@@ -86,6 +118,8 @@ public abstract class BaseAutonomous extends LinearOpMode {
             instance = this;
 
             initialize();
+            //Fire up the camera view
+            fireStartEvent();
 
             //Must wait for start, otherwise the robot will run as soon as it is initialized, which can
             //be incredibly annoying. We could also simply override start(), but we also want to
@@ -99,6 +133,7 @@ public abstract class BaseAutonomous extends LinearOpMode {
             exc = e;
         } finally {
             instance = null;
+            fireStopEvent();
             if (exc != null) {
                 //We can't just throw any Throwables; we need to throw either unchecked exceptions
                 //(RuntimeException and Error) or InterruptedException, which it is declared to be
