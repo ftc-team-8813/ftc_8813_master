@@ -1,8 +1,10 @@
-How to use Git for FTC
-
+ _    _                                  _       _        __ ___ _
+|_|  / _   . _| _   |_ _  | | _.,_  _   / _.|_  |_ _ ,_  |_   | / `
+| |  \_/|_||(_|(-'  |_(_) |_|_)|| |(_|  \_/||_  | |_||   |    | \_,
+                                    _|
 1. Setting up the repository
 
-This will show how to set up the Git repository. First, you will need to create a GitHub account by
+This will show how to set up your Git repository. First, you will need to create a GitHub account by
 going to
   https://github.com/
 and creating an account.
@@ -34,6 +36,16 @@ Add your info to the Git configuration file
 This will make any commits you push onto GitHub show up in your profile statistics and also makes it
 so that it can log who made a commit in a repository.
 
+1.4 - Setting the upstream repository
+
+    The 'upstream' repository is the one you forked from. It is important to have this upstream
+repository so that you can have everyone else's changes in your repo.
+Note: There is no known way to do this in Android Studio; you need to use the terminal.
+
+  $ git remote add upstream https://github.com/cdbbnnyCode/ftc_8813_master
+
+See Section 4 for how to sync with the main repository.
+
 2. Committing your code
 
     Committing your code is an important part of the Git workflow. When you commit a change, it is
@@ -42,22 +54,21 @@ know why).
 
 How to commit your code:
 
-1    6                                         48    54        # Column formatting
-     Using Android Studio:                           Using the terminal
-1. Go to VCS --> Commit Changes...               $ git commit -m "descriptive commit message"
-2. Make a descriptive commit message
-3. Click 'Commit'
+     Using Android Studio                            Using the terminal
+1) Go to VCS --> Commit Changes                  $ git commit -m "descriptive commit message"
+2) Make a descriptive commit message
+3) Click 'Commit'
 
 3. Pushing your code to GitHub
 
     Pushing your commits to your GitHub repository is also very important. Just about nothing in Git
 is automatically synced, so this is the way to do it manually. Pushing your code will send the
 changes to the GitHub repository so you can then submit a Pull Request to get your code merged into
-the main repository.
+the main repository (see Section 5).
 
 How to push your code:
 
-     Using Android Studio:                           Using the terminal
+     Using Android Studio                            Using the terminal
 You can actually commit AND push in the same   Note: You need to have already committed.
 dialog box. To do that, just follow the above    $ git push
 instructions for committing your changes,      You will need to enter your GitHub login password to
@@ -66,4 +77,58 @@ the Commit button, select 'Commit and Push'.
 Otherwise, go to VCS --> Git --> Push (or
 press Ctrl+Shift+K)
 
+Note: If the push fails, it may be because the GitHub repository has changes that weren't merged
+into your local repository. Try pulling the changes into your local repository:
 
+     Using Android Studio                              Using the terminal
+1) Go to VCS --> Update Project                  $ git pull
+2) Click OK
+
+4. Updating from the upstream repository
+
+You should do this about once or twice every day.
+
+     Using Android Studio                              Using the terminal
+1) Go to VCS --> Git --> Pull                    $ git pull upstream master
+2) Change Remote to upstream
+3) Click Pull
+
+5. Adding your code to the upstream repository
+
+    Once you've finished something you've been working on, you should get it added into the main
+codebase.
+
+1) Push your code to your repository if you haven't already (see Section 3)
+2) Open a browser tab and go to
+    https://github.com/cdbbnnyCode/ftc_8813_master
+3) On the left, next to the 'Branch: master' button, there is a 'New pull request' button. Click it.
+4) If the pull request page looks like this:
+   _____________________________________________________________________________________________________________
+  |  _                                                                                                          /
+  | / ` _ ,_ _  _  _ ,_ _    _ |_  _ ,_  _  _  _                                                                \
+  | \_,(_)| | ||_)(_|| (-'  (_ | |(_|| |(_|(-'_)                                                                /
+  |            |                         _|                                                                     \
+  | Compare across branches, commits, tags, and more below. If you need to, you can also *compare across forks*./
+  | ____________________________________________________________________________________________________________\
+  |[   ______________       _________________                                                                   /
+  |[  [_base:_master_] ... [_compare:_master_]                                                                  \
+  |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~/
+
+  Click on the 'Compare across forks' link. It should now look like this:
+
+   _____________________________________________________________________________________________________________
+  |  _                                                                                                          /
+  | / ` _ ,_ _  _  _ ,_ _    _ |_  _ ,_  _  _  _                                                                \
+  | \_,(_)| | ||_)(_|| (-'  (_ | |(_|| |(_|(-'_)                                                                /
+  |            |                         _|                                                                     \
+  | Compare across branches, commits, tags, and more below. If you need to, you can also *compare across forks*./
+  | ___________________________________________________________________________________________________________ \
+  |[   ________________________________________  ______________       ___________________________________  _____/
+  |[  [_base_fork:_cdbbnnyCode/ftc_8813_master_][_base:_master_] ... [_head_fork:_<name>/ftc_8813_master_][_comp\
+  |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~/
+
+  Make sure the base fork is my repository and the head fork is your repository. Then click on
+'Create pull request'.
+
+5) Notify me that you would like your code imported into the main repository. I will check your code
+and then merge your changes.
