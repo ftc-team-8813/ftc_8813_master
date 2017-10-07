@@ -1,0 +1,69 @@
+How to use Git for FTC
+
+1. Setting up the repository
+
+This will show how to set up the Git repository. First, you will need to create a GitHub account by
+going to
+  https://github.com/
+and creating an account.
+
+1.1 - Forking the main repo
+
+    To make a copy of the team Git repository, first open a new browser tab and go to:
+  https://github.com/cdbbnnyCode/ftc_8813_master
+There, in the upper right corner there is a 'fork' button. Click on that and then follow the
+instructions to fork the repository.
+
+1.2 - Cloning the repository onto your computer
+
+    To get your code onto your computer, you need to clone the fork you just made. To do this, open
+a terminal and put:
+//Quick note: The dollar signs are just a prompt. Don't actually put them into your command.
+Go to your home directory
+  $ cd ~
+Clone the repo onto your computer
+  $ git clone https://github.com/<GitHub username>/ftc_8813_master
+Enter the repository folder
+  $ cd ftc_8813_master
+
+1.3 - Setting your Git username/email
+
+Add your info to the Git configuration file
+  $ git config --global user.name '<GitHub username>'
+  $ git config --global user.email '<GitHub login e-mail>'
+This will make any commits you push onto GitHub show up in your profile statistics and also makes it
+so that it can log who made a commit in a repository.
+
+2. Committing your code
+
+    Committing your code is an important part of the Git workflow. When you commit a change, it is
+saved in the repository and you can revert back to it (e.g. if you made a really nasty bug and don't
+know why).
+
+How to commit your code:
+
+1    6                                         48    54        # Column formatting
+     Using Android Studio:                           Using the terminal
+1. Go to VCS --> Commit Changes...               $ git commit -m "descriptive commit message"
+2. Make a descriptive commit message
+3. Click 'Commit'
+
+3. Pushing your code to GitHub
+
+    Pushing your commits to your GitHub repository is also very important. Just about nothing in Git
+is automatically synced, so this is the way to do it manually. Pushing your code will send the
+changes to the GitHub repository so you can then submit a Pull Request to get your code merged into
+the main repository.
+
+How to push your code:
+
+     Using Android Studio:                           Using the terminal
+You can actually commit AND push in the same   Note: You need to have already committed.
+dialog box. To do that, just follow the above    $ git push
+instructions for committing your changes,      You will need to enter your GitHub login password to
+except in the popup menu when you hover over   continue.
+the Commit button, select 'Commit and Push'.
+Otherwise, go to VCS --> Git --> Push (or
+press Ctrl+Shift+K)
+
+

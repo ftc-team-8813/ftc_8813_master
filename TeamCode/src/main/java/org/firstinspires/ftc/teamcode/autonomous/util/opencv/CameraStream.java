@@ -87,7 +87,7 @@ public class CameraStream implements EventHooks {
                 }
                 Mat out =  modifier.process(frame);
                 //Run the garbage collector as fast as possible to delete old images and keep enough
-                //memory for our program to function!
+                //memory for our program to function, avoid blowing up the phone :)
                 System.gc();
                 return out;
             }

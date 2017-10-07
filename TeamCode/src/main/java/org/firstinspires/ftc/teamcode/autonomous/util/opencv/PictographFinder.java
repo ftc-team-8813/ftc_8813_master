@@ -36,6 +36,7 @@ import java.util.List;
  */
 
 public class PictographFinder implements CameraListener {
+    private boolean finished = false;
     private boolean firstRun = true;
     private Mat mat;
     private Mat trainImage;
@@ -67,6 +68,8 @@ public class PictographFinder implements CameraListener {
     public ClassificationType getPrevClassification() {
         return prevClassification;
     }
+
+    public boolean finished() { return finished; }
 
     public PictographFinder() {
         //Get an Activity so we can get some image resources
@@ -121,6 +124,7 @@ public class PictographFinder implements CameraListener {
             //We can't classify it; don't show anything
             prevClassification = new ClassificationType("", -1, -1, -1);
         }
+        finished = true;
     }
 
     private ClassificationType classify(Mat img, Mat mask) {
