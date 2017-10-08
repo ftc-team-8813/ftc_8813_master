@@ -8,7 +8,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * Holder for configurable variables.
+ * Config - Config file reader. Any configurable things (such as 'tweak' variables for quick adjustment)
+ * should be put in the config file.
  */
 
 public class Config {

@@ -5,6 +5,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcontroller.internal.EventHooks;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.Task;
+import org.firstinspires.ftc.teamcode.autonomous.util.TelemetryWrapper;
+import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
+import org.opencv.android.OpenCVLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +59,12 @@ Note: You should put to-do list items in more specific places if possible.
 // @Autonomous(name = "Autonomous")
 public abstract class BaseAutonomous extends LinearOpMode {
 
+    static {
+        if (!OpenCVLoader.initDebug()) {
+            System.exit(0);
+        }
+    }
+
     //Queue of tasks to run
     protected final List<Task> tasks = new ArrayList<>();
     //We're making BaseAutonomous a 'singleton' class. This means that there is always only ONE
@@ -64,6 +73,8 @@ public abstract class BaseAutonomous extends LinearOpMode {
     private static BaseAutonomous instance;
 
     private List<EventHooks> hooks = new ArrayList<>();
+
+    private CameraStream stream;
 
     public void addEventHooks(EventHooks hook) {
         hooks.add(hook);
@@ -92,6 +103,12 @@ public abstract class BaseAutonomous extends LinearOpMode {
         return instance != null;
     }
 
+    public final CameraStream getCameraStream() {
+        if (stream == null)
+            stream = new CameraStream();
+        return stream;
+    }
+
 
     /**
      * Run the op mode.
@@ -114,17 +131,20 @@ public abstract class BaseAutonomous extends LinearOpMode {
             //and the OpMode wasn't re-initialized.
             tasks.clear();
 
+            TelemetryWrapper.init(telemetry, 0);
+
             //Set the current instance
             instance = this;
 
             initialize();
-            //Fire up the camera view
+            //Fire up the camera view if necessary
             fireStartEvent();
 
             //Must wait for start, otherwise the robot will run as soon as it is initialized, which can
             //be incredibly annoying. We could also simply override start(), but we also want to
             //initialize stuff, so it makes it simpler to use one method.
             waitForStart();
+            if (!opModeIsActive()) return;
             //Run the tasks
             run();
             //Run any leftover tasks

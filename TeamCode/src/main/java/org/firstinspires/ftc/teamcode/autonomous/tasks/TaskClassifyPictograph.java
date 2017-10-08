@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.autonomous.tasks;
 
 import android.app.VoiceInteractor;
 
+import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
+import org.firstinspires.ftc.teamcode.autonomous.util.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.PictographFinder;
 
@@ -21,8 +23,12 @@ public class TaskClassifyPictograph implements Task {
 
     private Result prevResult;
 
+    public Result getResult() {
+        return prevResult;
+    }
+
     public TaskClassifyPictograph() {
-        stream = new CameraStream();
+        stream = BaseAutonomous.instance().getCameraStream();
     }
 
     @Override

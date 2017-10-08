@@ -25,10 +25,16 @@ public class TestOPMode extends OpMode {
         if (gamepad1.left_stick_y > 0){
             servopos = servopos - .01;
             servo.setPosition(servopos);
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {}
         }
         if (gamepad1.left_stick_y < 0){
             servopos = servopos + .01;
             servo.setPosition(servopos);
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {}
         }
         if (servopos < 0)
             servopos = 0;
