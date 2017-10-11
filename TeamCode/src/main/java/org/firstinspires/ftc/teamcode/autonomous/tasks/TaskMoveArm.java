@@ -18,6 +18,7 @@ public class TaskMoveArm implements Task{
     double[] x_array = new double[2];
     double[] y_array = new double[2];
     double segLength = 12.0;
+    double armLength = 24.0;
     public TaskMoveArm(DcMotor base, double x, double y, double z) {this.base = base; this.x = x; this.y = y; this.z = z;}
     @Override
     public void runTask() throws InterruptedException {
@@ -44,11 +45,17 @@ public class TaskMoveArm implements Task{
             base.setDirection(DcMotorSimple.Direction.REVERSE);
         }
         base.setTargetPosition(rotation);
+       //Arm extension
+        double adjustedX = Math.sqrt((x*x) + (y*y));
         for(int i=1; i<=2; i++){
-            double dx = x - x_array[i];
-            double dy = y - y_array[i];
+            double dx = adjustedX - x_array[i];
+            double dy = z - y_array[i];
             double angle = Math.atan2(dy, dx);
-            lowerArm.setPosition(angle);
+            if(i == 1){
+                lowerArm.setPosition(angle);
+            }else{
+                upperArm.setPosition(angle);
+            }
         }
     }
 }
