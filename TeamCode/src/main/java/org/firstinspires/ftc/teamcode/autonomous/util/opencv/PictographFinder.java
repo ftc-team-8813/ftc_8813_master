@@ -8,9 +8,8 @@ import android.util.Log;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.R;
-import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
-import org.firstinspires.ftc.teamcode.autonomous.util.ProgressBar;
-import org.firstinspires.ftc.teamcode.autonomous.util.TelemetryWrapper;
+import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.ProgressBar;
+import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream.CameraListener;
 import org.opencv.android.Utils;
 import org.opencv.calib3d.Calib3d;
@@ -232,7 +231,7 @@ public class PictographFinder implements CameraListener {
         status = "Detecting Features";
 
         //Make a FeatureDetector to find key points
-        //We're using the Brisk feature detector/descriptor extractor
+        //We're using the Brisk feature detector/descriptor extractor algorithms
         FeatureDetector fd = FeatureDetector.create(FeatureDetector.BRISK);
         //Key points
         Mat temp = new Mat();

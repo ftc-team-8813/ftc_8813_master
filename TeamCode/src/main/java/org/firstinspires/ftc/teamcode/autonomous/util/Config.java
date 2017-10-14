@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous.util;
 
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,16 +14,20 @@ import java.util.Properties;
  */
 
 public class Config {
-    public static final String storageDir =
-            Environment.getExternalStorageDirectory().getAbsolutePath() + "/Team8813/";
+    public static final String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+    public static final String storageDir = baseDir + "/Team8813/";
+    public static final String configFile = "config.properties";
     private Properties properties;
 
-    public Config(String filename) throws IOException {
+    public Config(String filename) {
         new File(storageDir).mkdirs();
-        this.properties = new Properties();
-        properties.load(new FileInputStream(storageDir + filename));
+        try {
+            this.properties = new Properties();
+            properties.load(new FileInputStream(storageDir + filename));
+        } catch (IOException e) {
+            Log.e("Config", "No config file found");
+        }
     }
-
 
     public int getInt(String name, int def) {
         try {
@@ -108,6 +113,4 @@ public class Config {
         }
         return values;
     }
-
-
 }

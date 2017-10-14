@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous.tasks;
 
-import android.app.VoiceInteractor;
-
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
-import org.firstinspires.ftc.teamcode.autonomous.util.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.PictographFinder;
 

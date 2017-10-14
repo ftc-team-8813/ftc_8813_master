@@ -5,8 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcontroller.internal.EventHooks;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.Task;
-import org.firstinspires.ftc.teamcode.autonomous.util.TelemetryWrapper;
+import org.firstinspires.ftc.teamcode.autonomous.util.Config;
+import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
+import org.firstinspires.ftc.teamcode.util.Utils;
 import org.opencv.android.OpenCVLoader;
 
 import java.util.ArrayList;
@@ -15,12 +17,6 @@ import java.util.List;
 //9/10: 2:30P - 5:15P -ABY
 //9/11: 6:30P - 7:30P -ABY
 
-/*
-To-Do List:
-  * TODO: Make tasks using the REV robotics modules (Joe/Tarun)
-  * TODO: Vision Processing (Aidan/Joe)
-Note: You should put to-do list items in more specific places if possible.
- */
 
 /**
  * Base autonomous OpMode. Sub-OpModes that are going to be used for the games must extend this.
@@ -75,6 +71,7 @@ public abstract class BaseAutonomous extends LinearOpMode {
     private List<EventHooks> hooks = new ArrayList<>();
 
     private CameraStream stream;
+    public Config cfg;
 
     public void addEventHooks(EventHooks hook) {
         hooks.add(hook);
@@ -125,7 +122,10 @@ public abstract class BaseAutonomous extends LinearOpMode {
         Throwable exc = null;
         try {
             //Run initialization operations here
-            //Need to initialize the motor/sensor handlers here once they are written.
+            //GZip old log files to save space :P
+            Utils.gzipLogs();
+            //Initialize the configuration file
+            cfg = new Config(Config.configFile);
 
             //Clear the task list in case the robot was stopped before the list was empty
             //and the OpMode wasn't re-initialized.

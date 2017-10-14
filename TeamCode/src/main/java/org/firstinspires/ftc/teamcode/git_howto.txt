@@ -1,7 +1,7 @@
- _    _                                  _       _        __ ___ _
-|_|  / _   . _| _   |_ _  | | _.,_  _   / _.|_  |_ _ ,_  |_   | / `
-| |  \_/|_||(_|(-'  |_(_) |_|_)|| |(_|  \_/||_  | |_||   |    | \_,
-                                    _|
+ _    _                                   _       _        __ ___ _
+|_|  / _   . _| _   |_ _  | |  _.,_  _   / _.|_  |_ _ ,_  |_   | / `
+| |  \_/|_||(_|(-'  |_(_) |_| _)|| |(_|  \_/||_  | |_||   |    | \_,
+                                     _|
 1. Setting up the repository
 
 This will show how to set up your Git repository. First, you will need to create a GitHub account by
