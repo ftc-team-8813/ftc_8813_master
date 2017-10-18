@@ -1,23 +1,26 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
-import android.util.Log;
-
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
-import org.firstinspires.ftc.robotcontroller.external.samples.ConceptI2cAddressChange;
-import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.util.Config;
+import org.firstinspires.ftc.teamcode.autonomous.util.arm.RobotMove;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * ArmTest - TeleOp arm drive. Controls:
+ * MoveRecorder - A duplicate of ArmTest that records movements. Controls:
  * Left stick:
  *   Vertical: Shoulder Y
  *   Horizontal: Base
@@ -26,26 +29,43 @@ import org.firstinspires.ftc.teamcode.util.Utils;
  *   Horizontal: Shoulder X
  * Right Bumper: Stop
  * A: Open/Close Claw
+ * Y: Start/Stop Recording
  * D-Pad:
  *   Vertical: Extend slide
  *   Horizontal: N/A
  *
  */
-@TeleOp(name="Arm Test")
-public class ArmTest extends OpMode{
+@TeleOp(name="Autonomous Move Recorder")
+public class MoveRecorder extends OpMode{
 
+    /* Servos */
     private Servo shoulderX, shoulderY, elbow, claw;
+    /* DC motors */
     private DcMotor base, extend;
+    /* Limit switch */
     private TouchSensor extendLimit;
+    /* Rotation values */
     private double turnX, turnY, turnElbow;
     private boolean claw_closed = false;
+    /* Maximum amount to be added to servo position every 200 ms */
     private double maxTurn;
+    /* Claw constants */
     private double clawCloseAmount;
     private double clawOpenAmount;
+    /* Extend motor minimum encoder value */
     private Integer extMin = null;
+    /* Constant range for extension motor */
     private int extRange;
+    /* Stores whether a button is held */
     private boolean aHeld = false;
+    private boolean yHeld = false;
+    /* Configuration */
     private Config config = new Config(Config.configFile);
+
+    /* Robot movement recording */
+    private List<RobotMove> moves = new ArrayList<>();
+    private boolean recording = false;
+    private long last;
 
     @Override
     public void init() {
@@ -74,8 +94,9 @@ public class ArmTest extends OpMode{
 
     @Override
     public void loop() {
+        boolean action = true;
         //Assign values
-        turnX     += -gamepad1.right_stick_x * maxTurn;
+        turnX     +=  gamepad1.right_stick_x * maxTurn;
         turnY     += -gamepad1.left_stick_y * maxTurn;
         turnElbow += -gamepad1.right_stick_y * maxTurn;
         base.setPower(gamepad1.left_stick_x * 0.25);
@@ -113,10 +134,43 @@ public class ArmTest extends OpMode{
                 if (claw_closed)
                     claw.setPosition(clawCloseAmount);
                 else
-                    claw.setPosition(0);
+                    claw.setPosition(clawOpenAmount);
             }
         } else {
             aHeld = false;
+        }
+
+        if (gamepad1.y) {
+            if (!yHeld) {
+                yHeld = true;
+                recording = !recording;
+            }
+        } else {
+            yHeld = false;
+        }
+
+        if (!recording)
+            action = false;
+
+        if (action) {
+            RobotMove move = new RobotMove();
+            if (last != 0)
+                move.dt = (int) (System.currentTimeMillis() - last);
+            last = System.currentTimeMillis();
+            move.xTurn = turnX;
+            move.yTurn = turnY;
+            move.clawPos = (claw_closed ? clawCloseAmount : clawOpenAmount);
+            move.elbow = turnElbow;
+            move.extendEncoder = extend.getCurrentPosition();
+            move.baseEncoder = base.getCurrentPosition();
+            move.extSet = extMin != null;
+            RobotMove last = moves.get(moves.size()-1);
+            if (last.equals(move)) {
+                //Add the time of this one onto the other one
+                last.dt += move.dt;
+            } else {
+                moves.add(move);
+            }
         }
 
         String fmt = "%.4f";
@@ -128,5 +182,20 @@ public class ArmTest extends OpMode{
         telemetry.addData("Extend motor encoder", extend.getCurrentPosition());
         telemetry.addData("Rotation motor encoder", base.getCurrentPosition());
         telemetry.update();
+    }
+
+    public void stop() {
+        try {
+            File out = new File(Config.storageDir + "/drive_" + System.currentTimeMillis()/1000 + ".dat");
+            DataOutputStream dat = new DataOutputStream(
+                    new FileOutputStream(out));
+            dat.writeInt(moves.size());
+            for (RobotMove move : moves) {
+                move.write(dat);
+            }
+            dat.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
