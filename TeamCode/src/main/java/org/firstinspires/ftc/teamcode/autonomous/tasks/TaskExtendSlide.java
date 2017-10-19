@@ -16,6 +16,7 @@ public class TaskExtendSlide implements Task {
     private DcMotor ex;
 
     public TaskExtendSlide(DcMotor extender) {
+        extended = false;
         this.ex = extender;
     }
 

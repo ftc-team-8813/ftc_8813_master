@@ -116,6 +116,14 @@ public class ArmTest extends OpMode{
             aHeld = false;
         }
 
+        //When the left bumper is pressed, reset the servo positions
+        if (gamepad1.left_bumper) {
+            turnX = 0;
+            turnY = 0;
+            turnElbow = 0;
+        }
+
+
         String fmt = "%.4f";
 
         telemetry.addData("X turn", String.format(fmt, turnX));

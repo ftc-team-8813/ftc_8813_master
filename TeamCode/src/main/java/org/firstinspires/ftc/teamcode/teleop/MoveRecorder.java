@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskExtendSlide;
 import org.firstinspires.ftc.teamcode.autonomous.util.Config;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.RobotMove;
 import org.firstinspires.ftc.teamcode.util.Utils;
@@ -66,6 +67,7 @@ public class MoveRecorder extends OpMode{
     private List<RobotMove> moves = new ArrayList<>();
     private boolean recording = false;
     private long last;
+    private long startTime;
 
     @Override
     public void init() {
@@ -88,6 +90,9 @@ public class MoveRecorder extends OpMode{
             base.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("ext_reverse", false))
             extend.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (TaskExtendSlide.extended)
+            extMin = 0;
+
 
         claw.setPosition(clawOpenAmount);
     }
@@ -146,6 +151,10 @@ public class MoveRecorder extends OpMode{
             if (!yHeld) {
                 yHeld = true;
                 recording = !recording;
+                if (!recording)
+                    save();
+                else
+                    startTime = System.currentTimeMillis();
             }
         } else {
             yHeld = false;
@@ -183,12 +192,20 @@ public class MoveRecorder extends OpMode{
         telemetry.addData("Claw Closed", claw_closed);
         telemetry.addData("Extend motor encoder", extend.getCurrentPosition());
         telemetry.addData("Rotation motor encoder", base.getCurrentPosition());
+        telemetry.addData("Recording", recording);
+        if (recording)
+            telemetry.addData("Elapsed time: ", (System.currentTimeMillis() - startTime)/1000);
         telemetry.update();
     }
 
     public void stop() {
+        save();
+    }
+
+    private void save() {
         try {
-            File out = new File(Config.storageDir + "/drive_" + System.currentTimeMillis()/1000 + ".dat");
+            File out = new File(
+                    Config.storageDir + "/drive_" + Long.toHexString(System.currentTimeMillis()/1000) + ".dat");
             DataOutputStream dat = new DataOutputStream(
                     new FileOutputStream(out));
             dat.writeInt(moves.size());

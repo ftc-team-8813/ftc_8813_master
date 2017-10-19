@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
+import org.firstinspires.ftc.teamcode.autonomous.util.Config;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.RobotMove;
 
 import java.io.DataInputStream;
@@ -29,7 +30,7 @@ public class TaskDoMove implements Task {
     public TaskDoMove(String file) {
         moves = new ArrayList<>();
         try {
-            DataInputStream inp = new DataInputStream(new FileInputStream(file));
+            DataInputStream inp = new DataInputStream(new FileInputStream(Config.storageDir + file));
             int size = inp.readInt();
             for (int i = 0; i < size; i++) {
                 RobotMove next = new RobotMove();
