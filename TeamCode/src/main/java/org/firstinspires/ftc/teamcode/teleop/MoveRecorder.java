@@ -115,7 +115,9 @@ public class MoveRecorder extends OpMode{
         }
         try {
             Thread.sleep(200);
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+            return;
+        }
 
         //Constrain the values
         turnX = Utils.constrain(turnX, 0, 1);
@@ -161,8 +163,8 @@ public class MoveRecorder extends OpMode{
             move.yTurn = turnY;
             move.clawPos = (claw_closed ? clawCloseAmount : clawOpenAmount);
             move.elbow = turnElbow;
-            move.extendEncoder = extend.getCurrentPosition();
-            move.baseEncoder = base.getCurrentPosition();
+            move.extendPower = extend.getPower();
+            move.basePower = base.getPower();
             move.extSet = extMin != null;
             RobotMove last = moves.get(moves.size()-1);
             if (last.equals(move)) {

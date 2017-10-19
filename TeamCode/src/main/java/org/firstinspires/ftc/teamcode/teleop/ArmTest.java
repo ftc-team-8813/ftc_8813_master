@@ -1,18 +1,13 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
-import android.util.Log;
-
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
-import org.firstinspires.ftc.robotcontroller.external.samples.ConceptI2cAddressChange;
-import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskExtendSlide;
 import org.firstinspires.ftc.teamcode.autonomous.util.Config;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
@@ -68,6 +63,8 @@ public class ArmTest extends OpMode{
             base.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("ext_reverse", false))
             extend.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (TaskExtendSlide.extended)
+            extMin = 0;
 
         claw.setPosition(clawOpenAmount);
     }
@@ -121,12 +118,13 @@ public class ArmTest extends OpMode{
 
         String fmt = "%.4f";
 
-        telemetry.addData("X Turn", String.format(fmt, turnX));
-        telemetry.addData("Y Turn", String.format(fmt, turnY));
-        telemetry.addData("Elbow Turn", String.format(fmt, turnElbow));
-        telemetry.addData("Claw Closed", claw_closed);
+        telemetry.addData("X turn", String.format(fmt, turnX));
+        telemetry.addData("Y turn", String.format(fmt, turnY));
+        telemetry.addData("Elbow turn", String.format(fmt, turnElbow));
+        telemetry.addData("Claw closed", claw_closed);
         telemetry.addData("Extend motor encoder", extend.getCurrentPosition());
         telemetry.addData("Rotation motor encoder", base.getCurrentPosition());
+        telemetry.addData("Limit switch pressed", extendLimit.isPressed());
         telemetry.update();
     }
 }

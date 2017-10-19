@@ -25,8 +25,6 @@ public class TaskDoMove implements Task {
     private Servo ax, ay, el, cw;
     private DcMotor rt, ex;
     private TouchSensor lm;
-    private double axt, ayt, elt, clt;
-    private int rtenc, exenc;
 
     public TaskDoMove(String file) {
         moves = new ArrayList<>();
@@ -52,35 +50,27 @@ public class TaskDoMove implements Task {
         rt = m.dcMotor.get("base");
         ex = m.dcMotor.get("extend");
         lm = m.touchSensor.get("ext_bumper");
-        double vel = 0.5;
-        long t = System.currentTimeMillis();
-        while (!lm.isPressed()) {
-            ex.setPower(vel);
-            if (System.currentTimeMillis() > t + 50) {
-                t = System.currentTimeMillis();
-                vel *= 0.75;
-            }
-        }
-        ex.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        ex.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
     }
 
     @Override
     public void runTask() throws InterruptedException {
-        if (!loaded)
-            return;
-        int rEncMin = 0;
         boolean rExtSet = false;
         for (RobotMove move : moves) {
             if (move.extSet) {
-                rEncMin = move.extendEncoder;
                 rExtSet = true;
             }
-            if (rExtSet) {
-                int targetEnc = move.extendEncoder - rEncMin;
-                ex.setTargetPosition(targetEnc);
-                ex.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            if (rExtSet && !lm.isPressed()) {
+                ex.setPower(move.extendPower);
             }
+            if (lm.isPressed())
+                ex.setPower(0);
+            ax.setPosition(move.xTurn);
+            ay.setPosition(move.yTurn);
+            el.setPosition(move.elbow);
+            cw.setPosition(move.clawPos);
+            rt.setPower(move.basePower);
+            Thread.sleep(move.dt); //Should exit if robot stops
         }
     }
 }

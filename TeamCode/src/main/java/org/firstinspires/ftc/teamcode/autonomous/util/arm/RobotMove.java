@@ -16,10 +16,10 @@ public class RobotMove {
     public double yTurn;
     /** Elbow servo rotation */
     public double elbow;
-    /** Encoder value of the base rotation motor */
-    public int baseEncoder;
-    /** Encoder value of the extension motor */
-    public int extendEncoder;
+    /** Current power of base motor */
+    public double basePower;
+    /** Current power of extend motor */
+    public double extendPower;
     /** Claw servo rotation */
     public double clawPos;
     /** Number of milliseconds since last command */
@@ -40,8 +40,8 @@ public class RobotMove {
         out.writeFloat((float)elbow);
         out.writeFloat((float)clawPos);
 
-        out.writeInt(baseEncoder);
-        out.writeInt(extendEncoder);
+        out.writeFloat((float)basePower);
+        out.writeFloat((float)extendPower);
 
         out.writeByte(extSet ? 0xFF : 0);
     }
@@ -59,8 +59,8 @@ public class RobotMove {
         elbow = in.readFloat();
         clawPos = in.readFloat();
 
-        baseEncoder = in.readInt();
-        extendEncoder = in.readInt();
+        basePower = in.readFloat();
+        extendPower = in.readFloat();
 
         extSet = in.readByte() != 0;
     }
@@ -71,6 +71,6 @@ public class RobotMove {
         if (!(other instanceof RobotMove)) return false;
         RobotMove r = (RobotMove)other;
         return xTurn == r.xTurn && yTurn == r.yTurn && elbow == r.elbow && clawPos == r.clawPos
-                && baseEncoder == r.baseEncoder && extendEncoder == r.extendEncoder;
+                && basePower == r.basePower && extendPower == r.extendPower;
     }
 }
