@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDetectJewel;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDoMove;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskExtendSlide;
+import org.firstinspires.ftc.teamcode.autonomous.util.opencv.PictographFinder;
 
 import java.util.Arrays;
 
@@ -16,6 +17,8 @@ import java.util.Arrays;
  */
 
 public abstract class MainAutonomous extends BaseAutonomous {
+
+    private static final boolean COLOR_SENSOR = false;
 
     public abstract boolean isBlue();
 
@@ -30,18 +33,29 @@ public abstract class MainAutonomous extends BaseAutonomous {
         tasks.add(finder);
         tasks.add(new TaskExtendSlide(hardwareMap.dcMotor.get("extend")));
         tasks.add(new TaskDoMove("to_jewels.dat"));
-        TaskDetectJewel jd = new TaskDetectJewel(hardwareMap.colorSensor.get("color"));
-        tasks.add(jd);
-        runTasks();
-        if (jd.getReading() == TaskDetectJewel.RED) {
-            tasks.add(new TaskDoMove("jewel_red.dat"));
-        } else if (jd.getReading() == TaskDetectJewel.BLUE) {
-            tasks.add(new TaskDoMove("jewel_blue.dat"));
-        } else {
-            telemetry.addData("Color detected was not valid", Arrays.toString(jd.getDetectedColor()));
-            telemetry.update();
+        TaskDetectJewel jd = null;
+        if (COLOR_SENSOR) {
+            jd = new TaskDetectJewel(hardwareMap.colorSensor.get("color"));
+            tasks.add(jd);
         }
-        tasks.add(new TaskDoMove("place_block.dat"));
+        runTasks();
+        if (COLOR_SENSOR) {
+            if (jd.getReading() == TaskDetectJewel.RED) {
+                tasks.add(new TaskDoMove("jewel_red.dat"));
+            } else if (jd.getReading() == TaskDetectJewel.BLUE) {
+                tasks.add(new TaskDoMove("jewel_blue.dat"));
+            } else {
+                telemetry.addData("Color detected was not valid", Arrays.toString(jd.getDetectedColor()));
+                telemetry.update();
+            }
+        }
+        if (finder.getResult().equals(TaskClassifyPictograph.Result.LEFT)) {
+            tasks.add(new TaskDoMove("place_block_l.dat"));
+        } else if (finder.getResult().equals(TaskClassifyPictograph.Result.CENTER)) {
+            tasks.add(new TaskDoMove("place_block_c.dat"));
+        } else {
+            tasks.add(new TaskDoMove("place_block_r.dat"));
+        }
     }
 }
 

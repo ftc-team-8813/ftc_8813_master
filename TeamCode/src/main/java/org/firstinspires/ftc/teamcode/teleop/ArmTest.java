@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
@@ -53,7 +54,44 @@ public class ArmTest extends OpMode{
         base        = hardwareMap.dcMotor.get("base");
         extend      = hardwareMap.dcMotor.get("extend");
         //1 bumper
-        extendLimit = hardwareMap.touchSensor.get("ext_bumper");
+        extendLimit = new TouchSensor() {
+            private DigitalChannel dc = hardwareMap.digitalChannel.get("limit");
+            @Override
+            public double getValue() {
+                return dc.getState() ? 1 : 0;
+            }
+
+            @Override
+            public boolean isPressed() {
+                return getValue() == 1;
+            }
+
+            @Override
+            public Manufacturer getManufacturer() {
+                return null;
+            }
+
+            @Override
+            public String getDeviceName() {
+                return null;
+            }
+
+            @Override
+            public String getConnectionInfo() {
+                return null;
+            }
+
+            @Override
+            public int getVersion() {
+                return 0;
+            }
+
+            @Override
+            public void resetDeviceConfigurationForOpMode() {}
+
+            @Override
+            public void close() {}
+        };
 
         maxTurn = config.getDouble("servo_turn", 0);
         clawCloseAmount = config.getDouble("claw_closed", 0);
@@ -67,6 +105,8 @@ public class ArmTest extends OpMode{
             extMin = 0;
 
         claw.setPosition(clawOpenAmount);
+        shoulderX.setPosition(0.4145);
+        turnX = 0.4145;
     }
 
     @Override
@@ -75,19 +115,28 @@ public class ArmTest extends OpMode{
         turnX     += -gamepad1.right_stick_x * maxTurn;
         turnY     += -gamepad1.left_stick_y * maxTurn;
         turnElbow += -gamepad1.right_stick_y * maxTurn;
-        base.setPower(gamepad1.left_stick_x * 0.25);
-        if (!extendLimit.isPressed()) {
-            //Only allows user to go forward if the minimum switch has been triggered.
-            if (gamepad1.dpad_up && extMin != null && extend.getCurrentPosition() < extMin + extRange) {
-                extend.setPower(1);
-            } else if (gamepad1.dpad_down) {
-                extend.setPower(-1);
-            } else {
-                extend.setPower(0);
-            }
+        base.setPower(gamepad1.left_stick_x * 0.5);
+        //Limit switch code -- needs work!!
+//        if (!extendLimit.isPressed()) {
+//            //Only allows user to go forward if the minimum switch has been triggered.
+//            if (gamepad1.dpad_up && extMin != null && extend.getCurrentPosition() < extMin + extRange) {
+//                extend.setPower(1);
+//            } else if (gamepad1.dpad_down) {
+//                extend.setPower(-1);
+//            } else {
+//                extend.setPower(0);
+//            }
+//        } else {
+//            extend.setPower(0);
+//            extMin = extend.getCurrentPosition();
+//        }
+        if (gamepad1.dpad_up) {
+            extend.setPower(1);
+        } else if (gamepad1.dpad_down) {
+            extend.setPower(-1
+            );
         } else {
             extend.setPower(0);
-            extMin = extend.getCurrentPosition();
         }
         try {
             Thread.sleep(200);

@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
@@ -80,7 +82,44 @@ public class MoveRecorder extends OpMode{
         base        = hardwareMap.dcMotor.get("base");
         extend      = hardwareMap.dcMotor.get("extend");
         //1 bumper
-        extendLimit = hardwareMap.touchSensor.get("ext_bumper");
+        extendLimit = new TouchSensor() {
+            private DigitalChannel dc = hardwareMap.digitalChannel.get("limit");
+            @Override
+            public double getValue() {
+                return dc.getState() ? 1 : 0;
+            }
+
+            @Override
+            public boolean isPressed() {
+                return getValue() == 1;
+            }
+
+            @Override
+            public Manufacturer getManufacturer() {
+                return null;
+            }
+
+            @Override
+            public String getDeviceName() {
+                return null;
+            }
+
+            @Override
+            public String getConnectionInfo() {
+                return null;
+            }
+
+            @Override
+            public int getVersion() {
+                return 0;
+            }
+
+            @Override
+            public void resetDeviceConfigurationForOpMode() {}
+
+            @Override
+            public void close() {}
+        };
 
         maxTurn = config.getDouble("servo_turn", 0);
         clawCloseAmount = config.getDouble("claw_closed", 0);
@@ -94,6 +133,7 @@ public class MoveRecorder extends OpMode{
             extMin = 0;
 
 
+        shoulderX.setPosition(0.4154);
         claw.setPosition(clawOpenAmount);
     }
 
@@ -175,8 +215,8 @@ public class MoveRecorder extends OpMode{
             move.extendPower = extend.getPower();
             move.basePower = base.getPower();
             move.extSet = extMin != null;
-            RobotMove last = moves.get(moves.size()-1);
-            if (last.equals(move)) {
+            RobotMove last = moves.size() == 0 ? null : moves.get(moves.size()-1);
+            if (last != null && last.equals(move)) {
                 //Add the time of this one onto the other one
                 last.dt += move.dt;
             } else {
