@@ -106,7 +106,11 @@ public class ArmTest extends OpMode{
 
         claw.setPosition(clawOpenAmount);
         shoulderX.setPosition(0.4145);
+        shoulderY.setPosition(0);
+        elbow.setPosition(0.1201);
         turnX = 0.4145;
+        turnY = 0;
+        turnElbow = 0.1201;
     }
 
     @Override
@@ -133,8 +137,7 @@ public class ArmTest extends OpMode{
         if (gamepad1.dpad_up) {
             extend.setPower(1);
         } else if (gamepad1.dpad_down) {
-            extend.setPower(-1
-            );
+            extend.setPower(-1);
         } else {
             extend.setPower(0);
         }
@@ -159,7 +162,7 @@ public class ArmTest extends OpMode{
                 if (claw_closed)
                     claw.setPosition(clawCloseAmount);
                 else
-                    claw.setPosition(0);
+                    claw.setPosition(clawOpenAmount);
             }
         } else {
             aHeld = false;

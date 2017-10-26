@@ -19,6 +19,10 @@ public class Config {
     public static final String configFile = "config.properties";
     private Properties properties;
 
+    public static class Encodeable {
+
+    }
+
     public Config(String filename) {
         new File(storageDir).mkdirs();
         try {

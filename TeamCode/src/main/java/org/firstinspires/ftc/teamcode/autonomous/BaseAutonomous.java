@@ -71,7 +71,7 @@ public abstract class BaseAutonomous extends LinearOpMode {
     private List<EventHooks> hooks = new ArrayList<>();
 
     private CameraStream stream;
-    public Config cfg;
+    public Config config;
 
     public void addEventHooks(EventHooks hook) {
         hooks.add(hook);
@@ -125,7 +125,7 @@ public abstract class BaseAutonomous extends LinearOpMode {
             //GZip old log files to save space :P
             Utils.gzipLogs();
             //Initialize the configuration file
-            cfg = new Config(Config.configFile);
+            config = new Config(Config.configFile);
 
             //Clear the task list in case the robot was stopped before the list was empty
             //and the OpMode wasn't re-initialized.
