@@ -13,14 +13,26 @@ import java.io.OutputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Created by aidan on 10/13/17.
+ * Utils - Utility methods
  */
 
 public class Utils {
+    /**
+     * Constrain a value between a lower and upper limit. Good for limiting servo values etc.
+     * @param value The value to constrain
+     * @param min   The lower limit
+     * @param max   The upper limit
+     * @return value if it is between min and max, otherwise if it is less than min returns min and
+     *               if greater than max returns max.
+     */
     public static double constrain(double value, double min, double max) {
         return (value < min) ? min : ((value > max) ? max : value);
     }
 
+    /**
+     * GZips all non-GZipped old Robot Controller log files, renaming them to
+     * 'robotControllerLog.txt.[n].gz'
+     */
     public static void gzipLogs() {
         String base = Config.baseDir + "/robotControllerLog.txt.";
         File input;

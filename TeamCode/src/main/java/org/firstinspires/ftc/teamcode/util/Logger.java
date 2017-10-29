@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by aidan on 10/25/17.
+ * Log utility. NOT FINISHED DO NOT USE!!!!!
  */
-
+@Deprecated
 public class Logger {
     private final String name;
     private static PrintStream[] outputs;

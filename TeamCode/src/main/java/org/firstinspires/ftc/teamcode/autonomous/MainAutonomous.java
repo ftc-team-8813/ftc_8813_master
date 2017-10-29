@@ -17,6 +17,8 @@ import java.util.Arrays;
 /**
  * Main autonomous program. RedAutonomous and BlueAutonomous are the sub-OpModes that decide whether
  * isRed or isBlue is true.
+ *
+ * Much of this is for the first league meet; don't use it!!!
  */
 
 public abstract class MainAutonomous extends BaseAutonomous {
@@ -67,7 +69,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
         }
     }
 }
-
+/*
 abstract class BasicAutonomous extends MainAutonomous {
     @Override
     public void run() throws InterruptedException {
@@ -140,4 +142,4 @@ abstract class BasicAutonomous extends MainAutonomous {
         }
     }
 }
-
+*/

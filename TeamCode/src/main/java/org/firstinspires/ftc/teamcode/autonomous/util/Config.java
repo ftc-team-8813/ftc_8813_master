@@ -14,15 +14,25 @@ import java.util.Properties;
  */
 
 public class Config {
+    /** The base 'external' storage path (usually /sdcard or /storage/emulated/legacy etc.).
+        This directory can be viewed when the phone is set in MTP mode                       */
     public static final String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+    /** The 'storage' directory (the 'Team8813' folder in the file browser) */
     public static final String storageDir = baseDir + "/Team8813/";
+    /** The name of the default config file (other ones can be used, but this is the default) */
     public static final String configFile = "config.properties";
-    private Properties properties;
 
-    public static class Encodeable {
-
+    public static interface Encodeable {
+        public boolean valid(String input);
+        public void parse(String input);
     }
 
+    private Properties properties;
+
+    /**
+     * Construct a configuration from a config file.
+     * @param filename The name of the file to load the configuration from.
+     */
     public Config(String filename) {
         new File(storageDir).mkdirs();
         try {
@@ -30,6 +40,8 @@ public class Config {
             properties.load(new FileInputStream(storageDir + filename));
         } catch (IOException e) {
             Log.e("Config", "No config file found");
+        } catch (IllegalArgumentException e) {
+            Log.e("Config", "Malformed properties file");
         }
     }
 
@@ -108,6 +120,23 @@ public class Config {
             }
             return out;
         } else return null;
+    }
+
+    public Encodeable getEncodeable(String name, Class<? extends Encodeable> klass) {
+        if (properties.getProperty(name) != null) {
+            String value = properties.getProperty(name);
+            Encodeable output;
+            try {
+                output = klass.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                return null;
+            }
+            if (output.valid(value)) {
+                output.parse(value);
+                return output;
+            }
+        }
+        return null;
     }
 
     private String[] csv(String s) {
