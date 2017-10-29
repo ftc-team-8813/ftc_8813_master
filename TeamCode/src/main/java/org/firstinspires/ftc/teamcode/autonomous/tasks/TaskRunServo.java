@@ -8,16 +8,16 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class TaskRunServo implements Task {
 
-    private int pos;
+    private double pos;
     private Servo servo;
 
-    public TaskRunServo(Servo servo, int pos) {
+    public TaskRunServo(Servo servo, double pos) {
         this.pos = pos;
         this.servo = servo;
     }
 
     @Override
     public void runTask() throws InterruptedException {
-        servo.setPosition(pos/255.0);
+        servo.setPosition(pos);
     }
 }

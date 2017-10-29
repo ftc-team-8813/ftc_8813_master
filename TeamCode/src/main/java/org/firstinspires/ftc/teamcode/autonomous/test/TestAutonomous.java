@@ -2,15 +2,10 @@ package org.firstinspires.ftc.teamcode.autonomous.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoController;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDelay;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskReadSensor;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRunServo;
-import org.firstinspires.ftc.teamcode.autonomous.util.TelemetryWrapper;
-import org.firstinspires.ftc.teamcode.autonomous.util.opencv.PictographFinder;
+import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 
 /**
  * An example test autonomous OpMode. Test OpModes should perhaps be @Disabled at competitions
@@ -27,7 +22,7 @@ public class TestAutonomous extends BaseAutonomous {
     public void initialize() throws InterruptedException {
         //Must do for ALL servos!!
         servo = hardwareMap.servo.get("s0");
-        servo.setPosition(-0.1);
+        servo.setPosition(0);
         finder = new TaskClassifyPictograph();
     }
 

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous.util;
+package org.firstinspires.ftc.teamcode.autonomous.util.telemetry;
 
 /**
  * ProgressBar - a text progress bar

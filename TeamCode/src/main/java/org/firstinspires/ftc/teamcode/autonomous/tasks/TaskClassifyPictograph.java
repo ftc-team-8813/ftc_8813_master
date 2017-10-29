@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous.tasks;
 
-import android.app.VoiceInteractor;
-
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
-import org.firstinspires.ftc.teamcode.autonomous.util.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.PictographFinder;
 
@@ -35,8 +32,7 @@ public class TaskClassifyPictograph implements Task {
     public void runTask() throws InterruptedException {
         PictographFinder finder = new PictographFinder();
         stream.addListener(finder);
-        while (!finder.finished() && !Thread.interrupted()) {
-        }
+        while (!finder.finished() && !Thread.interrupted());
         stream.removeListener(finder);
         if (Thread.interrupted()) return;
         //Otherwise, we may have gotten a result!
