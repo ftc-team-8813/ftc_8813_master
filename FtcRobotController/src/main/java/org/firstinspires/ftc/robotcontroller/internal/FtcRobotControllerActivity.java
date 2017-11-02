@@ -87,7 +87,6 @@ import com.qualcomm.robotcore.hardware.configuration.Utility;
 import com.qualcomm.robotcore.util.Dimmer;
 import com.qualcomm.robotcore.util.ImmersiveMode;
 import com.qualcomm.robotcore.util.RobotLog;
-import com.qualcomm.robotcore.wifi.NetworkConnection;
 import com.qualcomm.robotcore.wifi.NetworkConnectionFactory;
 import com.qualcomm.robotcore.wifi.NetworkType;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
@@ -110,8 +109,6 @@ import org.firstinspires.ftc.robotcore.internal.webserver.RobotControllerWebInfo
 import org.firstinspires.ftc.robotcore.internal.webserver.WebServer;
 import org.firstinspires.inspection.RcInspectionActivity;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -123,8 +120,8 @@ public class FtcRobotControllerActivity extends Activity {
         return TAG;
     }
 
-    private static final int REQUEST_CONFIG_WIFI_CHANNEL = 1;
-    private static final int NUM_GAMEPADS = 2;
+  private static final int REQUEST_CONFIG_WIFI_CHANNEL = 1;
+  private static final int NUM_GAMEPADS = 2;
 
     protected WifiManager.WifiLock wifiLock;
     protected RobotConfigFileManager cfgFileMgr;
@@ -220,11 +217,12 @@ public class FtcRobotControllerActivity extends Activity {
         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        RobotLog.vv(TAG, "onCreate()");
-        ThemedActivity.appAppThemeToActivity(getTag(), this); // do this way instead of inherit to help AppInventor
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    RobotLog.onApplicationStart();  // robustify against onCreate() following onDestroy() but using the same app instance, which apparently does happen
+    RobotLog.vv(TAG, "onCreate()");
+    ThemedActivity.appAppThemeToActivity(getTag(), this); // do this way instead of inherit to help AppInventor
 
         Assert.assertTrue(FtcRobotControllerWatchdogService.isFtcRobotControllerActivity(AppUtil.getInstance().getRootActivity()));
         Assert.assertTrue(AppUtil.getInstance().isRobotController());
