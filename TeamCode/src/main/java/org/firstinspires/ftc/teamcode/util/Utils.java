@@ -29,6 +29,10 @@ public class Utils {
         return (value < min) ? min : ((value > max) ? max : value);
     }
 
+    public static double scaleRange(double x, double a, double b, double c, double d) {
+        return c * (1.0 - (x - a) / (b - a)) + d * ((x - a) / (b - a));
+    }
+
     /**
      * GZips all non-GZipped old Robot Controller log files, renaming them to
      * 'robotControllerLog.txt.[n].gz'

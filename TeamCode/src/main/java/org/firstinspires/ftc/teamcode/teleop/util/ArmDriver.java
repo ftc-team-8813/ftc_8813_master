@@ -11,6 +11,10 @@ public class ArmDriver {
     // Constants -- should be migrated to config?
 
     public static final double SERVO_MAX_ANGLE = 7.04614352305139340626;
+    public static final double SERVO_ANGLE_H_S = 0.4622;
+    public static final double SERVO_ANGLE_H_E = 0.5042;
+    public static final double SERVO_ANGLE_V_S = 0.2589;
+    public static final double SERVO_ANGLE_V_E = 0.4985;
 
     // Sub-classes
 
