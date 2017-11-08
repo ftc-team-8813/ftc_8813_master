@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.autonomous.util.Config;
 
 /**
- * Created by aidan on 10/27/17.
+ * Servo initialization for autonomous
  */
 
 public class ServoInit {

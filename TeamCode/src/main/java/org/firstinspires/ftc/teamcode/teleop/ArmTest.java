@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.util.Utils;
  *   Horizontal: N/A
  *
  */
-@TeleOp(name="Arm Test")
+@TeleOp(name="Arm Test", group="test")
 public class ArmTest extends OpMode{
 
     private Servo shoulderX, shoulderY, elbow, claw;
@@ -121,26 +121,27 @@ public class ArmTest extends OpMode{
         turnElbow += -gamepad1.right_stick_y * maxTurn;
         base.setPower(gamepad1.left_stick_x * 0.5);
         //Limit switch code -- needs work!!
-//        if (!extendLimit.isPressed()) {
-//            //Only allows user to go forward if the minimum switch has been triggered.
-//            if (gamepad1.dpad_up && extMin != null && extend.getCurrentPosition() < extMin + extRange) {
-//                extend.setPower(1);
-//            } else if (gamepad1.dpad_down) {
-//                extend.setPower(-1);
-//            } else {
-//                extend.setPower(0);
-//            }
-//        } else {
-//            extend.setPower(0);
-//            extMin = extend.getCurrentPosition();
-//        }
-        if (gamepad1.dpad_up) {
-            extend.setPower(1);
-        } else if (gamepad1.dpad_down) {
-            extend.setPower(-1);
+        if (!extendLimit.isPressed()) {
+            //Only allows user to go forward if the minimum switch has been triggered.
+            if (gamepad1.dpad_up && extMin != null && extend.getCurrentPosition() < extMin + extRange) {
+                extend.setPower(1);
+            } else if (gamepad1.dpad_down) {
+                extend.setPower(-1);
+            } else {
+                extend.setPower(0);
+            }
         } else {
             extend.setPower(0);
+            extMin = extend.getCurrentPosition();
         }
+        //Generic (non-limit-switch) code
+//        if (gamepad1.dpad_up) {
+//            extend.setPower(1);
+//        } else if (gamepad1.dpad_down) {
+//            extend.setPower(-1);
+//        } else {
+//            extend.setPower(0);
+//        }
         try {
             Thread.sleep(200);
         } catch (InterruptedException e) {}
