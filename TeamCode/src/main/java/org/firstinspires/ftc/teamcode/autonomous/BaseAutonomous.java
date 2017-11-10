@@ -129,6 +129,7 @@ public abstract class BaseAutonomous extends LinearOpMode {
             run();
             //Run any leftover tasks
             runTasks();
+            while (opModeIsActive()) {}
         } catch (InterruptedException | RuntimeException | Error e) {
             exc = e;
         } finally {
