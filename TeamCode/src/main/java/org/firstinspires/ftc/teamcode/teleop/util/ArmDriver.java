@@ -71,6 +71,12 @@ public class ArmDriver {
 
     // Constructors
 
+    /**
+     * Construct the arm driver. Does not attempt to move the servos.
+     * @param waist The waist servo
+     * @param shoulder The shoulder servo
+     * @param elbow The elbow servo
+     */
     public ArmDriver(Servo waist, Servo shoulder, Servo elbow) {
         ws = waist;
         ss = shoulder;

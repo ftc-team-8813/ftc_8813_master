@@ -123,9 +123,7 @@ public class ArmTest extends OpMode{
         //Limit switch code -- needs work!!
         if (!extendLimit.isPressed()) {
             //Only allows user to go forward if the minimum switch has been triggered.
-            if (gamepad1.dpad_up && extMin != null && extend.getCurrentPosition() < extMin + extRange) {
-                extend.setPower(1);
-            } else if (gamepad1.dpad_down) {
+            if (gamepad1.dpad_down) {
                 extend.setPower(-1);
             } else {
                 extend.setPower(0);
@@ -133,6 +131,11 @@ public class ArmTest extends OpMode{
         } else {
             extend.setPower(0);
             extMin = extend.getCurrentPosition();
+        }
+        if (gamepad1.dpad_up && extMin != null && extend.getCurrentPosition() < extMin + extRange) {
+            extend.setPower(1);
+        } else {
+            extend.setPower(0);
         }
         //Generic (non-limit-switch) code
 //        if (gamepad1.dpad_up) {
