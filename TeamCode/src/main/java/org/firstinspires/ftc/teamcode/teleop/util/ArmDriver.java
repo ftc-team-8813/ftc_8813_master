@@ -61,7 +61,7 @@ public class ArmDriver {
     //Servos
     private final Servo ws, ss, es;
     //Points of origin for xy to angle calculation (never change)
-    private final double x=0, y=0, x2=0, y2=0;
+    private double x=1, y, x2, y2;
     //Current position in cartesian coordinates
     private double cx, cy;
     //Current servo positions in servo angles (0-1)
@@ -245,6 +245,8 @@ public class ArmDriver {
         double ty = cy - sin(angle1);
         dx = tx - x2;
         dy = ty - y2;
+        x = tx;
+        y = ty;
         double angle2 = atan2(dy, dx);
         setElbowAngle(angle1);
         setShoulderAngle(angle2);

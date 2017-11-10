@@ -118,7 +118,7 @@ public class MainTeleOp extends OpMode {
         telemetry.addData("Claw", claw_closed ? "CLOSED" : "OPEN");
         telemetry.addData("Limit Switch", limit.getState() ? "PRESSED" : "RELEASED");
         telemetry.addData("Claw X", driver.getClawX());
-        telemetry.addData("Claw Y", driver.getClawX());
+        telemetry.addData("Claw Y", driver.getClawY());
         telemetry.addData("Waist Position", driver.getWaistPos());
         telemetry.addData("Waist Angle", driver.getWaistAngle());
         telemetry.addData("Shoulder Position", driver.getShoulderPos());
