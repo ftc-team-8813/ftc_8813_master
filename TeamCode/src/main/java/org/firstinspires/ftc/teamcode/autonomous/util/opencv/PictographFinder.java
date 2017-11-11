@@ -8,6 +8,8 @@ import android.util.Log;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.R;
+import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.ProgressBar;
+import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream.CameraListener;
 import org.opencv.android.Utils;
 import org.opencv.calib3d.Calib3d;
@@ -43,11 +45,13 @@ public class PictographFinder implements CameraListener {
     private Mat find_mask;
     private Point[] prevQuad = new Point[4];
     private Thread workerThread;
+    private Thread progressBarThread;
     private MatOfKeyPoint kp_obj;
     private Mat desc_obj;
     private Mat flattened;
     private ClassificationType prevClassification;
-
+    private volatile ProgressBar pb;
+    private volatile String status;
 
     public static class ClassificationType {
         public final String name;
@@ -72,10 +76,13 @@ public class PictographFinder implements CameraListener {
     public boolean finished() { return finished; }
 
     public PictographFinder() {
+        TelemetryWrapper.setLines(5);
+        TelemetryWrapper.setLine(0, "Pictograph Finder -- Init");
         //Get an Activity so we can get some image resources
         Activity a = AppUtil.getInstance().getActivity();
         Bitmap bmp = BitmapFactory.decodeResource(a.getResources(), R.drawable.pictograph);
         trainImage = new Mat();
+        find_mask = new Mat();
         Utils.bitmapToMat(bmp, trainImage);
         bmp = BitmapFactory.decodeResource(a.getResources(), R.drawable.dot_mask);
         Utils.bitmapToMat(bmp, find_mask);
@@ -86,17 +93,38 @@ public class PictographFinder implements CameraListener {
     @Override
     public void processFrame(Mat rgba) {
         if (firstRun) {
+            TelemetryWrapper.setLine(0, "Pictograph Finder -- Receive frame");
             if (rgba.width() == 0 || rgba.height() == 0) return;
             firstRun = false;
-            mat = rgba;
+            //rgba is destroyed after this method ends, so we need to make a copy and use it
+            mat = new Mat();
+            rgba.copyTo(mat);
             workerThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     work();
                 }
             });
+            finished = false;
+            progressBarThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    while (!finished()) {
+                        TelemetryWrapper.setLine(1, "Working - " + pb);
+                        TelemetryWrapper.setLine(2, "Status: " + status);
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            return;
+                        }
+                    }
+                }
+            });
             workerThread.setDaemon(true);
             workerThread.start();
+            progressBarThread.setDaemon(true);
+            progressBarThread.start();
         }
     }
 
@@ -106,7 +134,9 @@ public class PictographFinder implements CameraListener {
      * The processor thread should stop immediately after processing the next frame.
      */
     public void stop() {
-        Log.w("PictographFinder", "May need to kill currently running pictograph finder thread. Any errors after this");
+        TelemetryWrapper.setLine(0, "Pictograph Finder -- Force Stop");
+        finished = true;
+        Log.w("PictographFinder", "Force-killing pictograph finder thread. Any errors after this");
         Log.w("PictographFinder", "are completely normal.");
         //We can delete the scene Mat, which should cause enough havoc to kill the thread!
         mat.release();
@@ -115,6 +145,9 @@ public class PictographFinder implements CameraListener {
     }
 
     private void work() {
+        // 1: Detect features. 2: Compute descriptors. 3: Find matches. 4: Calculate object position.
+        // 5: Classify.
+        pb = new ProgressBar(5, 30, ' ', '#', '[', ']');
         //First, we want to find the image
         boolean found = findImage(trainImage);
         if (found) {
@@ -124,10 +157,15 @@ public class PictographFinder implements CameraListener {
             //We can't classify it; don't show anything
             prevClassification = new ClassificationType("", -1, -1, -1);
         }
+        pb.setProgress(5);
+        status = "Finished";
         finished = true;
     }
 
     private ClassificationType classify(Mat img, Mat mask) {
+        pb.setProgress(4);
+        status = "Classifying object";
+
         int mean = (int)Core.mean(img, mask).val[0];
         Imgproc.threshold(img, img, mean, 255, Imgproc.THRESH_BINARY);
         final int[][] dataPoints = {
@@ -190,8 +228,10 @@ public class PictographFinder implements CameraListener {
 
         if (mat.width() == 0 || mat.height() == 0) return false;
 
+        status = "Detecting Features";
+
         //Make a FeatureDetector to find key points
-        //We're using the Brisk feature detector/descriptor extractor
+        //We're using the Brisk feature detector/descriptor extractor algorithms
         FeatureDetector fd = FeatureDetector.create(FeatureDetector.BRISK);
         //Key points
         Mat temp = new Mat();
@@ -205,6 +245,9 @@ public class PictographFinder implements CameraListener {
             fd.detect(object, kp_obj, temp); //Find object key points
         }
         temp.release();
+
+        pb.setProgress(1);
+        status = "Computing Descriptors";
 
         //Descriptors
         Mat desc_scene = new Mat();
@@ -220,6 +263,10 @@ public class PictographFinder implements CameraListener {
 
         //Convert descriptors to CV_32F
         desc_scene.convertTo(desc_scene, CvType.CV_32F);
+
+        pb.setProgress(2);
+        status = "Finding matches";
+
         //Match features on the object to features in the scene
         FlannBasedMatcher matcher = FlannBasedMatcher.create();
         List<MatOfDMatch> matches = new ArrayList<>();
@@ -238,6 +285,10 @@ public class PictographFinder implements CameraListener {
         }
         //If we have at least MIN_MATCHES matches, we have found the object!
         if (goodMatches.size() >= MIN_MATCHES) {
+
+            pb.setProgress(3);
+            status = "Calculating object position";
+
             List<Point> objPts = new ArrayList<>();
             List<Point> scenePts = new ArrayList<>();
 

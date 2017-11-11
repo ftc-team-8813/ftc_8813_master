@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous.util.opencv;
 
 import android.app.Activity;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -11,6 +12,8 @@ import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
@@ -25,6 +28,10 @@ import java.util.List;
 public class CameraStream implements EventHooks {
 
     private JavaCameraView cameraView;
+    private Activity activity;
+    private volatile boolean uiRunning;
+    //Smurf mode -- swap red and blue color channels in the output image for EPIC results
+    private static final boolean SMURF_MODE = true;
 
     private List<CameraListener> listeners = new ArrayList<>();
 
@@ -47,12 +54,29 @@ public class CameraStream implements EventHooks {
 
     @Override
     public void stop() {
-        cameraView.disableView();
+        uiRunning = true;
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                cameraView.disableView();
+                uiRunning = false;
+            }
+        });
+        while (uiRunning);
     }
 
     @Override
     public void resume() {
-        cameraView.enableView();
+        uiRunning = true;
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                cameraView.enableView();
+                startProcessing();
+                uiRunning = false;
+            }
+        });
+        while (uiRunning);
     }
 
     public static interface CameraListener {
@@ -64,6 +88,7 @@ public class CameraStream implements EventHooks {
     }
 
     private void startProcessing() {
+        cameraView.setVisibility(View.VISIBLE);
         cameraView.setCvCameraViewListener(new CameraBridgeViewBase.CvCameraViewListener2() {
             @Override
             public void onCameraViewStarted(int width, int height) { }
@@ -74,6 +99,8 @@ public class CameraStream implements EventHooks {
             @Override
             public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
                 Mat frame = inputFrame.rgba();
+                if (frame.width() == 0 || frame.height() == 0) return frame;
+                //Log.i("Image Conversion", "Image type: " + CvType.typeToString(frame.type()));
                 //Convert to BGR to make it a 'normal' image
                 Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGBA2BGR);
                 //Make a copy of the current listeners list to try to be more thread-safe
@@ -86,6 +113,14 @@ public class CameraStream implements EventHooks {
                     copyFrame.release();
                 }
                 Mat out =  modifier.process(frame);
+
+                if (!SMURF_MODE)
+                    Imgproc.cvtColor(out, out, Imgproc.COLOR_BGR2RGBA);
+                Mat t = new Mat(out.height(), out.width(), CvType.CV_8UC4);
+                Core.transpose(out, t);
+                Imgproc.resize(t, out, out.size(), 0,0, 0);
+                Core.flip(out, out, 1 );
+                t.release();
                 //Run the garbage collector as fast as possible to delete old images and keep enough
                 //memory for our program to function, avoid blowing up the phone :)
                 System.gc();
@@ -94,19 +129,22 @@ public class CameraStream implements EventHooks {
         });
     }
 
-    static {
-        if (!OpenCVLoader.initDebug()) {
-            System.exit(0);
-        }
-    }
-
     public CameraStream() {
-        Activity activity = AppUtil.getInstance().getActivity();
+        activity = AppUtil.getInstance().getActivity();
         FtcRobotControllerActivity rc = (FtcRobotControllerActivity) activity;
-        LinearLayout cameraLayout = rc.cameraMonitorLayout;
-        cameraView = new JavaCameraView(activity, JavaCameraView.CAMERA_ID_BACK);
-        cameraView.setVisibility(View.INVISIBLE);
-        cameraLayout.addView(cameraView);
-        BaseAutonomous.instance().addEventHooks(this);
+        final LinearLayout cameraLayout = rc.cameraMonitorLayout;
+        uiRunning = true;
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                cameraView = new JavaCameraView(activity, JavaCameraView.CAMERA_ID_BACK);
+                cameraView.setVisibility(View.INVISIBLE);
+                //cameraView.setRotation(90);
+                cameraLayout.addView(cameraView);
+                BaseAutonomous.instance().addEventHooks(CameraStream.this);
+                uiRunning = false;
+            }
+        });
+        while (uiRunning);
     }
 }

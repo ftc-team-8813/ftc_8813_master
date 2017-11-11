@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous.util;
 
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,20 +9,41 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * Holder for configurable variables.
+ * Config - Config file reader. Any configurable things (such as 'tweak' variables for quick adjustment)
+ * should be put in the config file.
  */
 
 public class Config {
-    public static final String storageDir =
-            Environment.getExternalStorageDirectory().getAbsolutePath() + "/Team8813/";
-    private Properties properties;
+    /** The base 'external' storage path (usually /sdcard or /storage/emulated/legacy etc.).
+        This directory can be viewed when the phone is set in MTP mode                       */
+    public static final String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+    /** The 'storage' directory (the 'Team8813' folder in the file browser) */
+    public static final String storageDir = baseDir + "/Team8813/";
+    /** The name of the default config file (other ones can be used, but this is the default) */
+    public static final String configFile = "config.properties";
 
-    public Config(String filename) throws IOException {
-        new File(storageDir).mkdirs();
-        this.properties = new Properties();
-        properties.load(new FileInputStream(storageDir + filename));
+    public static interface Encodeable {
+        public boolean valid(String input);
+        public void parse(String input);
     }
 
+    private Properties properties;
+
+    /**
+     * Construct a configuration from a config file.
+     * @param filename The name of the file to load the configuration from.
+     */
+    public Config(String filename) {
+        new File(storageDir).mkdirs();
+        try {
+            this.properties = new Properties();
+            properties.load(new FileInputStream(storageDir + filename));
+        } catch (IOException e) {
+            Log.e("Config", "No config file found");
+        } catch (IllegalArgumentException e) {
+            Log.e("Config", "Malformed properties file");
+        }
+    }
 
     public int getInt(String name, int def) {
         try {
@@ -100,6 +122,23 @@ public class Config {
         } else return null;
     }
 
+    public Encodeable getEncodeable(String name, Class<? extends Encodeable> klass) {
+        if (properties.getProperty(name) != null) {
+            String value = properties.getProperty(name);
+            Encodeable output;
+            try {
+                output = klass.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                return null;
+            }
+            if (output.valid(value)) {
+                output.parse(value);
+                return output;
+            }
+        }
+        return null;
+    }
+
     private String[] csv(String s) {
         String[] values = s.split(",");
         for (int i = 0; i < values.length; i++) {
@@ -107,6 +146,4 @@ public class Config {
         }
         return values;
     }
-
-
 }

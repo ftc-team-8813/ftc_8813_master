@@ -5,18 +5,17 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcontroller.internal.EventHooks;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.Task;
+import org.firstinspires.ftc.teamcode.autonomous.util.Config;
+import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
+import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
+import org.firstinspires.ftc.teamcode.util.Utils;
+import org.opencv.android.OpenCVLoader;
 
 import java.util.ArrayList;
 import java.util.List;
 //Put your hours here:
 //9/10: 2:30P - 5:15P -ABY
 //9/11: 6:30P - 7:30P -ABY
-/*
-To-Do List:
-  * TODO: Make tasks using the REV robotics modules (Joe/Tarun)
-  * TODO: Vision Processing (Aidan/Joe)
-Note: You should put to-do list items in more specific places if possible.
- */
 
 /**
  * Base autonomous OpMode. Sub-OpModes that are going to be used for the games must extend this.
@@ -55,6 +54,12 @@ Note: You should put to-do list items in more specific places if possible.
 // @Autonomous(name = "Autonomous")
 public abstract class BaseAutonomous extends LinearOpMode {
 
+    static {
+        if (!OpenCVLoader.initDebug()) {
+            System.exit(0);
+        }
+    }
+
     //Queue of tasks to run
     protected final List<Task> tasks = new ArrayList<>();
     //We're making BaseAutonomous a 'singleton' class. This means that there is always only ONE
@@ -63,6 +68,9 @@ public abstract class BaseAutonomous extends LinearOpMode {
     private static BaseAutonomous instance;
 
     private List<EventHooks> hooks = new ArrayList<>();
+
+    private CameraStream stream;
+    public Config config;
 
     public void addEventHooks(EventHooks hook) {
         hooks.add(hook);
@@ -91,6 +99,12 @@ public abstract class BaseAutonomous extends LinearOpMode {
         return instance != null;
     }
 
+    public final CameraStream getCameraStream() {
+        if (stream == null)
+            stream = new CameraStream();
+        return stream;
+    }
+
 
     /**
      * Run the op mode.
@@ -107,23 +121,29 @@ public abstract class BaseAutonomous extends LinearOpMode {
         Throwable exc = null;
         try {
             //Run initialization operations here
-            //Need to initialize the motor/sensor handlers here once they are written.
+            //GZip old log files to save space :P
+            Utils.gzipLogs();
+            //Initialize the configuration file
+            config = new Config(Config.configFile);
 
             //Clear the task list in case the robot was stopped before the list was empty
             //and the OpMode wasn't re-initialized.
             tasks.clear();
 
+            TelemetryWrapper.init(telemetry, 0);
+
             //Set the current instance
             instance = this;
 
             initialize();
-            //Fire up the camera view
+            //Fire up the camera view if necessary
             fireStartEvent();
 
             //Must wait for start, otherwise the robot will run as soon as it is initialized, which can
             //be incredibly annoying. We could also simply override start(), but we also want to
             //initialize stuff, so it makes it simpler to use one method.
             waitForStart();
+            if (!opModeIsActive()) return;
             //Run the tasks
             run();
             //Run any leftover tasks
