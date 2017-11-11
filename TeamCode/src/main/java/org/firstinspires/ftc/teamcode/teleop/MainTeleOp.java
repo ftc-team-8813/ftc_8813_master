@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.teleop;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -63,6 +64,11 @@ public class MainTeleOp extends OpMode {
         //Get extend motor range
         extRange = conf.getInt("ext_range", 0);
 
+        if (conf.getBoolean("base_reverse", false))
+            base.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (conf.getBoolean("ext_reverse", false))
+            extend.setDirection(DcMotorSimple.Direction.REVERSE);
+
         //Set up
         setInitialPositions();
         ServoAngleFinder.create(hardwareMap);
@@ -81,9 +87,9 @@ public class MainTeleOp extends OpMode {
                 driver.getArmAngle() - (gamepad1.right_stick_y * maxMove));
         base.setPower(gamepad1.left_stick_x * 0.5);
         driver.setWaistAngle(driver.getWaistAngle()+(gamepad1.right_stick_x * maxRotate));
-        //getState same as isPressed, except for DigitalChannels (which are needed for REV sensors)
-        if (!limit.getState()) {
-            //Only allows user to go forward if the minimum switch has been triggered.
+        //getState same as !isPressed, except for DigitalChannels (which are needed for REV sensors)
+        if (limit.getState()) {
+            //Only allows user to go backward if the minimum switch hasn't been triggered.
             if (gamepad1.dpad_down) {
                 extend.setPower(-1);
             } else {
@@ -95,7 +101,7 @@ public class MainTeleOp extends OpMode {
         }
         if (gamepad1.dpad_up && extMin != null && extend.getCurrentPosition() < extMin + extRange) {
             extend.setPower(1);
-        } else {
+        } else if (extend.getPower() != -1){
             extend.setPower(0);
         }
         try {
@@ -121,7 +127,7 @@ public class MainTeleOp extends OpMode {
         }
 
         telemetry.addData("Claw", claw_closed ? "CLOSED" : "OPEN");
-        telemetry.addData("Limit Switch", limit.getState() ? "PRESSED" : "RELEASED");
+        telemetry.addData("Limit Switch", !limit.getState() ? "PRESSED" : "RELEASED");
         telemetry.addData("Arm Angle", Utils.shortFloat(driver.getArmAngle()));
         telemetry.addData("Distance", Utils.shortFloat(driver.getClawDistance()));
         telemetry.addData("Waist Position", Utils.shortFloat(driver.getWaistPos()));
