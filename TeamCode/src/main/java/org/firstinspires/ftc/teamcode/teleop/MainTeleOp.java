@@ -69,8 +69,9 @@ public class MainTeleOp extends OpMode {
     }
 
     private void setInitialPositions() {
-        driver.moveTo(conf.getDouble("dist_init", 0),
+        driver.moveTo(conf.getDouble("dist_init", l1+l2),
                       conf.getDouble("adj_init", 0));
+        driver.setWaistAngle(conf.getDouble("waist_init", 0));
     }
 
     @Override

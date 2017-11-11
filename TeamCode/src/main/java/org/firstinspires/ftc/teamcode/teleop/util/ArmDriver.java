@@ -22,7 +22,7 @@ public class ArmDriver {
     /** Position of shoulder servo when vertical (pi/2 radians) */
     public static final double SERVO_ANGLE_V_S = 0.2589;
     /** Position of elbow servo when vertical (pi/2 radians) */
-    public static final double SERVO_ANGLE_V_E = 0.4985;
+    public static final double SERVO_ANGLE_V_E = 0.7207;
     /** Length from the shoulder to the elbow (assumed to be equal to LENGTH_E_C, but this is
      * definitely wrong */
     public static final double LENGTH_S_E      = 1;
@@ -183,10 +183,9 @@ public class ArmDriver {
 
 
     public void moveTo(double distance, double adjust) {
-        n = distance;
+        n = Utils.constrain(distance, 0, l1+l2);
         adj = adjust;
-        double angle = cos(n/(2*l1));
-        setShoulderAngle(angle);
-        setElbowAngle(-angle);
+        setShoulderAngle(acos(Utils.constrain(n/(2*l1), 0, 1))+adj);
+        setElbowAngle(-2*acos(Utils.constrain(n/(2*l2), 0, 1)));
     }
 }
