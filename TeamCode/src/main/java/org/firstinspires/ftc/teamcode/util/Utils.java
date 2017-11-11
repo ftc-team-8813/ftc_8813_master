@@ -17,6 +17,9 @@ import java.util.zip.GZIPOutputStream;
  */
 
 public class Utils {
+    public static String shortFloat(double r) {
+        return String.format("%.4f", r);
+    }
     /**
      * Constrain a value between a lower and upper limit. Good for limiting servo values etc.
      * @param value The value to constrain

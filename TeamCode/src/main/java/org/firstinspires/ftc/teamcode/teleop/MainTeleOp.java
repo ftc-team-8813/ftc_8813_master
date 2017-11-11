@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.autonomous.util.Config;
 import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
 import org.firstinspires.ftc.teamcode.teleop.util.ServoAngleFinder;
+import org.firstinspires.ftc.teamcode.util.Utils;
 
 /**
  * Main TeleOp control to control the {@link ArmDriver}.
@@ -30,7 +31,7 @@ public class MainTeleOp extends OpMode {
     private int extRange;
     //Configuration
     private Config conf = new Config(Config.configFile);
-    //Maximum speed of arm servos (servopos per 200ms)
+    //Maximum speed of arm servos (some arbitrary unit)
     private double maxMove = conf.getDouble("max_move", 0.02);
     //Maximum speed of waist servo (radians per 200ms)
     private double maxRotate = conf.getDouble("max_rotate_speed", 0.1);
@@ -43,6 +44,9 @@ public class MainTeleOp extends OpMode {
     //The amount to open the claw
     private double clawOpenAmount = conf.getDouble("claw_open", 0);
 
+    private double l1 = conf.getDouble("l1", 1);
+    private double l2 = conf.getDouble("l2", 1);
+
     @Override
     public void init() {
         //Get motors and servos from hardware map
@@ -54,7 +58,7 @@ public class MainTeleOp extends OpMode {
         extend = hardwareMap.dcMotor.get("extend");
         limit = hardwareMap.digitalChannel.get("limit");
         //Initialize arm controller
-        driver = new ArmDriver(waist, shoulder, elbow);
+        driver = new ArmDriver(waist, shoulder, elbow, l1, l2);
 
         //Get extend motor range
         extRange = conf.getInt("ext_range", 0);
@@ -65,15 +69,15 @@ public class MainTeleOp extends OpMode {
     }
 
     private void setInitialPositions() {
-        driver.moveTo(conf.getDouble("waist_init", 0),
-                      conf.getDouble("shoulder_init", 0),
-                      conf.getDouble("elbow_init", 0));
+        driver.moveTo(conf.getDouble("dist_init", 0),
+                      conf.getDouble("adj_init", 0));
     }
 
     @Override
     public void loop() {
-        driver.setArmX(driver.getClawX()-(gamepad1.left_stick_y * maxMove));
-        driver.setArmY(driver.getClawY()-(gamepad1.right_stick_y * maxMove));
+        driver.moveTo(
+                driver.getClawDistance()-(gamepad1.left_stick_y * maxMove),
+                driver.getArmAngle() - (gamepad1.right_stick_y * maxMove));
         base.setPower(gamepad1.left_stick_x * 0.5);
         driver.setWaistAngle(driver.getWaistAngle()+(gamepad1.right_stick_x * maxRotate));
         //getState same as isPressed, except for DigitalChannels (which are needed for REV sensors)
@@ -117,13 +121,14 @@ public class MainTeleOp extends OpMode {
 
         telemetry.addData("Claw", claw_closed ? "CLOSED" : "OPEN");
         telemetry.addData("Limit Switch", limit.getState() ? "PRESSED" : "RELEASED");
-        telemetry.addData("Claw X", driver.getClawX());
-        telemetry.addData("Claw Y", driver.getClawX());
-        telemetry.addData("Waist Position", driver.getWaistPos());
-        telemetry.addData("Waist Angle", driver.getWaistAngle());
-        telemetry.addData("Shoulder Position", driver.getShoulderPos());
-        telemetry.addData("Shoulder Angle", driver.getShoulderAngle());
-        telemetry.addData("Elbow Position", driver.getElbowPos());
-        telemetry.addData("Elbow Angle", driver.getElbowAngle());
+        telemetry.addData("Arm Angle", Utils.shortFloat(driver.getArmAngle()));
+        telemetry.addData("Distance", Utils.shortFloat(driver.getClawDistance()));
+        telemetry.addData("Waist Position", Utils.shortFloat(driver.getWaistPos()));
+        telemetry.addData("Waist Angle", Utils.shortFloat(driver.getWaistAngle()));
+        telemetry.addData("Shoulder Position", Utils.shortFloat(driver.getShoulderPos()));
+        telemetry.addData("Shoulder Angle", Utils.shortFloat(driver.getShoulderAngle()));
+        telemetry.addData("Elbow Position", Utils.shortFloat(driver.getElbowPos()));
+        telemetry.addData("Elbow Angle", Utils.shortFloat(driver.getElbowAngle()));
+        telemetry.addData("Extend Position", extend.getCurrentPosition());
     }
 }
