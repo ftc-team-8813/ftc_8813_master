@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDoMove;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskExtendSlide;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRunServo;
 import org.firstinspires.ftc.teamcode.autonomous.util.Config;
+import org.firstinspires.ftc.teamcode.autonomous.util.arm.RobotMove;
 
 import java.util.Arrays;
 
@@ -18,7 +19,6 @@ import java.util.Arrays;
  * Main autonomous program. RedAutonomous and BlueAutonomous are the sub-OpModes that decide whether
  * isRed or isBlue is true.
  *
- * Much of this is for the first league meet; don't use it!!!
  */
 
 public abstract class MainAutonomous extends BaseAutonomous {
@@ -27,46 +27,20 @@ public abstract class MainAutonomous extends BaseAutonomous {
 
     public abstract boolean isBlue();
 
-    protected TaskClassifyPictograph finder;
+    private Servo ws, ss, es;
+
     @Override
     public void initialize() {
-        finder = new TaskClassifyPictograph();
+        ws = hardwareMap.servo.get("s0");
+        ss = hardwareMap.servo.get("s1");
+        es = hardwareMap.servo.get("s2");
     }
 
     @Override
     public void run() throws InterruptedException {
-        tasks.add(finder);
-        tasks.add(new TaskExtendSlide(hardwareMap.dcMotor.get("extend")));
-        tasks.add(new TaskDoMove("to_jewels.dat"));
-        TaskDetectJewel jd = null;
-        if (COLOR_SENSOR) {
-            jd = new TaskDetectJewel(hardwareMap.colorSensor.get("color"));
-            tasks.add(jd);
-        }
-        runTasks();
-        if (COLOR_SENSOR) {
-            if (jd.getReading() == TaskDetectJewel.RED) {
-                if (isBlue())
-                    tasks.add(new TaskDoMove("jewel_blue.dat"));
-                else
-                    tasks.add(new TaskDoMove("jewel_red.dat"));
-            } else if (jd.getReading() == TaskDetectJewel.BLUE) {
-                if (isBlue())
-                    tasks.add(new TaskDoMove("jewel_red.dat"));
-                else
-                    tasks.add(new TaskDoMove("jewel_blue.dat"));
-            } else {
-                telemetry.addData("Color detected was not valid", Arrays.toString(jd.getDetectedColor()));
-                telemetry.update();
-            }
-        }
-        if (finder.getResult().equals(TaskClassifyPictograph.Result.LEFT)) {
-            tasks.add(new TaskDoMove("place_block_l.dat"));
-        } else if (finder.getResult().equals(TaskClassifyPictograph.Result.CENTER)) {
-            tasks.add(new TaskDoMove("place_block_c.dat"));
-        } else {
-            tasks.add(new TaskDoMove("place_block_r.dat"));
-        }
+        ws.setPosition(config.getDouble("w_park_"+(isBlue()?"b":"r"), 0));
+        ss.setPosition(config.getDouble("s_park_"+(isBlue()?"b":"r"), 0));
+        es.setPosition(config.getDouble("e_park_"+(isBlue()?"b":"r"), 0));
     }
 }
 /*
@@ -86,7 +60,7 @@ abstract class BasicAutonomous extends MainAutonomous {
             //BLUE CODE HERE!!!//
             /////////////////////
 
-            //Go to the relic zone
+            //Go to the cryptobox column
             if (finder.getResult().equals(TaskClassifyPictograph.Result.LEFT)) {
                 tasks.add(new TaskRunServo(w, cf.getDouble("blue.left.waist",0)));
                 tasks.add(new TaskRunServo(s, cf.getDouble("blue.left.shoulder",0)));

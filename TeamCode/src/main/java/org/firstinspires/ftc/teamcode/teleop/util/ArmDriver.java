@@ -64,7 +64,6 @@ public class ArmDriver {
     private double l1, l2;
     private double n;
     private double adj;
-    private double theta1, theta2;
     //Current servo positions in servo angles (0-1)
     private double[] currentPositions = new double[3];
     //Current servo positions in radians

@@ -62,7 +62,7 @@ public class MainTeleOp extends OpMode {
         driver = new ArmDriver(waist, shoulder, elbow, l1, l2);
 
         //Get extend motor range
-        extRange = conf.getInt("ext_range", 0);
+        extRange = conf.getInt("ext_range", Integer.MAX_VALUE/2);
 
         if (conf.getBoolean("base_reverse", false))
             base.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -83,10 +83,16 @@ public class MainTeleOp extends OpMode {
     @Override
     public void loop() {
         driver.moveTo(
-                driver.getClawDistance()-(gamepad1.left_stick_y * maxMove),
-                driver.getArmAngle() - (gamepad1.right_stick_y * maxMove));
-        base.setPower(gamepad1.left_stick_x * 0.5);
-        driver.setWaistAngle(driver.getWaistAngle()+(gamepad1.right_stick_x * maxRotate));
+                driver.getClawDistance()-(gamepad1.right_stick_y * maxMove),
+                driver.getArmAngle() - (gamepad1.left_stick_y * maxMove));
+        if (gamepad1.dpad_left) {
+            base.setPower(-0.5);
+        } else if (gamepad1.dpad_right) {
+            base.setPower(0.5);
+        } else {
+            base.setPower(0);
+        }
+        driver.setWaistAngle(driver.getWaistAngle()-(gamepad1.left_stick_x * maxRotate));
         //getState same as !isPressed, except for DigitalChannels (which are needed for REV sensors)
         if (limit.getState()) {
             //Only allows user to go backward if the minimum switch hasn't been triggered.
@@ -137,5 +143,6 @@ public class MainTeleOp extends OpMode {
         telemetry.addData("Elbow Position", Utils.shortFloat(driver.getElbowPos()));
         telemetry.addData("Elbow Angle", Utils.shortFloat(driver.getElbowAngle()));
         telemetry.addData("Extend Position", extend.getCurrentPosition());
+        telemetry.addData("Extend Minimum", extMin);
     }
 }
