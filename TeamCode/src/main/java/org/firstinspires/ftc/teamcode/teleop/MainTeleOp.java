@@ -33,9 +33,16 @@ public class MainTeleOp extends OpMode {
     //Configuration
     private Config conf = new Config(Config.configFile);
     //Maximum speed of arm servos (some arbitrary unit)
-    private double maxMove = conf.getDouble("max_move", 0.02);
-    //Maximum speed of waist servo (radians per 200ms)
-    private double maxRotate = conf.getDouble("max_rotate_speed", 0.1);
+    private double maxMove = conf.getDouble("max_move", 0.002);
+    //Maximum amount of change allowed in 200ms second
+    private double maxIncrease = conf.getDouble("max_inc", 0.02);
+    //Maximum speed of waist servo (radians per 20ms)
+    private double maxRotate = conf.getDouble("max_rotate_speed", 0.02);
+
+    private double[] rotateWindow = new double[10];
+    private double[] extWindow = new double[10];
+    private int nextWindowSlotR = 0;
+    private int nextWindowSlotE = 0;
     //Whether the claw open/close button is currently being held down
     private boolean aHeld;
     //Whether the claw is open or closed
@@ -82,9 +89,17 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public void loop() {
+        double newAngle = -(gamepad1.right_stick_y * maxMove);
+        double newDist = -(gamepad1.left_stick_y * maxMove);
+        if (Math.abs(Utils.sum(rotateWindow)) > maxIncrease)
+            newAngle = 0;
+        if (Math.abs(Utils.sum(extWindow)) > maxIncrease)
+            newDist = 0;
+        addToEndOfRotateWindow(newAngle);
+        addToEndOfExtendWindow(newDist);
         driver.moveTo(
-                driver.getClawDistance()-(gamepad1.right_stick_y * maxMove),
-                driver.getArmAngle() - (gamepad1.left_stick_y * maxMove));
+                driver.getClawDistance() + newAngle,
+                driver.getArmAngle() + newDist);
         if (gamepad1.dpad_left) {
             base.setPower(-0.5);
         } else if (gamepad1.dpad_right) {
@@ -111,8 +126,10 @@ public class MainTeleOp extends OpMode {
             extend.setPower(0);
         }
         try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {}
+            Thread.sleep(20);
+        } catch (InterruptedException e) {
+            return;
+        }
 
         //Used to be A, but that would trigger the claw when Start+A was pressed to connect gamepad1
         if (gamepad1.x) {
@@ -145,4 +162,16 @@ public class MainTeleOp extends OpMode {
         telemetry.addData("Extend Position", extend.getCurrentPosition());
         telemetry.addData("Extend Minimum", extMin);
     }
+
+    private void addToEndOfRotateWindow(double value) {
+        rotateWindow[nextWindowSlotR++] = value;
+        //If it overflows, start writing from the beginning again
+        nextWindowSlotR %= rotateWindow.length;
+    }
+    private void addToEndOfExtendWindow(double value) {
+        extWindow[nextWindowSlotE++] = value;
+        //If it overflows, start writing from the beginning again
+        nextWindowSlotE %= extWindow.length;
+    }
+
 }

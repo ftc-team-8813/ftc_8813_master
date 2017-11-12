@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.autonomous;
 //Guys, you should read ALL the comments! They contain some useful observations about the software!
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcontroller.internal.EventHooks;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.Task;
 import org.firstinspires.ftc.teamcode.autonomous.util.Config;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
@@ -67,26 +66,9 @@ public abstract class BaseAutonomous extends LinearOpMode {
     //other code without having to pass an instance to all of the methods that want to use it.
     private static BaseAutonomous instance;
 
-    private List<EventHooks> hooks = new ArrayList<>();
 
     private CameraStream stream;
     public Config config;
-
-    public void addEventHooks(EventHooks hook) {
-        hooks.add(hook);
-    }
-
-    private void fireStopEvent() {
-        for (EventHooks hook : hooks) {
-            hook.stop();
-        }
-    }
-
-    private void fireStartEvent() {
-        for (EventHooks hook : hooks) {
-            hook.resume();
-        }
-    }
 
     /**
      * Get the current instance of BaseAutonomous. This is set when the OpMode is initialized.
@@ -136,8 +118,6 @@ public abstract class BaseAutonomous extends LinearOpMode {
             instance = this;
 
             initialize();
-            //Fire up the camera view if necessary
-            fireStartEvent();
 
             //Must wait for start, otherwise the robot will run as soon as it is initialized, which can
             //be incredibly annoying. We could also simply override start(), but we also want to
@@ -153,7 +133,10 @@ public abstract class BaseAutonomous extends LinearOpMode {
             exc = e;
         } finally {
             instance = null;
-            fireStopEvent();
+            if (stream != null) {
+                stream.stop();
+                stream = null;
+            }
             if (exc != null) {
                 //We can't just throw any Throwables; we need to throw either unchecked exceptions
                 //(RuntimeException and Error) or InterruptedException, which it is declared to be

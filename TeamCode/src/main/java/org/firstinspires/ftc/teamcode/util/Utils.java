@@ -17,6 +17,17 @@ import java.util.zip.GZIPOutputStream;
  */
 
 public class Utils {
+    public static double mean(double... values) {
+        return sum(values) / values.length;
+    }
+
+    public static double sum(double... values) {
+        double total = 0;
+        for (double d : values) {
+            total += d;
+        }
+        return total;
+    }
     /**
      * Return a string representation of a double with 4-digit precision.
      * @param r The number

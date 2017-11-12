@@ -1,17 +1,14 @@
 package org.firstinspires.ftc.teamcode.autonomous.util.opencv;
 
 import android.app.Activity;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-import org.firstinspires.ftc.robotcontroller.internal.EventHooks;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
-import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -25,15 +22,15 @@ import java.util.List;
  * **MUST** be initialized (e.g. by CameraStream.class) BEFORE using ANY OpenCV classes!!!
  */
 
-public class CameraStream implements EventHooks {
+public class CameraStream {
 
     private JavaCameraView cameraView;
     private Activity activity;
     private volatile boolean uiRunning;
-    //Smurf mode -- swap red and blue color channels in the output image for EPIC results
+    //Smurf mode -- swap red and blue color channels in the output image for EPIC results :)
     private static final boolean SMURF_MODE = true;
 
-    private List<CameraListener> listeners = new ArrayList<>();
+    private volatile List<CameraListener> listeners = new ArrayList<>();
 
     //Default modifier: do nothing to the image
     public static final OutputModifier defaultModifier =
@@ -52,27 +49,15 @@ public class CameraStream implements EventHooks {
         modifier = m;
     }
 
-    @Override
     public void stop() {
+        FtcRobotControllerActivity rc = (FtcRobotControllerActivity) activity;
+        final LinearLayout cameraLayout = rc.cameraMonitorLayout;
         uiRunning = true;
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 cameraView.disableView();
-                uiRunning = false;
-            }
-        });
-        while (uiRunning);
-    }
-
-    @Override
-    public void resume() {
-        uiRunning = true;
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                cameraView.enableView();
-                startProcessing();
+                cameraLayout.removeView(cameraView);
                 uiRunning = false;
             }
         });
@@ -141,10 +126,11 @@ public class CameraStream implements EventHooks {
                 cameraView.setVisibility(View.INVISIBLE);
                 //cameraView.setRotation(90);
                 cameraLayout.addView(cameraView);
-                BaseAutonomous.instance().addEventHooks(CameraStream.this);
                 uiRunning = false;
             }
         });
         while (uiRunning);
+        startProcessing();
+        cameraView.enableView();
     }
 }
