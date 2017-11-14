@@ -46,7 +46,7 @@ public class ProgressBar {
             if (progress <= equiv)
                 build += finished;
             else
-                build += finished;
+                build += unfinished;
         }
         if (border != null)
             build += border.charAt(1);

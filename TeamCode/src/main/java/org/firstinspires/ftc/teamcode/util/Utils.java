@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.util;
 
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.util.Log;
 
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.autonomous.util.Config;
 
 import java.io.File;
@@ -17,6 +20,17 @@ import java.util.zip.GZIPOutputStream;
  */
 
 public class Utils {
+
+    public static void scanFile(File file) {
+        MediaScannerConnection.scanFile(AppUtil.getDefContext(), new String[] { file.toString() }, null,
+                new MediaScannerConnection.OnScanCompletedListener() {
+                    public void onScanCompleted(String path, Uri uri) {
+                        Log.i("ExternalStorage", "Scanned " + path + ":");
+                        Log.i("ExternalStorage", "-> uri=" + uri);
+                    }
+                });
+    }
+
     public static double mean(double... values) {
         return sum(values) / values.length;
     }

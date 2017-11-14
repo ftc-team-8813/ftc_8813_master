@@ -42,7 +42,7 @@ import java.util.List;
  *           //Stuff
  *       }
  *
- *     This way you can avoid more 'stuck in stop()' errors.
+ *     This way you can avoid 'stuck in stop()' errors.
  */
 //The @Autonomous annotation is required for all OpModes. This puts it in the list of autonomous
 //programs. You should specify a name for each OpMode.

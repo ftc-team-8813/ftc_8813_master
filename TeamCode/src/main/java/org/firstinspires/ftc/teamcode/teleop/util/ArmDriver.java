@@ -16,11 +16,11 @@ public class ArmDriver {
     /** Maximum servo angle (pos = 1) in radians */
     public static final double SERVO_MAX_ANGLE = 7.04614352305139340626;
     /** Position of shoulder servo when horizontal (0 radians) */
-    public static final double SERVO_ANGLE_H_S = 0.4622;
+    public static final double SERVO_ANGLE_H_S = 0.468;
     /** Position of elbow servo when horizontal (0 radians) */
     public static final double SERVO_ANGLE_H_E = 0.5042;
     /** Position of shoulder servo when vertical (pi/2 radians) */
-    public static final double SERVO_ANGLE_V_S = 0.2589;
+    public static final double SERVO_ANGLE_V_S = 0.2513;
     /** Position of elbow servo when vertical (pi/2 radians) */
     public static final double SERVO_ANGLE_V_E = 0.7207;
     /** Length from the shoulder to the elbow (assumed to be equal to LENGTH_E_C, but this is

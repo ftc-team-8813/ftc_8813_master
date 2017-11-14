@@ -19,19 +19,19 @@ import org.firstinspires.ftc.teamcode.util.Utils;
 public class MainTeleOp extends OpMode {
 
     //The arm controller
-    private ArmDriver driver;
+    protected ArmDriver driver;
     //Claw servo
-    private Servo claw;
+    protected Servo claw;
     //Drive motors
-    private DcMotor base, extend;
+    protected DcMotor base, extend;
     //Limit switch
-    private DigitalChannel limit;
+    protected DigitalChannel limit;
     //Extend motor minimum position
-    private Integer extMin = null;
+    protected Integer extMin = null;
     //Range of extend motor
-    private int extRange;
+    protected int extRange;
     //Configuration
-    private Config conf = new Config(Config.configFile);
+    protected Config conf = new Config(Config.configFile);
     //Maximum speed of arm servos (some arbitrary unit)
     private double maxMove = conf.getDouble("max_move", 0.002);
     //Maximum amount of change allowed in 200ms second
@@ -87,6 +87,9 @@ public class MainTeleOp extends OpMode {
         driver.setWaistAngle(conf.getDouble("waist_init", 0));
     }
 
+    /**
+     * Always use super.loop() if overriding
+     */
     @Override
     public void loop() {
         double newAngle = -(gamepad1.right_stick_y * maxMove);

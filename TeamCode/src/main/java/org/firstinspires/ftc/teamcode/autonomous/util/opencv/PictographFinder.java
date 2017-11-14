@@ -38,24 +38,50 @@ import java.util.List;
  */
 
 public class PictographFinder implements CameraListener {
+    //Is pictograph finding completed?
     private boolean finished = false;
+    //Is this the first frame?
     private boolean firstRun = true;
+    //The frame
     private Mat mat;
+    //The object to look for
     private Mat trainImage;
+    //Dot mask
     private Mat find_mask;
+    //Box around the image
     private Point[] prevQuad = new Point[4];
+    //The worker thread
     private Thread workerThread;
+    //The progress bar updater thread
     private Thread progressBarThread;
+    //The key points
     private MatOfKeyPoint kp_obj;
+    //The descriptors
     private Mat desc_obj;
+    //The image taken out of the frame to classify
     private Mat flattened;
+    //The classification
     private ClassificationType prevClassification;
+    //The progress bar
     private volatile ProgressBar pb;
+    //The status message
     private volatile String status;
 
+    /**
+     * A pictograph classification result. Contains a name along with the number of left, center,
+     * and right matches found.
+     */
     public static class ClassificationType {
+        /** A display name of the classification (e.g. Left) */
         public final String name;
-        public final int nLeft, nCenter, nRight;
+        /** The number of correlations with the left pictograph dots */
+        public final int nLeft;
+        /** The number of correlations with the center pictograph dots */
+        public final int nCenter;
+        /** The number of correlations with the right pictograph dots */
+        public final int nRight;
+
+        /* Only this class can create these */
         private ClassificationType(String name, int nl, int nc, int nr) {
             this.name = name;
             this.nLeft = nl;
@@ -65,16 +91,34 @@ public class PictographFinder implements CameraListener {
 
     }
 
+    /**
+     * Get the previously detected quad describing the corners of the pictograph in the frame. If
+     * no frame was processed or nothing was found, returns an array of zeros.
+     * @return The previous quad, or an array of 0 if nothing was found
+     */
     public Point[] getPrevQuad() {
         return prevQuad;
     }
 
+    /**
+     * Get the previous classification. If nothing was found, returns a classification with "" for
+     * the name and all -1's for the scores. If no frame was processed, returns null.
+     * @return The previous classification or null if no frame was processed
+     */
     public ClassificationType getPrevClassification() {
         return prevClassification;
     }
 
+    /**
+     * Whether or not the current classification task is finished.
+     * @return true if the worker thread is not busy
+     */
     public boolean finished() { return finished; }
 
+    /**
+     * Initialize the pictograph finder. Sets the current status to "Init" and retrieve training
+     * and mask images.
+     */
     public PictographFinder() {
         TelemetryWrapper.setLines(5);
         TelemetryWrapper.setLine(0, "Pictograph Finder -- Init");
@@ -90,6 +134,10 @@ public class PictographFinder implements CameraListener {
         Imgproc.cvtColor(find_mask, find_mask, Imgproc.COLOR_BGR2GRAY);
     }
 
+    /**
+     * Start processing a frame.
+     * @param rgba The frame to process
+     */
     @Override
     public void processFrame(Mat rgba) {
         if (firstRun) {
@@ -165,9 +213,11 @@ public class PictographFinder implements CameraListener {
     private ClassificationType classify(Mat img, Mat mask) {
         pb.setProgress(4);
         status = "Classifying object";
-
+        //Take the average color to get a threshold
         int mean = (int)Core.mean(img, mask).val[0];
+        //Make the image binary
         Imgproc.threshold(img, img, mean, 255, Imgproc.THRESH_BINARY);
+        //Define points to look on the image
         final int[][] dataPoints = {
                 {698, 391}, {662, 397}, {315, 416}, {360, 427},
                 {700, 426}, {644, 434}, {598, 466}, {450, 509},
@@ -175,42 +225,46 @@ public class PictographFinder implements CameraListener {
                 {662, 470}, {352, 516}, {314, 500}, {698, 510},
                 {655, 510}, {597, 506}
         };
-        //                    11111111
-        //                    765432109876543210
-        //No differences in:        X X
+
+        //Define a bit field for expected light and dark areas. Starts with the last point in
+        //dataPoints down to the first.
+        //Center
         final int light_c = 0b110011111010101010;
+        //Left
         final int light_l = 0b101101111000000000;
+        //Right
         final int light_r = 0b000110101101011111;
-        final int thresh = 80; //Rather dark gray
+        //Score for each pictograph type
         int score_l = 0, score_c = 0, score_r = 0;
 
         for (int i = 0; i < 18; i++) {
             int[] pt = dataPoints[i];
+            //Expected values
             boolean lc = (light_c & (1 << i)) != 0;
             boolean ll = (light_l & (1 << i)) != 0;
             boolean lr = (light_r & (1 << i)) != 0;
 
             //Our images are 2x size now for some reason
             int color = (int)(img.get(pt[1]*2, pt[0]*2)[0]);
-            boolean l = (color > thresh);
-            //May need to weight these?
+            //Actual values
+            boolean l = (color > 0);
+            //Increase the score if they match
             score_l += (l == ll) ? 1 : 0;
             score_c += (l == lc) ? 1 : 0;
             score_r += (l == lr) ? 1 : 0;
         }
-
-        boolean lgc = score_l > score_c;
-        boolean cgr = score_c > score_r;
-        boolean lgr = score_l > score_r;
+        //short names
+        int l = score_l;
+        int c = score_c;
+        int r = score_r;
+        //A blank one if it is not the same
         ClassificationType choose = new ClassificationType("", score_l, score_c, score_r);
-        //  l>c    l>r
-        if (lgc && lgr)
+        //Choose the maximum of them
+        if (l > c && l > r)
             choose = new ClassificationType("Left", score_l, score_c, score_r);
-        //        c>l    c>r
-        else if (!lgc && cgr)
+        else if (c > l && c > r)
             choose = new ClassificationType("Center", score_l, score_c, score_r);
-        //        r>c     r>l
-        else if (!cgr && !lgr)
+        else if (r > l && r > c)
             choose = new ClassificationType("Right", score_l, score_c, score_r);
         return choose;
     }
@@ -238,6 +292,7 @@ public class PictographFinder implements CameraListener {
 
         MatOfKeyPoint kp_scene = new MatOfKeyPoint();
 
+        //Detect key points
         fd.detect(scene, kp_scene, temp); //Find scene key points
         //We only need to find object key points once
         if (kp_obj == null) {
@@ -270,6 +325,7 @@ public class PictographFinder implements CameraListener {
         //Match features on the object to features in the scene
         FlannBasedMatcher matcher = FlannBasedMatcher.create();
         List<MatOfDMatch> matches = new ArrayList<>();
+        //Use K nearest neighbor matching
         matcher.knnMatch(desc_obj, desc_scene, matches, 2);
 
         //Sort out matches that make sense
@@ -311,12 +367,14 @@ public class PictographFinder implements CameraListener {
         } else {
             prevQuad = new Point[4];
         }
+        //Release objects to save our tiny bit of memory
         desc_scene.release();
         object.release();
         kp_scene.release();
         return goodMatches.size() > MIN_MATCHES;
     }
 
+    //Get the corners of an object
     private Point[] getCorners(Mat object, Mat h) {
         List<Point> objCorners = new ArrayList<>();
         objCorners.add(new Point(0, 0));
