@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 
+import static java.lang.Thread.sleep;
+
 /**
  * Program that takes an integer to reflect what quadrant the robot is in
  * and places a block.
@@ -40,25 +42,17 @@ public class TaskPlaceGlyphAutonomous implements Task{
     @Override
     public void runTask() throws InterruptedException {
         switch(quadrant){
-            case 1: ax.setPosition(.3486);
-                    ay.setPosition(.1330);
-                    el.setPosition(.0691);
+            case 1: moveArm(.3486, .1330, .0691);
                     cw.setPosition(0);
-                    Thread.sleep(5000);
-                    ax.setPosition(.2523);
-                    ay.setPosition(.2486);
-                    el.setPosition(.3356);
-                    Thread.sleep(5000);
-                    ax.setPosition(.2523);
-                    ay.setPosition(.5042);
-                    el.setPosition(.4364);
-                    Thread.sleep(5000);
+                    sleep(5000);
+                    moveArm(.2523, .2486, .3356);
+                    sleep(5000);
+                    moveArm(.2523, .5042, .4364);
+                    sleep(5000);
                     cw.setPosition(1);
-                    Thread.sleep(500);
-                    ax.setPosition(.2523);
-                    ay.setPosition(.3879);
-                    el.setPosition(.3239);
-                    Thread.sleep(5000);
+                    sleep(500);
+                    moveArm(.2065, .5042, .2821);
+                    sleep(5000);
                     break;
             /*case 2: ax.setPosition();
                     ay.setPosition();
@@ -71,7 +65,14 @@ public class TaskPlaceGlyphAutonomous implements Task{
                     break;
             default:break;*/
         }
-    }/*ax.setPosition(.2673);
-                    ay.setPosition(.2486);
-                    el.setPosition(.2568);*/
-}
+    }   /**
+            A simple method that takes arm positions and moves the arm. Need to add wait function.
+        **/
+        private void moveArm(double waist, double elbow, double shoulder){
+            ax.setPosition(waist);
+            ay.setPosition(elbow);
+            el.setPosition(shoulder);
+    }
+}/*ax.setPosition(.2523);
+                    ay.setPosition(.3879);
+                    el.setPosition(.3239);*/
