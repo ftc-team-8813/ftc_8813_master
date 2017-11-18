@@ -45,7 +45,8 @@ public abstract class MainAutonomous extends BaseAutonomous {
 
     @Override
     public void run() throws InterruptedException {
-        tasks.add(new TaskPlaceGlyphAutonomous(1));
+        if(isBlue()){tasks.add(new TaskPlaceGlyphAutonomous(1));}
+        else{tasks.add(new TaskPlaceGlyphAutonomous(2));}
         /*ws.setPosition(config.getDouble("w_park_"+(isBlue()?"b":"r"), 0));
         ss.setPosition(config.getDouble("s_park_"+(isBlue()?"b":"r"), 0));
         es.setPosition(config.getDouble("e_park_"+(isBlue()?"b":"r"), 0));*/
