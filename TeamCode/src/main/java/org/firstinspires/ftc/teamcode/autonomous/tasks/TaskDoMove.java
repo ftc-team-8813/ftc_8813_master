@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
-import org.firstinspires.ftc.teamcode.autonomous.util.Config;
+import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.RobotMove;
 
 import java.io.DataInputStream;

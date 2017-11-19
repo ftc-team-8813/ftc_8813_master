@@ -6,12 +6,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskExtendSlide;
-import org.firstinspires.ftc.teamcode.autonomous.util.Config;
+import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.RobotMove;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
@@ -19,7 +18,6 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 

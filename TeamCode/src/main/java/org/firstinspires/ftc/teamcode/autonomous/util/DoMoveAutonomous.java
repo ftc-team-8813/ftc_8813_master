@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDelay;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRunServo;
+import org.firstinspires.ftc.teamcode.util.Config;
 
 /**
  * Do a single movement of the waist, shoulder and elbow servos.

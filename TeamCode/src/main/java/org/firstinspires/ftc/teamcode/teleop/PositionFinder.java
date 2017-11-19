@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.autonomous.util.Config;
+import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 import java.io.File;

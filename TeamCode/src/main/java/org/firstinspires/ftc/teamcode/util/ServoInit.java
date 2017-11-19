@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.util;
 
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.autonomous.util.Config;
-
 /**
  * Servo initialization for autonomous
  */

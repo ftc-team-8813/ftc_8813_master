@@ -4,7 +4,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.Task;
-import org.firstinspires.ftc.teamcode.autonomous.util.Config;
+import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.util.Utils;

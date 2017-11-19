@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.autonomous.util.Config;
+import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
 import org.firstinspires.ftc.teamcode.teleop.util.ServoAngleFinder;
 import org.firstinspires.ftc.teamcode.util.Utils;

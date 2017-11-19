@@ -1,24 +1,9 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.I2cAddr;
-import com.qualcomm.robotcore.hardware.I2cDevice;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDelay;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDetectJewel;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDoMove;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskExtendSlide;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomous;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRunServo;
-import org.firstinspires.ftc.teamcode.autonomous.util.Config;
-import org.firstinspires.ftc.teamcode.autonomous.util.arm.RobotMove;
-
-import java.util.Arrays;
 
 /**
  * Main autonomous program. RedAutonomous and BlueAutonomous are the sub-OpModes that decide whether

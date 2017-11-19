@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.util.Log;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-import org.firstinspires.ftc.teamcode.autonomous.util.Config;
 
 import java.io.File;
 import java.io.FileInputStream;
