@@ -6,17 +6,17 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomous;
 
 /**
- * Main autonomous program. RedAutonomous and BlueAutonomous are the sub-OpModes that decide whether
- * isRed or isBlue is true.
- *
+ * Main autonomous program.
  */
 
 public abstract class MainAutonomous extends BaseAutonomous {
 
     private static final boolean COLOR_SENSOR = false;
 
-    public abstract boolean isBlue();
-
+    //public abstract boolean isBlue();
+    public abstract int quadrant();
+    //public boolean find = config.getBoolean("runFinder", false);
+    private TaskClassifyPictograph finder;
     private Servo ws, ss, es, claw;
 
     @Override
@@ -26,12 +26,22 @@ public abstract class MainAutonomous extends BaseAutonomous {
         es = hardwareMap.servo.get("s2");
         claw = hardwareMap.servo.get("s3");
         claw.setPosition(0);
+        //moveArm(.4134, .1303, .05);
+        ws.setPosition(.3863);
+        ss.setPosition(.0378);
+        es.setPosition(.0386);
+        //finder = new TaskClassifyPictograph();
     }
 
     @Override
     public void run() throws InterruptedException {
-        if(isBlue()){tasks.add(new TaskPlaceGlyphAutonomous(1));}
-        else{tasks.add(new TaskPlaceGlyphAutonomous(2));}
+        if (false) {
+            tasks.add(finder);
+            runTasks();
+        }
+        TaskClassifyPictograph.Result result = finder == null ? null : finder.getResult();
+        if (result == null) result = TaskClassifyPictograph.Result.NONE;
+        tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result));
         /*ws.setPosition(config.getDouble("w_park_"+(isBlue()?"b":"r"), 0));
         ss.setPosition(config.getDouble("s_park_"+(isBlue()?"b":"r"), 0));
         es.setPosition(config.getDouble("e_park_"+(isBlue()?"b":"r"), 0));*/
