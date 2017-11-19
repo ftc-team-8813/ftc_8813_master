@@ -28,9 +28,11 @@ public class TaskPlaceGlyphAutonomous implements Task{
     private TouchSensor lm;
     private int quadrant;
     private Task task;
+    private TaskClassifyPictograph.Result result;
 
     private BaseAutonomous baseAutonomous;
-    public TaskPlaceGlyphAutonomous(int quadrant) {
+    public TaskPlaceGlyphAutonomous(int quadrant, TaskClassifyPictograph.Result result) {
+        this.result = result;
         this.quadrant = quadrant;
         HardwareMap m = BaseAutonomous.instance().hardwareMap;
         ax = m.servo.get("s0"); //waist
@@ -46,15 +48,19 @@ public class TaskPlaceGlyphAutonomous implements Task{
         double waist;
         double elbow;
         double shoulder;
+        String column = result.name().toLowerCase();
+        if (column.equals("none")) {
+            column = "center";
+        }
         switch(quadrant){
             case 1: moveArm(.4134, .1303, .1386);
                     cw.setPosition(0);
                     sleep(5000);
                     moveArm(.5398, .1818, .1660);
                     sleep(2000);
-                    waist = BaseAutonomous.instance().config.getDouble("waist.blue.center", 0);
-                    elbow = BaseAutonomous.instance().config.getDouble("elbow.blue.center", 0);
-                    shoulder = BaseAutonomous.instance().config.getDouble("shoulder.blue.center", 0);
+                    waist = BaseAutonomous.instance().config.getDouble("waist.blue." + column, 0);
+                    elbow = BaseAutonomous.instance().config.getDouble("elbow.blue." + column, 0);
+                    shoulder = BaseAutonomous.instance().config.getDouble("shoulder.blue" + column, 0);
                     moveArm(waist, elbow, shoulder);
                     sleep(5000);
                     cw.setPosition(1);
@@ -67,9 +73,9 @@ public class TaskPlaceGlyphAutonomous implements Task{
                     sleep(5000);
                     moveArm(.5398, .1818, .1660);
                     sleep(2000);
-                    waist = BaseAutonomous.instance().config.getDouble("waist.red.center", 0);
-                    elbow = BaseAutonomous.instance().config.getDouble("elbow.red.center", 0);
-                    shoulder = BaseAutonomous.instance().config.getDouble("shoulder.red.center", 0);
+                    waist = BaseAutonomous.instance().config.getDouble("waist.red." + column, 0);
+                    elbow = BaseAutonomous.instance().config.getDouble("elbow.red." + column, 0);
+                    shoulder = BaseAutonomous.instance().config.getDouble("shoulder.red." + column, 0);
                     moveArm(waist, elbow, shoulder);
                     sleep(5000);
                     cw.setPosition(1);
@@ -77,13 +83,29 @@ public class TaskPlaceGlyphAutonomous implements Task{
                     moveArm(waist, elbow, shoulder + .100);
                     sleep(3000);
                     break;
-            /*case 3: ax.setPosition();
-                    ay.setPosition();
+            case 3: moveArm(.4134, .1303, .1386);
+                    cw.setPosition(0);
+                    sleep(5000);
+                    moveArm(.5398, .1818, .1660);
+                    sleep(2000);
+                    waist = .5721;
+                    elbow = .3197;
+                    shoulder = .3877;
+                    moveArm(waist, elbow, shoulder);
+                    sleep(5000);
                     break;
-            case 4: ax.setPosition();
-                    ay.setPosition();
+            case 4: moveArm(.4134, .1303, .1386);
+                    cw.setPosition(0);
+                    sleep(5000);
+                    moveArm(.5398, .1818, .1660);
+                    sleep(2000);
+                    waist = .4279;
+                    elbow = .3197;
+                    shoulder = .6123;
+                    moveArm(waist, elbow, shoulder);
+                    sleep(5000);
                     break;
-            default:break;*/
+            default:break;
         }
     }   /**
             A simple method that takes arm positions and moves the arm. Need to add wait function.
