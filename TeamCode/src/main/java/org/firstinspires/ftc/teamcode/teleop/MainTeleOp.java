@@ -92,17 +92,17 @@ public class MainTeleOp extends OpMode {
      */
     @Override
     public void loop() {
-        double newAngle = -(gamepad1.right_stick_y * maxMove);
-        double newDist = -(gamepad1.left_stick_y * maxMove);
+        double newDist = -(gamepad1.right_stick_y * maxMove);
+        double newAngle = (gamepad1.left_stick_y * maxMove);
         if (Math.abs(Utils.sum(rotateWindow)) > maxIncrease)
-            newAngle = 0;
-        if (Math.abs(Utils.sum(extWindow)) > maxIncrease)
             newDist = 0;
-        addToEndOfRotateWindow(newAngle);
-        addToEndOfExtendWindow(newDist);
+        if (Math.abs(Utils.sum(extWindow)) > maxIncrease)
+            newAngle = 0;
+        addToEndOfRotateWindow(newDist);
+        addToEndOfExtendWindow(newAngle);
         driver.moveTo(
-                driver.getClawDistance() + newAngle,
-                driver.getArmAngle() + newDist);
+                driver.getClawDistance() + newDist,
+                driver.getArmAngle() + newAngle);
         if (gamepad1.dpad_left) {
             base.setPower(-0.5);
         } else if (gamepad1.dpad_right) {
