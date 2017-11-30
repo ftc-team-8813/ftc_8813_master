@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -19,6 +20,18 @@ import java.util.zip.GZIPOutputStream;
  */
 
 public class Utils {
+    /**
+     * Return a time in elapsed-time format (hh:mm:ss:hundredths)
+     * @param millis The time to format
+     * @return An elapsed-time string
+     */
+    public static String elapsedTime(long millis) {
+        int hundredths = (int)((millis/10)%100);
+        int seconds    = (int)((millis/1000)%60);
+        int minutes    = (int)((millis/60000)%60);
+        int hours      = (int)((millis/3600000));
+        return String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, hundredths);
+    }
 
     public static void scanFile(File file) {
         MediaScannerConnection.scanFile(AppUtil.getDefContext(), new String[] { file.toString() }, null,

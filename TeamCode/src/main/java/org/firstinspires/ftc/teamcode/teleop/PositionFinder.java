@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * PositionFinder - Util for finding positions for autonomous features.
  */
-@TeleOp(name="Position Collector")
+@TeleOp(name="Position Collector", group="util")
 public class PositionFinder extends MainTeleOp {
     private List<double[]> positions = new ArrayList<>();
     private boolean bHeld = false;

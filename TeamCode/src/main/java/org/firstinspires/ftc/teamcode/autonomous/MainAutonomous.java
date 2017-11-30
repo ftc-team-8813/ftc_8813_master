@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomous;
 
 /**
@@ -15,12 +16,13 @@ public abstract class MainAutonomous extends BaseAutonomous {
 
     //public abstract boolean isBlue();
     public abstract int quadrant();
-    //public boolean find = config.getBoolean("runFinder", false);
+    public boolean find;
     private TaskClassifyPictograph finder;
     private Servo ws, ss, es, claw;
 
     @Override
     public void initialize() {
+        find = config.getBoolean("run_finder", false);
         ws = hardwareMap.servo.get("s0");
         ss = hardwareMap.servo.get("s1");
         es = hardwareMap.servo.get("s2");
@@ -30,12 +32,12 @@ public abstract class MainAutonomous extends BaseAutonomous {
         ws.setPosition(.3863);
         ss.setPosition(.0378);
         es.setPosition(.0386);
-        //finder = new TaskClassifyPictograph();
+        finder = new TaskClassifyPictograph();
     }
 
     @Override
     public void run() throws InterruptedException {
-        if (false) {
+        if (find) {
             tasks.add(finder);
             runTasks();
         }

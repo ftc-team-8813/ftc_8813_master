@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 /**
- * ServoAngleFinder - Option to use potentiometers on
+ * ServoAngleFinder - Option to use potentiometers on servos for better position sensing
  */
 
 public class ServoAngleFinder {

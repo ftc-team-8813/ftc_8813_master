@@ -55,6 +55,8 @@ public class MainTeleOp extends OpMode {
     private double l1 = conf.getDouble("l1", 1);
     private double l2 = conf.getDouble("l2", 1);
 
+    private long start = 0;
+
     @Override
     public void init() {
         //Get motors and servos from hardware map
@@ -85,6 +87,11 @@ public class MainTeleOp extends OpMode {
         driver.moveTo(conf.getDouble("dist_init", l1+l2),
                       conf.getDouble("adj_init", 0));
         driver.setWaistAngle(conf.getDouble("waist_init", 0));
+    }
+
+    @Override
+    public void start() {
+        start = System.currentTimeMillis();
     }
 
     /**
@@ -152,6 +159,7 @@ public class MainTeleOp extends OpMode {
             setInitialPositions();
         }
 
+        telemetry.addData("Elapsed Time", Utils.elapsedTime(System.currentTimeMillis() - start));
         telemetry.addData("Claw", claw_closed ? "CLOSED" : "OPEN");
         telemetry.addData("Limit Switch", !limit.getState() ? "PRESSED" : "RELEASED");
         telemetry.addData("Arm Angle", Utils.shortFloat(driver.getArmAngle()));
