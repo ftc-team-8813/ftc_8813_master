@@ -12,6 +12,7 @@ import static java.lang.Thread.sleep;
 /**
  * Program that takes an integer to reflect what quadrant the robot is in
  * and places a block.
+ *       Blue     Red
  *     -----------------
  *     |Quad 1 | Quad 2|
  *     |       |       |
@@ -27,7 +28,6 @@ public class TaskPlaceGlyphAutonomous implements Task{
     private DcMotor rt, ex;
     private TouchSensor lm;
     private int quadrant;
-    private Task task;
     private TaskClassifyPictograph.Result result;
 
     private BaseAutonomous baseAutonomous;
@@ -88,9 +88,7 @@ public class TaskPlaceGlyphAutonomous implements Task{
                     sleep(5000);
                     moveArm(.5398, .1818, .1660);
                     sleep(2000);
-                    waist = .5721;
-                    elbow = .3197;
-                    shoulder = .3877;
+                    waist = .5721; elbow = .3197; shoulder = .3877;
                     moveArm(waist, elbow, shoulder);
                     sleep(5000);
                     break;
@@ -99,9 +97,7 @@ public class TaskPlaceGlyphAutonomous implements Task{
                     sleep(5000);
                     moveArm(.5398, .1818, .1660);
                     sleep(2000);
-                    waist = .4279;
-                    elbow = .3197;
-                    shoulder = .6123;
+                    waist = .4279; elbow = .3197; shoulder = .6123;
                     moveArm(waist, elbow, shoulder);
                     sleep(5000);
                     break;

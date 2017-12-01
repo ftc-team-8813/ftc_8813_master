@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomous;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskScoreJewel;
 
 /**
  * Main autonomous program.
@@ -37,16 +38,14 @@ public abstract class MainAutonomous extends BaseAutonomous {
 
     @Override
     public void run() throws InterruptedException {
-        if (find) {
+        /*if (find) {
             tasks.add(finder);
             runTasks();
         }
         TaskClassifyPictograph.Result result = finder == null ? null : finder.getResult();
         if (result == null) result = TaskClassifyPictograph.Result.NONE;
-        tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result));
-        /*ws.setPosition(config.getDouble("w_park_"+(isBlue()?"b":"r"), 0));
-        ss.setPosition(config.getDouble("s_park_"+(isBlue()?"b":"r"), 0));
-        es.setPosition(config.getDouble("e_park_"+(isBlue()?"b":"r"), 0));*/
+        tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result));*/
+        tasks.add(new TaskScoreJewel(quadrant()));
     }
 }
 /*
