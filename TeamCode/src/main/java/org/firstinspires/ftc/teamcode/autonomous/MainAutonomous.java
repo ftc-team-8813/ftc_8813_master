@@ -27,7 +27,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
         ss = hardwareMap.servo.get("s1");
         es = hardwareMap.servo.get("s2");
         claw = hardwareMap.servo.get("s3");
-        claw.setPosition(0);
+        claw.setPosition(config.getDouble("claw_closed", 1));
         //moveArm(.4134, .1303, .05);
         ws.setPosition(.3863);
         ss.setPosition(.0378);
