@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
+import org.firstinspires.ftc.teamcode.util.Config;
 
 import static java.lang.Thread.sleep;
 
@@ -47,6 +48,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
 
     @Override
     public void runTask() throws InterruptedException {
+        Config c = BaseAutonomous.instance().config;
         double waist;
         double elbow;
         double shoulder;
@@ -54,78 +56,29 @@ public class TaskPlaceGlyphAutonomous implements Task {
         if (column.equals("none")) {
             column = "center";
         }
-        switch (quadrant) {
-            case 1:
-                moveArm(.4134, .1303, .1386);
-                cw.setPosition(0);
-                sleep(5000);
-                moveArm(.5398, .1818, .1660);
-                sleep(2000);
-                waist = BaseAutonomous.instance().config.getDouble("waist.blue." + column, 0);
-                elbow = BaseAutonomous.instance().config.getDouble("elbow.blue." + column, 0);
-                shoulder = BaseAutonomous.instance().config.getDouble("shoulder.blue" + column, 0);
-                moveArm(waist, elbow, shoulder);
-                sleep(5000);
-                cw.setPosition(BaseAutonomous.instance().config.getDouble("claw_open", 0));
-                sleep(3000);
-                moveArm(waist, elbow, shoulder + .100);
-                sleep(3000);
-                break;
+        moveArm(c.getDouble("w_i", 0),
+                c.getDouble("s_i", 0),
+                c.getDouble("e_i", 0));
+        cw.setPosition(0);
+        sleep(1000);
 
-            case 2:
-                moveArm(.4134, .1303, .1386);
-                cw.setPosition(0);
-                sleep(5000);
-                moveArm(.5398, .1818, .1660);
-                sleep(2000);
-                waist = BaseAutonomous.instance().config.getDouble("waist.red." + column, 0);
-                elbow = BaseAutonomous.instance().config.getDouble("elbow.red." + column, 0);
-                shoulder = BaseAutonomous.instance().config.getDouble("shoulder.red." + column, 0);
-                moveArm(waist, elbow, shoulder);
-                sleep(5000);
-                cw.setPosition(BaseAutonomous.instance().config.getDouble("claw_open", 0));
-                sleep(3000);
-                moveArm(waist, elbow, shoulder + .100);
-                sleep(3000);
-                break;
+        int columnN = result.ordinal();
+        moveArm(c.getDouble("w_"+(quadrant-1)+columnN, 0),
+                c.getDouble("s_"+(quadrant-1)+columnN, 0),
+                c.getDouble("e_"+(quadrant-1)+columnN, 0));
 
-            case 3:
-                moveArm(.4134, .1303, .1386);
-                cw.setPosition(BaseAutonomous.instance().config.getDouble("claw_open", 0));
-                sleep(5000);
-                moveArm(.5398, .1818, .1660);
-                sleep(2000);
-                waist = .5721;
-                elbow = .3197;
-                shoulder = .3877;
-                moveArm(waist, elbow, shoulder);
-                sleep(5000);
-                break;
+        sleep(3500);
 
-            case 4:
-                moveArm(.4134, .1303, .1386);
-                cw.setPosition(BaseAutonomous.instance().config.getDouble("claw_open", 0));
-                sleep(5000);
-                moveArm(.5398, .1818, .1660);
-                sleep(2000);
-                waist = .4279;
-                elbow = .3197;
-                shoulder = .6123;
-                moveArm(waist, elbow, shoulder);
-                sleep(5000);
-                break;
 
-            default:
-                break;
-        }
+
     }
 
     /**
      * A simple method that takes arm positions and moves the arm. Need to add wait function.
      **/
-    private void moveArm(double waist, double elbow, double shoulder) {
+    private void moveArm(double waist, double shoulder, double elbow) {
         ax.setPosition(waist);
-        ay.setPosition(elbow);
-        el.setPosition(shoulder);
+        ay.setPosition(shoulder);
+        el.setPosition(elbow);
     }
 }

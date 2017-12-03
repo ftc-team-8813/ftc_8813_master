@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by aidan on 12/1/17.
+ * ServoPositioner - Tool to move specific servos individually to collect positions
  */
 
 public class ServoPositioner extends OpMode {
