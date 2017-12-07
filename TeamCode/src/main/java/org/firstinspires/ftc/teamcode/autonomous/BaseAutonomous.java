@@ -71,7 +71,8 @@ public abstract class BaseAutonomous extends LinearOpMode {
     public Config config;
 
     /**
-     * Get the current instance of BaseAutonomous. This is set when the OpMode is initialized.
+     * Get the current instance of BaseAutonomous. This is set when the OpMode is initialized and
+     * unset when it is stopped.
      * @return An instance of BaseAutonomous
      */
     public static final BaseAutonomous instance() {

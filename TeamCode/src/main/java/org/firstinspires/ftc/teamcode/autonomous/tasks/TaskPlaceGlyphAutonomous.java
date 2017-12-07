@@ -31,7 +31,6 @@ public class TaskPlaceGlyphAutonomous implements Task {
     private Task task;
     private TaskClassifyPictograph.Result result;
 
-    private BaseAutonomous baseAutonomous;
 
     public TaskPlaceGlyphAutonomous(int quadrant, TaskClassifyPictograph.Result result) {
         this.result = result;
@@ -40,7 +39,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
         ax = m.servo.get("s0"); //waist
         ay = m.servo.get("s1"); //elbow
         el = m.servo.get("s2"); //shoulder
-        cw = m.servo.get("s3");
+        cw = m.servo.get("s3"); //claw
         rt = m.dcMotor.get("base");
         ex = m.dcMotor.get("extend");
         lm = m.touchSensor.get("ext_bumper");
@@ -52,24 +51,27 @@ public class TaskPlaceGlyphAutonomous implements Task {
         double waist;
         double elbow;
         double shoulder;
-        String column = result.name().toLowerCase();
-        if (column.equals("none")) {
-            column = "center";
+        if (result == TaskClassifyPictograph.Result.NONE) {
+            result = TaskClassifyPictograph.Result.CENTER;
         }
+
         moveArm(c.getDouble("w_i", 0),
                 c.getDouble("s_i", 0),
                 c.getDouble("e_i", 0));
-        cw.setPosition(0);
-        sleep(1000);
+        sleep(2000);
 
         int columnN = result.ordinal();
-        moveArm(c.getDouble("w_"+(quadrant-1)+columnN, 0),
-                c.getDouble("s_"+(quadrant-1)+columnN, 0),
-                c.getDouble("e_"+(quadrant-1)+columnN, 0));
+        moveArm(c.getDouble("w_"+(quadrant-1)+""+columnN, 0),
+                c.getDouble("s_"+(quadrant-1)+""+columnN, 0),
+                c.getDouble("e_"+(quadrant-1)+""+columnN, 0));
 
-        sleep(3500);
+        sleep(3000);
+        cw.setPosition(c.getDouble("claw_open", 0));
 
-
+        moveArm(c.getDouble("wp_" + (quadrant-1), 0),
+                c.getDouble("sp_" + (quadrant-1), 0),
+                c.getDouble("ep_" + (quadrant-1), 0));
+        sleep(1000);
 
     }
 
