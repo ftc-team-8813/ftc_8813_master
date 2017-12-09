@@ -5,7 +5,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
+import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.util.Config;
 
 import static java.lang.Thread.sleep;
@@ -54,23 +56,27 @@ public class TaskPlaceGlyphAutonomous implements Task {
         if (result == TaskClassifyPictograph.Result.NONE) {
             result = TaskClassifyPictograph.Result.CENTER;
         }
+        TelemetryWrapper.setLines(2);
+        TelemetryWrapper.setLine(0, "Result: " + result.name());
 
         moveArm(c.getDouble("w_i", 0),
                 c.getDouble("s_i", 0),
                 c.getDouble("e_i", 0));
+        TelemetryWrapper.setLine(1, "Moving to start position");
         sleep(2000);
 
-        int columnN = result.ordinal();
+        int columnN = result.ordinal() - 1;
         moveArm(c.getDouble("w_"+(quadrant-1)+""+columnN, 0),
                 c.getDouble("s_"+(quadrant-1)+""+columnN, 0),
                 c.getDouble("e_"+(quadrant-1)+""+columnN, 0));
-
-        sleep(3000);
+        TelemetryWrapper.setLine(1, "Moving to key column");
+        sleep(4000);
         cw.setPosition(c.getDouble("claw_open", 0));
 
         moveArm(c.getDouble("wp_" + (quadrant-1), 0),
                 c.getDouble("sp_" + (quadrant-1), 0),
                 c.getDouble("ep_" + (quadrant-1), 0));
+        TelemetryWrapper.setLine(1, "Moving to park position");
         sleep(1000);
 
     }
