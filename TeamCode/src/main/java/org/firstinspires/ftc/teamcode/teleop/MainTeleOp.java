@@ -172,6 +172,7 @@ public class MainTeleOp extends OpMode {
         telemetry.addData("Elbow Angle", Utils.shortFloat(driver.getElbowAngle()));
         telemetry.addData("Extend Position", extend.getCurrentPosition());
         telemetry.addData("Extend Minimum", extMin);
+        telemetry.addData("Turntable Position", base.getCurrentPosition());
     }
 
     private void addToEndOfRotateWindow(double value) {

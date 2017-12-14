@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.autonomous.util;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 /**
@@ -26,9 +28,16 @@ public class DcMotorUtil {
 
     public static void moveToPosition(DcMotor motor, int encoderValue, double power) throws InterruptedException {
         holdPosition(motor, encoderValue, power);
+        Telemetry.Item[] items = new Telemetry.Item[2];
         while (motor.isBusy()) {
+            items[0] = BaseAutonomous.instance().telemetry.addData("Encoder count", motor.getCurrentPosition());
+            items[1] = BaseAutonomous.instance().telemetry.addData("Target position", encoderValue);
+            BaseAutonomous.instance().telemetry.update();
             Thread.sleep(10);
         }
+        BaseAutonomous.instance().telemetry.removeItem(items[0]);
+        BaseAutonomous.instance().telemetry.removeItem(items[1]);
+        stopHoldingPosition(motor);
     }
 
     public static void stopHoldingPosition(DcMotor motor) {
