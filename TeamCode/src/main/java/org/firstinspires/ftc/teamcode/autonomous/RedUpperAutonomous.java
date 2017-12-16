@@ -8,5 +8,5 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 @Autonomous(name = "Red Upper Autonomous")
 public class RedUpperAutonomous extends MainAutonomous{
     @Override
-    public int quadrant(){return 2;}
+    public int quadrant(){return 3;}
 }

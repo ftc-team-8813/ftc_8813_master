@@ -39,7 +39,7 @@ public class TaskPlaceGlyphAutonomous implements Task{
         cw = m.servo.get("s3");
         rt = m.dcMotor.get("base");
         ex = m.dcMotor.get("extend");
-        lm = m.touchSensor.get("ext_bumper");
+        lm = m.touchSensor.get("limit");
     }
     @Override
     public void runTask() throws InterruptedException {
