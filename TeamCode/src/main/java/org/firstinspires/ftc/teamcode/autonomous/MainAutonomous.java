@@ -38,13 +38,13 @@ public abstract class MainAutonomous extends BaseAutonomous {
 
     @Override
     public void run() throws InterruptedException {
-        /*if (find) {
+        if (find) {
             tasks.add(finder);
             runTasks();
         }
         TaskClassifyPictograph.Result result = finder == null ? null : finder.getResult();
         if (result == null) result = TaskClassifyPictograph.Result.NONE;
-        tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result));*/
+        tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result));
         tasks.add(new TaskScoreJewel(quadrant()));
     }
 }
