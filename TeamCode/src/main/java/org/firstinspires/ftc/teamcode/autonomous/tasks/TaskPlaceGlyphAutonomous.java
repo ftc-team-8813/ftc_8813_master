@@ -29,8 +29,6 @@ public class TaskPlaceGlyphAutonomous implements Task{
     private TouchSensor lm;
     private int quadrant;
     private TaskClassifyPictograph.Result result;
-
-    private BaseAutonomous baseAutonomous;
     public TaskPlaceGlyphAutonomous(int quadrant, TaskClassifyPictograph.Result result) {
         this.result = result;
         this.quadrant = quadrant;
