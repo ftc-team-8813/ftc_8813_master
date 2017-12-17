@@ -17,10 +17,10 @@ import static java.lang.Thread.sleep;
  * Program that takes an integer to reflect what quadrant the robot is in
  * and places a block.
  * -----------------
- * |Quad 1 | Quad 2|
+ * |Quad 1 | Quad 4|
  * |       |       |
  * ----------------|
- * |Quad 3 | Quad 4|
+ * |Quad 2 | Quad 3|
  * |       |       |
  * -----------------
  * Relic     Relic
@@ -45,7 +45,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
         cw = m.servo.get("s3"); //claw
         rt = m.dcMotor.get("base");
         ex = m.dcMotor.get("extend");
-        lm = m.digitalChannel.get("ext_bumper");
+        lm = m.digitalChannel.get("limit");
     }
 
     @Override
