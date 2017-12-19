@@ -44,4 +44,41 @@ public class DcMotorUtil {
         motor.setPower(0);
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
+
+    private static class Controller {
+        private DcMotor motor;
+        private volatile int error;
+        private volatile boolean running;
+        public Controller(DcMotor motor) {
+            this.motor = motor;
+        }
+
+        public void startHolding(int position) {
+            running = true;
+            Thread controller = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (running) {
+
+                    }
+                }
+            }, motor.getDeviceName() + " motor controller thread");
+        }
+
+        public void stopHolding() {
+            running = false;
+        }
+
+        public DcMotor getControllingMotor() {
+            return motor;
+        }
+
+        public boolean isRunning() {
+            return running;
+        }
+
+        public int getError() {
+            return error;
+        }
+    }
 }

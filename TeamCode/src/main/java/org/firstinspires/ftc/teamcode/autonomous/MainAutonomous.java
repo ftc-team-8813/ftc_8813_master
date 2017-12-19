@@ -45,7 +45,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
         TaskClassifyPictograph.Result result = finder == null ? null : finder.getResult();
         if (result == null) result = TaskClassifyPictograph.Result.NONE;
         tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result));
-        tasks.add(new TaskScoreJewel(quadrant()));
+        if (COLOR_SENSOR) tasks.add(new TaskScoreJewel(quadrant()));
     }
 }
 /*
