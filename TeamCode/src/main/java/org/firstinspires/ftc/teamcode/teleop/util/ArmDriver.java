@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.teleop.util;
 
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.util.Utils;
 import static java.lang.Math.*;
 
@@ -16,18 +17,14 @@ public class ArmDriver {
     /** Maximum servo angle (pos = 1) in radians */
     public static final double SERVO_MAX_ANGLE = 7.04614352305139340626;
     /** Position of shoulder servo when horizontal (0 radians) */
-    public static final double SERVO_ANGLE_H_S = 0.468;
+    public static double SERVO_ANGLE_H_S;
     /** Position of elbow servo when horizontal (0 radians) */
-    public static final double SERVO_ANGLE_H_E = 0.5042;
+    public static double SERVO_ANGLE_H_E;
     /** Position of shoulder servo when vertical (pi/2 radians) */
-    public static final double SERVO_ANGLE_V_S = 0.2513;
+    public static double SERVO_ANGLE_V_S;
     /** Position of elbow servo when vertical (pi/2 radians) */
-    public static final double SERVO_ANGLE_V_E = 0.7207;
-    /** Length from the shoulder to the elbow (assumed to be equal to LENGTH_E_C, but this is
-     * definitely wrong */
-    public static final double LENGTH_S_E      = 1;
-    /** Length from the elbow to the claw (definition of the cubit; should always equal 1 :D ) */
-    public static final double LENGTH_E_C      = 1;
+    public static double SERVO_ANGLE_V_E;
+    private static boolean servo_angles_initialized = false;
 
     // Sub-classes
 
@@ -77,13 +74,20 @@ public class ArmDriver {
      * @param shoulder The shoulder servo
      * @param elbow The elbow servo
      */
-    public ArmDriver(Servo waist, Servo shoulder, Servo elbow, double l1, double l2) {
+    public ArmDriver(Servo waist, Servo shoulder, Servo elbow, double l1, double l2, Config conf) {
         this.l1 = l1;
         this.l2 = l2;
         ws = waist;
         ss = shoulder;
         es = elbow;
         n = l1 + l2;
+        if (!servo_angles_initialized) {
+            servo_angles_initialized = true;
+            SERVO_ANGLE_H_E = conf.getDouble("e_h", 0);
+            SERVO_ANGLE_H_S = conf.getDouble("s_h", 0);
+            SERVO_ANGLE_V_E = conf.getDouble("e_v", 0);
+            SERVO_ANGLE_V_S = conf.getDouble("s_v", 0);
+        }
     }
 
     // Methods

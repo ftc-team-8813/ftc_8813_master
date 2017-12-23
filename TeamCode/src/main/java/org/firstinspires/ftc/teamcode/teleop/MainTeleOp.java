@@ -68,7 +68,7 @@ public class MainTeleOp extends OpMode {
         extend = hardwareMap.dcMotor.get("extend");
         limit = hardwareMap.digitalChannel.get("limit");
         //Initialize arm controller
-        driver = new ArmDriver(waist, shoulder, elbow, l1, l2);
+        driver = new ArmDriver(waist, shoulder, elbow, l1, l2, conf);
 
         //Get extend motor range
         extRange = conf.getInt("ext_range", Integer.MAX_VALUE/2);
