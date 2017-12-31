@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.autonomous.util;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
+import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 import java.io.Closeable;
@@ -9,6 +11,10 @@ import java.io.Closeable;
 /**
  * Created by aidan on 12/17/17.
  */
+
+
+//PID controller gains
+//kP = .018; kI = 0; kD = 0.07
 
 public class MotorController implements Closeable {
     private static class ParallelController implements Runnable {
@@ -37,8 +43,12 @@ public class MotorController implements Closeable {
                     integral += error;
                     double derivative = error - prev_error;
                     prev_error = error;
-                    double speed = error*kP + integral*kI + derivative*kD;
-                    speed = Utils.constrain(speed, -1, 1);
+                    double speed = error*kP + integral*(kI/1000) + derivative*kD;
+                    speed = Utils.constrain(speed, -1, 1) * 0.7;
+                    if (Math.abs(error) < 5) {
+                        integral -= error;
+                        speed = 0;
+                    }
                     motor.setPower(speed);
                 } else {
                     motor.setPower(0);
@@ -89,15 +99,25 @@ public class MotorController implements Closeable {
             this.kI = kI;
             this.kD = kD;
         }
+
+        void setPIDConstants(double[] constants) {
+            setPIDConstants(constants[0], constants[1], constants[2]);
+        }
     }
     private Thread thread;
     private ParallelController controller;
     private boolean closed = false;
 
-    public MotorController(DcMotor motor) {
+    public MotorController(DcMotor motor, Config conf) {
         controller = new ParallelController(motor);
+        controller.setPIDConstants(conf.getDoubleArray("pid_constants"));
         thread = new Thread(controller);
         thread.start();
+
+    }
+
+    public MotorController(DcMotor motor) {
+        this(motor, BaseAutonomous.instance().config);
     }
 
     public void hold(int position) {

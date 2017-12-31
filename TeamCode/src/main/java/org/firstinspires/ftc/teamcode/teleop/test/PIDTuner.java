@@ -43,16 +43,26 @@ public class PIDTuner extends OpMode {
         switch (changing) {
             case 0:
                 telemetry.addData("Changing", "Proportional Gain");
-                controller.setPIDConstants(constants[0] - gamepad1.right_stick_y / 10, constants[1], constants[2]);
+                controller.setPIDConstants(constants[0] - gamepad1.right_stick_y / 100, constants[1], constants[2]);
                 break;
             case 1:
                 telemetry.addData("Changing", "Integral Gain");
-                controller.setPIDConstants(constants[0], constants[1] - gamepad1.right_stick_y / 10, constants[2]);
+                controller.setPIDConstants(constants[0], constants[1] - gamepad1.right_stick_y / 100, constants[2]);
                 break;
             case 2:
                 telemetry.addData("Changing", "Derivative Gain");
-                controller.setPIDConstants(constants[0], constants[1], constants[2] - gamepad1.right_stick_y / 10);
+                controller.setPIDConstants(constants[0], constants[1], constants[2] - gamepad1.right_stick_y / 100);
                 break;
         }
+        telemetry.addData("Target", controller.getTargetPosition());
+        telemetry.addData("Position", controller.getCurrentPosition());
+        telemetry.addData("kP", constants[0]);
+        telemetry.addData("kI", constants[1]);
+        telemetry.addData("kD", constants[2]);
+    }
+
+    @Override
+    public void stop() {
+        controller.close();
     }
 }
