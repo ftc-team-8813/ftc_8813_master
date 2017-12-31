@@ -6,11 +6,18 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * DcMotorUtil - Utility class for moving DC motors to specific positions.
  */
 
 public class DcMotorUtil {
+
+    private static Map<DcMotor, MotorController> controllers = new HashMap<>();
 
     public static int degreesToEncoders(double degrees, int gearRatio) {
         return (int)Utils.scaleRange(degrees, 0, 360, 0, 28 * gearRatio);
@@ -21,9 +28,12 @@ public class DcMotorUtil {
     }
 
     public static void holdPosition(DcMotor motor, int encoderValue, double power) {
-        motor.setTargetPosition(encoderValue);
-        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motor.setPower(power);
+        MotorController controller;
+        if ((controller = controllers.get(motor)) == null) {
+            controller = new MotorController(motor);
+            controllers.put(motor, controller);
+        }
+        controller.hold(encoderValue);
     }
 
     public static void moveToPosition(DcMotor motor, int encoderValue, double power) throws InterruptedException {
@@ -41,7 +51,8 @@ public class DcMotorUtil {
     }
 
     public static void stopHoldingPosition(DcMotor motor) {
-        motor.setPower(0);
-        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        MotorController controller;
+        if ((controller = controllers.get(motor)) == null) return;
+        controllers.remove(controller).close();
     }
 }
