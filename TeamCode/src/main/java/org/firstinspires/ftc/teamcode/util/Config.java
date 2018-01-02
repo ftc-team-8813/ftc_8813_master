@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.util;
 import android.os.Environment;
 import android.util.Log;
 
+import com.qualcomm.robotcore.util.RobotLog;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -39,9 +41,9 @@ public class Config {
             this.properties = new Properties();
             properties.load(new FileInputStream(storageDir + filename));
         } catch (IOException e) {
-            Log.e("Config", "No config file found");
+            RobotLog.ee("Config", "No config file found");
         } catch (IllegalArgumentException e) {
-            Log.e("Config", "Malformed properties file");
+            RobotLog.ee("Config", "Bad properties file");
         }
     }
 
@@ -49,6 +51,7 @@ public class Config {
         try {
             return Integer.parseInt(properties.getProperty(name));
         } catch (NumberFormatException | NullPointerException e) {
+            RobotLog.ww("Config", "No int property named " + name + " found");
             return def;
         }
     }
@@ -57,22 +60,27 @@ public class Config {
         try {
             return Double.parseDouble(properties.getProperty(name));
         } catch (NumberFormatException | NullPointerException e) {
+            RobotLog.ww("Config", "No double property named " + name + " found");
             return def;
         }
     }
 
     public String getString(String name, String def) {
-        if (properties.getProperty(name) != null)
+        if (properties.getProperty(name) != null) {
             return properties.getProperty(name);
-        else
+        } else {
+            RobotLog.ww("Config", "No string property named " + name + " found");
             return def;
+        }
     }
 
     public boolean getBoolean(String name, boolean def) {
-        if (properties.getProperty(name) != null)
+        if (properties.getProperty(name) != null) {
             return Boolean.parseBoolean(properties.getProperty(name));
-        else
+        } else {
+            RobotLog.ww("Config", "No boolean property named " + name + " found");
             return def;
+        }
     }
 
     public int[] getIntArray(String name) {
@@ -84,8 +92,12 @@ public class Config {
                     out[i] = Integer.parseInt(values[i]);
                 }
                 return out;
-            } else return null;
+            } else {
+                RobotLog.ww("Config", "No int array property named " + name + " found");
+                return null;
+            }
         } catch (NumberFormatException e) {
+            RobotLog.ww("Config", "No int array property named " + name + " found");
             return null;
         }
     }
@@ -99,16 +111,23 @@ public class Config {
                     out[i] = Double.parseDouble(values[i]);
                 }
                 return out;
-            } else return null;
+            } else {
+                RobotLog.ww("Config", "No double array property named " + name + " found");
+                return null;
+            }
         } catch (NumberFormatException e) {
+            RobotLog.ww("Config", "No double array property named " + name + " found");
             return null;
         }
     }
 
     public String[] getStringArray(String name) {
-        if (properties.getProperty(name) != null)
+        if (properties.getProperty(name) != null) {
             return csv(properties.getProperty(name));
-        else return null;
+        } else {
+            RobotLog.ww("Config", "No string array property named " + name + " found");
+            return null;
+        }
     }
 
     public boolean[] getBooleanArray(String name) {
@@ -119,7 +138,10 @@ public class Config {
                 out[i] = Boolean.parseBoolean(values[i]);
             }
             return out;
-        } else return null;
+        } else {
+            RobotLog.ww("Config", "No boolean array property named " + name + " found");
+            return null;
+        }
     }
 
     public Encodeable getEncodeable(String name, Class<? extends Encodeable> klass) {
@@ -129,13 +151,17 @@ public class Config {
             try {
                 output = klass.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
+                RobotLog.ww("Config", "Invalid encodeable " + klass.getName());
                 return null;
             }
             if (output.valid(value)) {
                 output.parse(value);
                 return output;
+            } else {
+                RobotLog.ww("Config", "No valid " + klass.getSimpleName() + " property named " + name + " found");
             }
         }
+        RobotLog.ww("Config", "No " + klass.getSimpleName() + " property named " + name + " found");
         return null;
     }
 

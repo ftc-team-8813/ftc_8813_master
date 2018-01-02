@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRotate;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskScoreJewel;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
+import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
 
 /**
  * Main autonomous program.
@@ -21,17 +22,18 @@ public abstract class MainAutonomous extends BaseAutonomous {
     public abstract int quadrant();
     public boolean find;
     private TaskClassifyPictograph finder;
-    private Servo ws, ss, es, claw;
+    private Arm arm;
     private MotorController base;
 
     @Override
     public void initialize() {
         find = config.getBoolean("run_finder", false);
-        ws = hardwareMap.servo.get("s0");
-        ss = hardwareMap.servo.get("s1");
-        es = hardwareMap.servo.get("s2");
-        claw = hardwareMap.servo.get("s3");
-        claw.setPosition(config.getDouble("claw_closed", 1));
+        Servo ws = hardwareMap.servo.get("s0");
+        Servo ss = hardwareMap.servo.get("s1");
+        Servo es = hardwareMap.servo.get("s2");
+        Servo claw = hardwareMap.servo.get("s3");
+        arm = new Arm(ws, ss, es, claw);
+        arm.closeClaw();
         base = new MotorController(hardwareMap.dcMotor.get("base"));
         //moveArm(.4134, .1303, .05);
         ws.setPosition(.3863);

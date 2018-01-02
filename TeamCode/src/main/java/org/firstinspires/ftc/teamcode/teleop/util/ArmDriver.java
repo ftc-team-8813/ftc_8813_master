@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.teleop.util;
 
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
 import org.firstinspires.ftc.teamcode.util.Utils;
 import static java.lang.Math.*;
 
@@ -76,6 +77,8 @@ public class ArmDriver {
      * @param waist The waist servo
      * @param shoulder The shoulder servo
      * @param elbow The elbow servo
+     * @param l1 The length from the shoulder to the elbow
+     * @param l2 The length from the elbow to the claw
      */
     public ArmDriver(Servo waist, Servo shoulder, Servo elbow, double l1, double l2) {
         this.l1 = l1;
@@ -84,6 +87,16 @@ public class ArmDriver {
         ss = shoulder;
         es = elbow;
         n = l1 + l2;
+    }
+
+    /**
+     * Construct the arm driver using an Arm to provide the servos.
+     * @param arm The arm
+     * @param l1 The length from the shoulder to the elbow
+     * @param l2 The length from the elbow to the claw
+     */
+    public ArmDriver(Arm arm, double l1, double l2) {
+        this(arm.getWaist(), arm.getShoulder(), arm.getElbow(), l1, l2);
     }
 
     // Methods

@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
+import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.util.Config;
 
@@ -28,27 +29,18 @@ import static java.lang.Thread.sleep;
  */
 
 public class TaskPlaceGlyphAutonomous implements Task {
-    private Servo ax, ay, el, cw;
-    private DcMotor rt, ex;
-    private DigitalChannel lm;
     private int quadrant;
-    private Task task;
+    private Arm arm;
     private TaskClassifyPictograph.Result result;
     private MotorController base;
 
 
-    public TaskPlaceGlyphAutonomous(int quadrant, TaskClassifyPictograph.Result result, MotorController base) {
+    public TaskPlaceGlyphAutonomous(int quadrant, TaskClassifyPictograph.Result result, MotorController base, Arm arm) {
+        this.arm = arm;
         this.base = base;
         this.result = result;
         this.quadrant = quadrant;
-        HardwareMap m = BaseAutonomous.instance().hardwareMap;
-        ax = m.servo.get("s0"); //waist
-        ay = m.servo.get("s1"); //elbow
-        el = m.servo.get("s2"); //shoulder
-        cw = m.servo.get("s3"); //claw
-        rt = m.dcMotor.get("base");
-        ex = m.dcMotor.get("extend");
-        lm = m.digitalChannel.get("limit");
+
     }
 
     @Override
@@ -63,6 +55,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
         TelemetryWrapper.setLines(2);
         TelemetryWrapper.setLine(0, "Result: " + result.name());
 
+        base.runToPosition(0);
         moveArm(c.getDouble("w_i", 0),
                 c.getDouble("s_i", 0),
                 c.getDouble("e_i", 0));
@@ -75,7 +68,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
                 c.getDouble("e_"+(quadrant-1)+""+columnN, 0));
         TelemetryWrapper.setLine(1, "Moving to key column");
         sleep(4000);
-        cw.setPosition(c.getDouble("claw_open", 0));
+        arm.openClaw();
 
         moveArm(c.getDouble("wp_" + (quadrant-1), 0),
                 c.getDouble("sp_" + (quadrant-1), 0),
@@ -89,8 +82,6 @@ public class TaskPlaceGlyphAutonomous implements Task {
      * A simple method that takes arm positions and moves the arm. Need to add wait function.
      **/
     private void moveArm(double waist, double shoulder, double elbow) {
-        ax.setPosition(waist);
-        ay.setPosition(shoulder);
-        el.setPosition(elbow);
+        arm.moveTo(waist, shoulder, elbow);
     }
 }
