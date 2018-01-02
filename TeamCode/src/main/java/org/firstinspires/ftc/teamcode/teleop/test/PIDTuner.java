@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.teleop.MainTeleOp;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 
 /**
- * Created by aidan on 12/21/17.
+ * PIDTuner - OpMode to adjust PID constants for the MotorController.
  */
 
 @TeleOp(name = "PID Tuner", group = "test")

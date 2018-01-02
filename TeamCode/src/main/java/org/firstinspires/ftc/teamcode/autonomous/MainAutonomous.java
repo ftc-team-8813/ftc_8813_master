@@ -5,7 +5,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomous;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRotate;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskScoreJewel;
+import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 
 /**
  * Main autonomous program.
@@ -20,6 +22,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
     public boolean find;
     private TaskClassifyPictograph finder;
     private Servo ws, ss, es, claw;
+    private MotorController base;
 
     @Override
     public void initialize() {
@@ -29,6 +32,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
         es = hardwareMap.servo.get("s2");
         claw = hardwareMap.servo.get("s3");
         claw.setPosition(config.getDouble("claw_closed", 1));
+        base = new MotorController(hardwareMap.dcMotor.get("base"));
         //moveArm(.4134, .1303, .05);
         ws.setPosition(.3863);
         ss.setPosition(.0378);
@@ -39,12 +43,13 @@ public abstract class MainAutonomous extends BaseAutonomous {
     @Override
     public void run() throws InterruptedException {
         if (find) {
+            tasks.add(new TaskRotate(base, config.getInt("toPict_" + quadrant(), 0)));
             tasks.add(finder);
             runTasks();
         }
         TaskClassifyPictograph.Result result = finder == null ? null : finder.getResult();
         if (result == null) result = TaskClassifyPictograph.Result.NONE;
-        tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result));
+        tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result, base));
         if (COLOR_SENSOR) tasks.add(new TaskScoreJewel(quadrant()));
     }
 }

@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
+import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.util.Config;
 
@@ -33,9 +34,11 @@ public class TaskPlaceGlyphAutonomous implements Task {
     private int quadrant;
     private Task task;
     private TaskClassifyPictograph.Result result;
+    private MotorController base;
 
 
-    public TaskPlaceGlyphAutonomous(int quadrant, TaskClassifyPictograph.Result result) {
+    public TaskPlaceGlyphAutonomous(int quadrant, TaskClassifyPictograph.Result result, MotorController base) {
+        this.base = base;
         this.result = result;
         this.quadrant = quadrant;
         HardwareMap m = BaseAutonomous.instance().hardwareMap;
