@@ -19,6 +19,12 @@ public class DcMotorUtil {
 
     private static Map<DcMotor, MotorController> controllers = new HashMap<>();
 
+    /**
+     * Convert degrees to encoder ticks.
+     * @param degrees The number of degrees
+     * @param gearRatio The gear ratio
+     * @return The encoder count re
+     */
     public static int degreesToEncoders(double degrees, int gearRatio) {
         return (int)Utils.scaleRange(degrees, 0, 360, 0, 28 * gearRatio);
     }
@@ -54,42 +60,5 @@ public class DcMotorUtil {
         MotorController controller;
         if ((controller = controllers.get(motor)) == null) return;
         controllers.remove(controller).close();
-    }
-
-    private static class Controller {
-        private DcMotor motor;
-        private volatile int error;
-        private volatile boolean running;
-        public Controller(DcMotor motor) {
-            this.motor = motor;
-        }
-
-        public void startHolding(int position) {
-            running = true;
-            Thread controller = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (running) {
-
-                    }
-                }
-            }, motor.getDeviceName() + " motor controller thread");
-        }
-
-        public void stopHolding() {
-            running = false;
-        }
-
-        public DcMotor getControllingMotor() {
-            return motor;
-        }
-
-        public boolean isRunning() {
-            return running;
-        }
-
-        public int getError() {
-            return error;
-        }
     }
 }
