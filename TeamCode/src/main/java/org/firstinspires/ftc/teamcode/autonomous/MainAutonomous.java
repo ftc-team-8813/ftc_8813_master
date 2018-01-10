@@ -32,7 +32,8 @@ public abstract class MainAutonomous extends BaseAutonomous {
         Servo ss = hardwareMap.servo.get("s1");
         Servo es = hardwareMap.servo.get("s2");
         Servo claw = hardwareMap.servo.get("s3");
-        arm = new Arm(ws, ss, es, claw);
+        Servo wrist = hardwareMap.servo.get("s4");
+        arm = new Arm(ws, ss, es, claw, wrist);
         arm.closeClaw();
         base = new MotorController(hardwareMap.dcMotor.get("base"));
         //moveArm(.4134, .1303, .05);

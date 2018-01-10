@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.Config;
@@ -21,11 +22,12 @@ public class MainTeleOp extends OpMode {
     //The arm controller
     protected ArmDriver driver;
     //Claw servo
-    protected Servo claw;
+    protected Servo claw, wrist;
     //Drive motors
     protected DcMotor base, extend;
     //Limit switch
-    protected DigitalChannel limit;
+//    protected DigitalChannel limit;
+    protected AnalogInput limit;
     //Extend motor minimum position
     protected Integer extMin = null;
     //Range of extend motor
@@ -38,6 +40,9 @@ public class MainTeleOp extends OpMode {
     private double maxIncrease = conf.getDouble("max_inc", 0.02);
     //Maximum speed of waist servo (radians per 20ms)
     private double maxRotate = conf.getDouble("max_rotate_speed", 0.02);
+
+    private double[] wristRange = conf.getDoubleArray("wrist_range");
+    private double wrist_speed = conf.getDouble("wrist_speed", 0.01);
 
     private double[] rotateWindow = new double[10];
     private double[] extWindow = new double[10];
@@ -63,10 +68,11 @@ public class MainTeleOp extends OpMode {
         Servo waist = hardwareMap.servo.get("s0");
         Servo shoulder = hardwareMap.servo.get("s1");
         Servo elbow = hardwareMap.servo.get("s2");
+        wrist = hardwareMap.servo.get("s4");
         claw = hardwareMap.servo.get("s3");
         base = hardwareMap.dcMotor.get("base");
         extend = hardwareMap.dcMotor.get("extend");
-        limit = hardwareMap.digitalChannel.get("limit");
+        limit = hardwareMap.analogInput.get("limit");
         //Initialize arm controller
         driver = new ArmDriver(waist, shoulder, elbow, l1, l2);
 
@@ -78,6 +84,10 @@ public class MainTeleOp extends OpMode {
         if (conf.getBoolean("ext_reverse", false))
             extend.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        if (wristRange != null) {
+            wrist.scaleRange(wristRange[0], wristRange[1]);
+        }
+
         //Set up
         setInitialPositions();
         ServoAngleFinder.create(hardwareMap);
@@ -87,6 +97,7 @@ public class MainTeleOp extends OpMode {
         driver.moveTo(conf.getDouble("dist_init", l1+l2),
                       conf.getDouble("adj_init", 0));
         driver.setWaistAngle(conf.getDouble("waist_init", 0));
+        wrist.setPosition(conf.getDouble("wrist_init", 0));
     }
 
     @Override
@@ -117,9 +128,18 @@ public class MainTeleOp extends OpMode {
         } else {
             base.setPower(0);
         }
+
+        if (gamepad1.dpad_up) {
+            wrist.setPosition(Utils.constrain(wrist.getPosition() + wrist_speed, 0, 1));
+        } else if (gamepad1.dpad_down) {
+            wrist.setPosition(Utils.constrain(wrist.getPosition() - wrist_speed, 0, 1));
+        }
+
         driver.setWaistAngle(driver.getWaistAngle()-(gamepad1.left_stick_x * maxRotate));
         //getState same as !isPressed, except for DigitalChannels (which are needed for REV sensors)
-        if (limit.getState()) {
+        //For AnalogInputs, getVoltage() should be around 0 when active
+        //CMOS logic LOW is < 0.8V
+        if (limit.getVoltage() < 0.8) {
             //Only allows user to go backward if the minimum switch hasn't been triggered.
             if (gamepad2.dpad_down) {
                 extend.setPower(-1);
@@ -161,7 +181,7 @@ public class MainTeleOp extends OpMode {
 
         telemetry.addData("Elapsed Time", Utils.elapsedTime(System.currentTimeMillis() - start));
         telemetry.addData("Claw", claw_closed ? "CLOSED" : "OPEN");
-        telemetry.addData("Limit Switch", !limit.getState() ? "PRESSED" : "RELEASED");
+        telemetry.addData("Limit Switch", (limit.getVoltage() < 0.8) ? "PRESSED" : "RELEASED");
         telemetry.addData("Arm Angle", Utils.shortFloat(driver.getArmAngle()));
         telemetry.addData("Distance", Utils.shortFloat(driver.getClawDistance()));
         telemetry.addData("Waist Position", Utils.shortFloat(driver.getWaistPos()));

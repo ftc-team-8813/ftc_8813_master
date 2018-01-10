@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
@@ -55,33 +56,48 @@ public class TaskPlaceGlyphAutonomous implements Task {
         TelemetryWrapper.setLines(2);
         TelemetryWrapper.setLine(0, "Result: " + result.name());
 
+        Config move = new Config(c.getString("move_quad_" + quadrant, ""));
+
         base.runToPosition(0);
-        moveArm(c.getDouble("w_i", 0),
-                c.getDouble("s_i", 0),
-                c.getDouble("e_i", 0));
+        double[] vals = move.getDoubleArray("init_move");
+        if (vals == null) {
+            TelemetryWrapper.setLine(1, "No init_move data!");
+            return;
+        }
+        moveArm(vals);
         TelemetryWrapper.setLine(1, "Moving to start position");
         sleep(2000);
 
-        int columnN = result.ordinal() - 1;
-        moveArm(c.getDouble("w_"+(quadrant-1)+""+columnN, 0),
-                c.getDouble("s_"+(quadrant-1)+""+columnN, 0),
-                c.getDouble("e_"+(quadrant-1)+""+columnN, 0));
+        vals = move.getDoubleArray("move_" + result.name());
+        if (vals == null) {
+            TelemetryWrapper.setLine(1, "No move_" + result.name() + " data!");
+            return;
+        }
+        moveArm(vals);
         TelemetryWrapper.setLine(1, "Moving to key column");
         sleep(4000);
         arm.openClaw();
 
-        moveArm(c.getDouble("wp_" + (quadrant-1), 0),
-                c.getDouble("sp_" + (quadrant-1), 0),
-                c.getDouble("ep_" + (quadrant-1), 0));
+        vals = move.getDoubleArray("park");
+        if (vals == null) {
+            TelemetryWrapper.setLine(1, "No park data!");
+        }
+        moveArm(vals);
         TelemetryWrapper.setLine(1, "Moving to park position");
         sleep(1000);
 
     }
 
     /**
-     * A simple method that takes arm positions and moves the arm. Need to add wait function.
+     * A simple method that takes arm positions and moves the arm.
      **/
-    private void moveArm(double waist, double shoulder, double elbow) {
+    private void moveArm(double waist, double shoulder, double elbow, double wrist, double rotate) {
         arm.moveTo(waist, shoulder, elbow);
+        arm.moveWrist(wrist);
+        base.hold((int)rotate);
+    }
+
+    private void moveArm(double... pos) {
+        moveArm(pos[0], pos[1], pos[2], pos[3], pos[4]);
     }
 }

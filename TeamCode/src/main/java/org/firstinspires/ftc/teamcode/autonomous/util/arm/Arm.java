@@ -11,20 +11,21 @@ import org.firstinspires.ftc.teamcode.util.Config;
  */
 
 public class Arm {
-    private Servo waist, shoulder, elbow, claw;
+    private Servo waist, shoulder, elbow, claw, wrist;
     private boolean claw_closed = false;
     private Config conf;
 
-    public Arm(Config conf, Servo waist, Servo shoulder, Servo elbow, Servo claw) {
+    public Arm(Config conf, Servo waist, Servo shoulder, Servo elbow, Servo claw, Servo wrist) {
         this.conf = conf;
         this.waist = waist;
         this.shoulder = shoulder;
         this.elbow = elbow;
         this.claw = claw;
+        this.wrist = wrist;
     }
 
-    public Arm(Servo waist, Servo shoulder, Servo elbow, Servo claw) {
-        this(BaseAutonomous.instance().config, waist, shoulder, elbow, claw);
+    public Arm(Servo waist, Servo shoulder, Servo elbow, Servo claw, Servo wrist) {
+        this(BaseAutonomous.instance().config, waist, shoulder, elbow, claw, wrist);
     }
 
     public void moveTo(double w, double s, double e) {
@@ -32,6 +33,8 @@ public class Arm {
         shoulder.setPosition(s);
         elbow.setPosition(e);
     }
+
+    public void moveWrist(double wr) {wrist.setPosition(wr);}
 
     public void moveClaw(double c) {
         claw.setPosition(c);
