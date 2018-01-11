@@ -371,7 +371,7 @@ public class PictographFinder implements CameraListener {
         desc_scene.release();
         object.release();
         kp_scene.release();
-        return goodMatches.size() > MIN_MATCHES;
+        return goodMatches.size() >= MIN_MATCHES;
     }
 
     //Get the corners of an object

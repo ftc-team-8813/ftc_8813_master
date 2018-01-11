@@ -12,9 +12,6 @@ import org.opencv.android.OpenCVLoader;
 
 import java.util.ArrayList;
 import java.util.List;
-//Put your hours here:
-//9/10: 2:30P - 5:15P -ABY
-//9/11: 6:30P - 7:30P -ABY
 
 /**
  * Base autonomous OpMode. Sub-OpModes that are going to be used for the games must extend this.
