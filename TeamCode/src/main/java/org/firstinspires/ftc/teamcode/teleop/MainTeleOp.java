@@ -122,9 +122,9 @@ public class MainTeleOp extends OpMode {
                 driver.getClawDistance() + newDist,
                 driver.getArmAngle() + newAngle);
         if (gamepad2.dpad_left) {
-            base.setPower(-0.5);
+            base.setPower(-0.8);
         } else if (gamepad2.dpad_right) {
-            base.setPower(0.5);
+            base.setPower(0.8);
         } else {
             base.setPower(0);
         }

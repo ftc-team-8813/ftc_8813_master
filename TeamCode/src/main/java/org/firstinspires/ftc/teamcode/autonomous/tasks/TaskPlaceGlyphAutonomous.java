@@ -89,7 +89,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
     }
 
     /**
-     * A simple method that takes arm positions and moves the arm.
+     * A simple method that takes arm positions and moves the arm and turntable.
      **/
     private void moveArm(double waist, double shoulder, double elbow, double wrist, double rotate) {
         arm.moveTo(waist, shoulder, elbow);

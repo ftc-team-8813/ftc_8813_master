@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -17,6 +18,7 @@ import static org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper.*;
  * ServoPositioner - Tool to move specific servos individually to collect positions
  */
 
+@TeleOp(name="Servo Positioner")
 public class ServoPositioner extends OpMode {
 
     private static final int STATE_CHOOSING = 1;
