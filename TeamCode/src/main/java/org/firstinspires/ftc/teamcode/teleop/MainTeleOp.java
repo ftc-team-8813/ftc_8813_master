@@ -74,7 +74,7 @@ public class MainTeleOp extends OpMode {
         extend = hardwareMap.dcMotor.get("extend");
         limit = hardwareMap.analogInput.get("limit");
         //Initialize arm controller
-        driver = new ArmDriver(waist, shoulder, elbow, l1, l2, conf);
+        driver = new ArmDriver(waist, shoulder, elbow, l1, l2);
 
         //Get extend motor range
         extRange = conf.getInt("ext_range", Integer.MAX_VALUE/2);
@@ -94,6 +94,8 @@ public class MainTeleOp extends OpMode {
     }
 
     private void setInitialPositions() {
+        claw.setPosition(conf.getDouble("claw_closed", 0));
+        claw_closed = true;
         driver.moveTo(conf.getDouble("dist_init", l1+l2),
                       conf.getDouble("adj_init", 0));
         driver.setWaistAngle(conf.getDouble("waist_init", 0));
@@ -139,7 +141,7 @@ public class MainTeleOp extends OpMode {
         //getState same as !isPressed, except for DigitalChannels (which are needed for REV sensors)
         //For AnalogInputs, getVoltage() should be around 0 when active
         //CMOS logic LOW is < 0.8V
-        if (limit.getVoltage() < 0.8) {
+        if (limit.getVoltage() >= 0.8) {
             //Only allows user to go backward if the minimum switch hasn't been triggered.
             if (gamepad2.dpad_down) {
                 extend.setPower(-1);
@@ -193,6 +195,7 @@ public class MainTeleOp extends OpMode {
         telemetry.addData("Extend Position", extend.getCurrentPosition());
         telemetry.addData("Extend Minimum", extMin);
         telemetry.addData("Turntable Position", base.getCurrentPosition());
+        telemetry.addData("Wrist Position", wrist.getPosition());
     }
 
     private void addToEndOfRotateWindow(double value) {
