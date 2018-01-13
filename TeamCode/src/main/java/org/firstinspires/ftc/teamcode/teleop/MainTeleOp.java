@@ -124,9 +124,9 @@ public class MainTeleOp extends OpMode {
                 driver.getClawDistance() + newDist,
                 driver.getArmAngle() + newAngle);
         if (gamepad2.dpad_left) {
-            base.setPower(-0.8);
-        } else if (gamepad2.dpad_right) {
             base.setPower(0.8);
+        } else if (gamepad2.dpad_right) {
+            base.setPower(-0.8);
         } else {
             base.setPower(0);
         }
@@ -141,18 +141,18 @@ public class MainTeleOp extends OpMode {
         //getState same as !isPressed, except for DigitalChannels (which are needed for REV sensors)
         //For AnalogInputs, getVoltage() should be around 0 when active
         //CMOS logic LOW is < 0.8V
-        if (limit.getVoltage() >= 0.8) {
+        //if (limit.getVoltage() >= 0.8) {
             //Only allows user to go backward if the minimum switch hasn't been triggered.
             if (gamepad2.dpad_down) {
                 extend.setPower(-1);
             } else {
                 extend.setPower(0);
             }
-        } else {
-            extend.setPower(0);
-            extMin = extend.getCurrentPosition();
-        }
-        if (gamepad2.dpad_up && extMin != null && extend.getCurrentPosition() < extMin + extRange) {
+        //} else {
+        //    extend.setPower(0);
+        //    extMin = extend.getCurrentPosition();
+        //}
+        if (gamepad2.dpad_up /*&& extMin != null && extend.getCurrentPosition() < extMin + extRange*/) {
             extend.setPower(1);
         } else if (extend.getPower() != -1){
             extend.setPower(0);
