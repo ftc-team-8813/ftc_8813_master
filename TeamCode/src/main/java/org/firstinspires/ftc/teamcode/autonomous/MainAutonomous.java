@@ -9,6 +9,8 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRotate;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskScoreJewel;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
+import org.firstinspires.ftc.teamcode.teleop.MainTeleOp;
+import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
 
 /**
  * Main autonomous program.
@@ -37,9 +39,14 @@ public abstract class MainAutonomous extends BaseAutonomous {
         arm.closeClaw();
         base = new MotorController(hardwareMap.dcMotor.get("base"));
         //moveArm(.4134, .1303, .05);
-        ws.setPosition(.3863);
-        ss.setPosition(.0378);
-        es.setPosition(.0386);
+        ArmDriver driver = new ArmDriver(arm, config.getDouble("l1", 1),
+                                              config.getDouble("l2", 1));
+        claw.setPosition(config.getDouble("claw_closed", 0));
+        //claw_closed = true;
+        driver.moveTo(config.getDouble("dist_init", 0),
+                config.getDouble("adj_init", 0));
+        driver.setWaistAngle(config.getDouble("waist_init", 0));
+        wrist.setPosition(config.getDouble("wrist_init", 0));
         finder = new TaskClassifyPictograph();
     }
 

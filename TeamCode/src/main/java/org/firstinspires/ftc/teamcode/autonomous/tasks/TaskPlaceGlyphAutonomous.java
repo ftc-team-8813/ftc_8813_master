@@ -59,16 +59,16 @@ public class TaskPlaceGlyphAutonomous implements Task {
         Config move = new Config(c.getString("move_quad_" + quadrant, ""));
 
         base.runToPosition(0);
-        double[] vals = move.getDoubleArray("init_move");
-        if (vals == null) {
-            TelemetryWrapper.setLine(1, "No init_move data!");
-            return;
-        }
-        moveArm(vals);
-        TelemetryWrapper.setLine(1, "Moving to start position");
-        sleep(2000);
+//        double[] vals = move.getDoubleArray("init_move");
+//        if (vals == null) {
+//            TelemetryWrapper.setLine(1, "No init_move data!");
+//            return;
+//        }
+//        moveArm(vals);
+//        TelemetryWrapper.setLine(1, "Moving to start position");
+//        sleep(2000);
 
-        vals = move.getDoubleArray("move_" + result.name());
+        double[] vals = move.getDoubleArray("move_" + result.name());
         if (vals == null) {
             TelemetryWrapper.setLine(1, "No move_" + result.name() + " data!");
             return;
@@ -81,6 +81,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
         vals = move.getDoubleArray("park");
         if (vals == null) {
             TelemetryWrapper.setLine(1, "No park data!");
+            return;
         }
         moveArm(vals);
         TelemetryWrapper.setLine(1, "Moving to park position");
