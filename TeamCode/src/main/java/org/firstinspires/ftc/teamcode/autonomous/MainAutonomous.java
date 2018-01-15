@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
  */
 
 public abstract class MainAutonomous extends BaseAutonomous {
-
+    /** Set to true if a color sensor is available and the jewel knocker should run */
     private static final boolean COLOR_SENSOR = false;
 
     //public abstract boolean isBlue();
@@ -52,14 +52,19 @@ public abstract class MainAutonomous extends BaseAutonomous {
 
     @Override
     public void run() throws InterruptedException {
+        //Run finder if enabled
         if (find) {
             tasks.add(new TaskRotate(base, config.getInt("toPict_" + quadrant(), 0)));
             tasks.add(finder);
             runTasks();
         }
+        //Get result if finder is not null
         TaskClassifyPictograph.Result result = finder == null ? null : finder.getResult();
+        //Set result to NONE if result is null
         if (result == null) result = TaskClassifyPictograph.Result.NONE;
+        //Place glyph
         tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result, base, arm));
+        //Knock jewel
         if (COLOR_SENSOR) tasks.add(new TaskScoreJewel(quadrant()));
     }
 }
