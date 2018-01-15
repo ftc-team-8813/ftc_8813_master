@@ -40,7 +40,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
         base = new MotorController(hardwareMap.dcMotor.get("base"));
         //moveArm(.4134, .1303, .05);
         ArmDriver driver = new ArmDriver(arm, config.getDouble("l1", 1),
-                                              config.getDouble("l2", 1));
+                                              config.getDouble("l2", 1), config);
         claw.setPosition(config.getDouble("claw_closed", 0));
         //claw_closed = true;
         driver.moveTo(config.getDouble("dist_init", 0),
