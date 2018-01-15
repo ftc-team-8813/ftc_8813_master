@@ -48,7 +48,7 @@ public class PositionFinder extends MainTeleOp {
                 for (int j = 0; j < vals.length; j++) {
                     vals[j] = pos[j];
                 }
-                w.write(i + ": " + TextUtils.join(", ", vals));
+                w.write(i + ": " + TextUtils.join(", ", vals) + "\n");
                 i++;
             }
         } catch (IOException e) {

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.teleop.util;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
+import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.util.Utils;
 import static java.lang.Math.*;
 
@@ -14,21 +15,20 @@ public class ArmDriver {
 
     // Constants -- should be migrated to config?
 
-    /** Maximum servo angle (pos = 1) in radians */
-    public static final double SERVO_MAX_ANGLE = 7.04614352305139340626;
+    /** Maximum servo angle (pos = 1) in radians for no gear */
+    public static final double SERVO_MAX_ANGLE = 49.32300466135975384382;
+
+    private static double maxAngle(double gearRatio) {
+        return SERVO_MAX_ANGLE / gearRatio;
+    }
     /** Position of shoulder servo when horizontal (0 radians) */
-    public static final double SERVO_ANGLE_H_S = 0.468;
+    private static double SERVO_ANGLE_H_S = 0.468;
     /** Position of elbow servo when horizontal (0 radians) */
-    public static final double SERVO_ANGLE_H_E = 0.5042;
+    private static double SERVO_ANGLE_H_E = 0.5042;
     /** Position of shoulder servo when vertical (pi/2 radians) */
-    public static final double SERVO_ANGLE_V_S = 0.2513;
+    private static double SERVO_ANGLE_V_S = 0.2513;
     /** Position of elbow servo when vertical (pi/2 radians) */
-    public static final double SERVO_ANGLE_V_E = 0.7207;
-    /** Length from the shoulder to the elbow (assumed to be equal to LENGTH_E_C, but this is
-     * definitely wrong */
-    public static final double LENGTH_S_E      = 1;
-    /** Length from the elbow to the claw (definition of the cubit; should always equal 1 :D ) */
-    public static final double LENGTH_E_C      = 1;
+    private static double SERVO_ANGLE_V_E = 0.7207;
 
     // Sub-classes
 
@@ -80,13 +80,17 @@ public class ArmDriver {
      * @param l1 The length from the shoulder to the elbow
      * @param l2 The length from the elbow to the claw
      */
-    public ArmDriver(Servo waist, Servo shoulder, Servo elbow, double l1, double l2) {
+    public ArmDriver(Servo waist, Servo shoulder, Servo elbow, double l1, double l2, Config conf) {
         this.l1 = l1;
         this.l2 = l2;
         ws = waist;
         ss = shoulder;
         es = elbow;
         n = l1 + l2;
+        SERVO_ANGLE_H_S = conf.getDouble("s_h", 0);
+        SERVO_ANGLE_H_E = conf.getDouble("e_h", 0);
+        SERVO_ANGLE_V_S = conf.getDouble("s_v", 0);
+        SERVO_ANGLE_V_E = conf.getDouble("e_v", 0);
     }
 
     /**
@@ -95,8 +99,8 @@ public class ArmDriver {
      * @param l1 The length from the shoulder to the elbow
      * @param l2 The length from the elbow to the claw
      */
-    public ArmDriver(Arm arm, double l1, double l2) {
-        this(arm.getWaist(), arm.getShoulder(), arm.getElbow(), l1, l2);
+    public ArmDriver(Arm arm, double l1, double l2, Config conf) {
+        this(arm.getWaist(), arm.getShoulder(), arm.getElbow(), l1, l2, conf);
     }
 
     // Methods
@@ -109,7 +113,7 @@ public class ArmDriver {
      */
     public void setWaistAngle(double radians) {
         currentPositions[0] =
-                Utils.scaleRange(radians, 0, SERVO_MAX_ANGLE, 0, 1);
+                Utils.scaleRange(radians, 0, maxAngle(7), 0, 1);
         currentPositionsR[0] = radians;
         ws.setPosition(currentPositions[0]);
     }

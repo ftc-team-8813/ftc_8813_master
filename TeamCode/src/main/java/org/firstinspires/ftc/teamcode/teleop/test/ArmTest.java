@@ -54,44 +54,44 @@ public class ArmTest extends OpMode{
         base        = hardwareMap.dcMotor.get("base");
         extend      = hardwareMap.dcMotor.get("extend");
         //1 bumper
-        extendLimit = new TouchSensor() {
-            private DigitalChannel dc = hardwareMap.digitalChannel.get("limit");
-            @Override
-            public double getValue() {
-                return dc.getState() ? 1 : 0;
-            }
-
-            @Override
-            public boolean isPressed() {
-                return getValue() == 1;
-            }
-
-            @Override
-            public Manufacturer getManufacturer() {
-                return null;
-            }
-
-            @Override
-            public String getDeviceName() {
-                return null;
-            }
-
-            @Override
-            public String getConnectionInfo() {
-                return null;
-            }
-
-            @Override
-            public int getVersion() {
-                return 0;
-            }
-
-            @Override
-            public void resetDeviceConfigurationForOpMode() {}
-
-            @Override
-            public void close() {}
-        };
+//        extendLimit = new TouchSensor() {
+//            private DigitalChannel dc = hardwareMap.digitalChannel.get("limit");
+//            @Override
+//            public double getValue() {
+//                return dc.getState() ? 1 : 0;
+//            }
+//
+//            @Override
+//            public boolean isPressed() {
+//                return getValue() == 1;
+//            }
+//
+//            @Override
+//            public Manufacturer getManufacturer() {
+//                return null;
+//            }
+//
+//            @Override
+//            public String getDeviceName() {
+//                return null;
+//            }
+//
+//            @Override
+//            public String getConnectionInfo() {
+//                return null;
+//            }
+//
+//            @Override
+//            public int getVersion() {
+//                return 0;
+//            }
+//
+//            @Override
+//            public void resetDeviceConfigurationForOpMode() {}
+//
+//            @Override
+//            public void close() {}
+//        };
 
         maxTurn = config.getDouble("servo_turn", 0);
         clawCloseAmount = config.getDouble("claw_closed", 0);
@@ -121,22 +121,23 @@ public class ArmTest extends OpMode{
         turnElbow += -gamepad1.right_stick_y * maxTurn;
         base.setPower(gamepad1.left_stick_x * 0.5);
         //Limit switch code -- needs work!!
-        if (!extendLimit.isPressed()) {
-            //Only allows user to go forward if the minimum switch has been triggered.
-            if (gamepad1.dpad_down) {
-                extend.setPower(-1);
-            } else {
-                extend.setPower(0);
-            }
-        } else {
-            extend.setPower(0);
-            extMin = extend.getCurrentPosition();
-        }
-        if (gamepad1.dpad_up && extMin != null && extend.getCurrentPosition() < extMin + extRange) {
-            extend.setPower(1);
-        } else {
-            extend.setPower(0);
-        }
+        //Now used for arm calibration, ArmTest does not need the extend control
+//        if (!extendLimit.isPressed()) {
+//            //Only allows user to go forward if the minimum switch has been triggered.
+//            if (gamepad1.dpad_down) {
+//                extend.setPower(-1);
+//            } else {
+//                extend.setPower(0);
+//            }
+//        } else {
+//            extend.setPower(0);
+//            extMin = extend.getCurrentPosition();
+//        }
+//        if (gamepad1.dpad_up && extMin != null && extend.getCurrentPosition() < extMin + extRange) {
+//            extend.setPower(1);
+//        } else {
+//            extend.setPower(0);
+//        }
         //Generic (non-limit-switch) code
 //        if (gamepad1.dpad_up) {
 //            extend.setPower(1);
@@ -188,7 +189,7 @@ public class ArmTest extends OpMode{
         telemetry.addData("Claw closed", claw_closed);
         telemetry.addData("Extend motor encoder", extend.getCurrentPosition());
         telemetry.addData("Rotation motor encoder", base.getCurrentPosition());
-        telemetry.addData("Limit switch pressed", extendLimit.isPressed());
+//        telemetry.addData("Limit switch pressed", extendLimit.isPressed());
         telemetry.update();
     }
 }
