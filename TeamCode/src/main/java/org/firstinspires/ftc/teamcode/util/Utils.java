@@ -74,6 +74,24 @@ public class Utils {
         return (value < min) ? min : ((value > max) ? max : value);
     }
 
+    /**
+     * Creates a scaling factor which scales the range [a,b] to the range [c,d] and applies it to x. <br>
+     * For example,
+     * <pre>
+     *     scaleRange(x, 0, 1, 0, 2) -> x * 2
+     *     scaleRange(x, 0, 1, 1, 2) -> x + 1
+     *     scaleRange(x, 0, pi*2, 0, 360) -> convert x from radians to degrees
+     *     scaleRange(x, 0, 1, 1, 0) -> 1 - x
+     *     scaleRange(x, 0, 1, 1, 3) -> 2*x + 1
+     * </pre>
+     *
+     * @param x The value to scale
+     * @param a The minimum of the first range
+     * @param b The maximum of the first range
+     * @param c The minimum of the second range
+     * @param d The maximum of the second range
+     * @return
+     */
     public static double scaleRange(double x, double a, double b, double c, double d) {
         return c * (1.0 - (x - a) / (b - a)) + d * ((x - a) / (b - a));
     }

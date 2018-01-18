@@ -42,6 +42,17 @@ public class DcMotorUtil {
         controller.hold(encoderValue);
     }
 
+    public static void holdUntilComplete(DcMotor motor, int encoderValue, double power) {
+        MotorController controller;
+        if ((controller = controllers.get(motor)) == null) {
+            controller = new MotorController(motor);
+            controllers.put(motor, controller);
+        }
+        controller.setPower(power);
+        controller.startRunToPosition(encoderValue);
+    }
+
+    @Deprecated
     public static void moveToPosition(DcMotor motor, int encoderValue, double power) throws InterruptedException {
         holdPosition(motor, encoderValue, power);
         Telemetry.Item[] items = new Telemetry.Item[2];

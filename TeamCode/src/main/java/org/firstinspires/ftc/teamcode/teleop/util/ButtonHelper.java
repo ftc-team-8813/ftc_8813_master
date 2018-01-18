@@ -5,7 +5,8 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import java.util.Arrays;
 
 /**
- * Created by aidan on 12/6/17.
+ * ButtonHelper - Utility to detect 'pressing' events (change of state) for user-interface
+ * applications
  */
 
 public class ButtonHelper {

@@ -21,6 +21,7 @@ public class MotorController implements Closeable {
         private volatile double power = 1;
         private volatile int target;
         private volatile boolean holding = false;
+        private volatile boolean stopNearTarget = false;
         private volatile double kP, kI, kD;
         private DcMotor motor;
         private double integral;
@@ -46,6 +47,10 @@ public class MotorController implements Closeable {
                     double speed = error*kP + integral*(kI/1000) + derivative*kD;
                     speed = Utils.constrain(speed, -1, 1) * power;
                     if (Math.abs(error) < 5) {
+                        if (stopNearTarget) {
+                            holding = false;
+                            stopNearTarget = false;
+                        }
                         integral -= error;
                         speed = 0;
                     }
@@ -78,8 +83,12 @@ public class MotorController implements Closeable {
             holding = false;
         }
 
-         boolean isHolding() {
+        boolean isHolding() {
             return holding;
+        }
+
+        void stopWhenComplete(boolean stopNearTarget) {
+            this.stopNearTarget = stopNearTarget;
         }
 
         int getCurrentPosition() {
@@ -147,6 +156,7 @@ public class MotorController implements Closeable {
      */
     public void hold(int position) {
         if (closed) throw new IllegalStateException("Motor controller closed");
+        controller.stopWhenComplete(false);
         controller.setTarget(position);
         controller.hold();
     }
@@ -225,6 +235,17 @@ public class MotorController implements Closeable {
             Thread.sleep(10);
         }
         if (!keepHolding) stopHolding();
+    }
+
+    /**
+     * Start driving to a position. Does not hold the position once the target has been reached.
+     * @param position The position
+     */
+    public void startRunToPosition(int position) {
+        if (closed) throw new IllegalStateException("Motor controller closed");
+        controller.stopWhenComplete(true);
+        controller.setTarget(position);
+        controller.hold();
     }
 
     /**
