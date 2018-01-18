@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
+import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 import java.util.ArrayList;
@@ -42,10 +43,10 @@ public class DcMotorUtil {
         controller.hold(encoderValue);
     }
 
-    public static void holdUntilComplete(DcMotor motor, int encoderValue, double power) {
+    public static void holdUntilComplete(DcMotor motor, int encoderValue, double power, Config conf) {
         MotorController controller;
-        if ((controller = controllers.get(motor)) == null) {
-            controller = new MotorController(motor);
+        if ((controller = controllers.get(motor)) == null || controller.closed()) {
+            controller = new MotorController(motor, conf, true);
             controllers.put(motor, controller);
         }
         controller.setPower(power);

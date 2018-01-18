@@ -73,6 +73,7 @@ public class ButtonHelper {
     }
 
     public boolean pressing(int idx) {
-        return pressed(idx) && !held[idx];
+        boolean value = buttons[idx] && !held[idx];
+        return value;
     }
 }

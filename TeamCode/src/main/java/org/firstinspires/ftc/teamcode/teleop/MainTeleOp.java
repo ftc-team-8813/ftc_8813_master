@@ -191,7 +191,7 @@ public class MainTeleOp extends OpMode {
                     conf.getDouble("dist_glyphs", l1+l2),
                     conf.getDouble("adj_glyphs", 0));
             driver.setWaistAngle(conf.getDouble("waist_glyphs", 0));
-            DcMotorUtil.holdUntilComplete(base, conf.getInt("base_glyphs", 0), 1);
+            DcMotorUtil.holdUntilComplete(base, conf.getInt("base_glyphs", 0), 1, conf);
         }
 
         if (buttonHelper_1.pressing(ButtonHelper.b)) {
@@ -199,7 +199,7 @@ public class MainTeleOp extends OpMode {
                     conf.getDouble("dist_cryptobox", l1+l2),
                     conf.getDouble("adj_cryptobox", 0));
             driver.setWaistAngle(conf.getDouble("waist_cryptobox", 0));
-            DcMotorUtil.holdUntilComplete(base, conf.getInt("base_cryptobox", 0), 1);
+            DcMotorUtil.holdUntilComplete(base, conf.getInt("base_cryptobox", 0), 1, conf);
         }
 
         if (gamepad1.left_bumper) {
