@@ -28,7 +28,7 @@ public class MainTeleOp extends OpMode {
     //Drive motors
     protected DcMotor base, extend;
     //Limit switch
-//    protected DigitalChannel limit;
+//    protected DigitalChannel limit; //Not a digital channel anymore
     protected AnalogInput limit;
     //Extend motor minimum position
     protected Integer extMin = null;
@@ -145,11 +145,7 @@ public class MainTeleOp extends OpMode {
             base.setPower(0);
         }
 
-        if (gamepad1.dpad_up) {
-            wrist.setPosition(Utils.constrain(wrist.getPosition() + wrist_speed, 0, 1));
-        } else if (gamepad1.dpad_down) {
-            wrist.setPosition(Utils.constrain(wrist.getPosition() - wrist_speed, 0, 1));
-        }
+        wrist.setPosition(Utils.constrain(wrist.getPosition() + (wrist_speed * -gamepad2.right_stick_y), 0, 1));
 
         driver.setWaistAngle(driver.getWaistAngle() - (gamepad1.left_stick_x * maxRotate));
         //getState same as !isPressed, except for DigitalChannels (which are needed for REV sensors)
