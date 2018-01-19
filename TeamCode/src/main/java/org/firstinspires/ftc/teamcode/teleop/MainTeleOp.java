@@ -110,9 +110,14 @@ public class MainTeleOp extends OpMode {
         wrist.setPosition(conf.getDouble("wrist_init", 0));
     }
 
+    private void moveTo(double[] armPos) {
+        if (armPos == null) return;
+        driver.moveTo(armPos[0], armPos[1]);
+        if (armPos.length > 2) driver.setWaistAngle(armPos[2]);
+    }
+
     private void setExtendedPositions() {
-        driver.moveTo(conf.getDouble("dist_out", l1+l2),
-                      conf.getDouble("adj_out", 0));
+        moveTo(new double[] {conf.getDouble("raise_adj", 0), conf.getDouble("raise_dist", 0)});
     }
 
     @Override
@@ -126,6 +131,7 @@ public class MainTeleOp extends OpMode {
      */
     @Override
     public void loop() {
+        buttonHelper_1.update();
         double newDist = -(gamepad1.right_stick_y * maxMove);
         double newAngle = (gamepad1.left_stick_y * maxMove);
         if (Math.abs(Utils.sum(rotateWindow)) > maxIncrease)
@@ -183,19 +189,15 @@ public class MainTeleOp extends OpMode {
         }
 
         if (buttonHelper_1.pressing(ButtonHelper.y)) {
-            driver.moveTo(
-                    conf.getDouble("dist_glyphs", l1+l2),
-                    conf.getDouble("adj_glyphs", 0));
-            driver.setWaistAngle(conf.getDouble("waist_glyphs", 0));
-            DcMotorUtil.holdUntilComplete(base, conf.getInt("base_glyphs", 0), 1, conf);
+            moveTo(new double[] {conf.getDouble("glyph_adj", 0), conf.getDouble("glyph_dist", 0), conf.getDouble("glyph_waist", 0)});
         }
 
         if (buttonHelper_1.pressing(ButtonHelper.b)) {
-            driver.moveTo(
-                    conf.getDouble("dist_cryptobox", l1+l2),
-                    conf.getDouble("adj_cryptobox", 0));
-            driver.setWaistAngle(conf.getDouble("waist_cryptobox", 0));
-            DcMotorUtil.holdUntilComplete(base, conf.getInt("base_cryptobox", 0), 1, conf);
+            moveTo(new double[] {conf.getDouble("cryptobox_adj", 0), conf.getDouble("cryptobox_dist", 0), conf.getDouble("cryptobox_waist", 0)});
+        }
+
+        if (buttonHelper_1.pressing(ButtonHelper.right_bumper)) {
+            moveTo(new double[] {conf.getDouble("relic_adj", 0), conf.getDouble("relic_dist", 0), conf.getDouble("relic_waist", 0)});
         }
 
         if (gamepad1.left_bumper) {

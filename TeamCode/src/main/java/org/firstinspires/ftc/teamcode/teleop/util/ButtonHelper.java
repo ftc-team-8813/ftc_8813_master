@@ -41,7 +41,7 @@ public class ButtonHelper {
         this.gamepad = gamepad;
     }
 
-    private void update() {
+    public void update() {
         boolean[] buttons2 = Arrays.copyOf(buttons, 15);
         buttons[dpad_up] = gamepad.dpad_up;
         buttons[dpad_down] = gamepad.dpad_down;
@@ -64,7 +64,6 @@ public class ButtonHelper {
     }
 
     public boolean pressed(int idx) {
-        update();
         return buttons[idx];
     }
 
@@ -73,7 +72,6 @@ public class ButtonHelper {
     }
 
     public boolean pressing(int idx) {
-        boolean value = buttons[idx] && !held[idx];
-        return value;
+        return !held[idx] && pressed(idx);
     }
 }

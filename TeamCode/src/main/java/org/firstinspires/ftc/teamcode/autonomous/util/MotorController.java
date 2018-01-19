@@ -18,8 +18,6 @@ public class MotorController implements Closeable {
      */
     private class ParallelController implements Runnable {
 
-        private boolean ephemeral;
-        private boolean ran = false;
         private volatile double power = 1;
         private volatile int target;
         private volatile boolean holding = false;
@@ -28,9 +26,9 @@ public class MotorController implements Closeable {
         private DcMotor motor;
         private double integral;
         private double prev_error;
+        private Runnable atTarget;
 
-        ParallelController(DcMotor motor, boolean ephemeral) {
-            this.ephemeral = ephemeral;
+        ParallelController(DcMotor motor, Runnable atTarget) {
             this.motor = motor;
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             target = 0;
@@ -43,7 +41,6 @@ public class MotorController implements Closeable {
         public void run() {
             while (true) {
                 if (holding) {
-                    ran = true;
                     double error = target - motor.getCurrentPosition(); //target > pos : error positive
                     integral += error;
                     double derivative = error - prev_error;
@@ -57,10 +54,10 @@ public class MotorController implements Closeable {
                         }
                         integral -= error;
                         speed = 0;
+                        if (atTarget != null) atTarget.run();
                     }
                     motor.setPower(speed);
                 } else {
-                    if (ran && ephemeral) close();
                     motor.setPower(0);
                     integral = 0;
                 }
@@ -125,11 +122,15 @@ public class MotorController implements Closeable {
     /* Whether or not the controller has been closed */
     private boolean closed = false;
 
-    public MotorController(DcMotor motor, Config conf, boolean ephemeral) {
-        controller = new ParallelController(motor, ephemeral);
+    public MotorController(DcMotor motor, Config conf, Runnable atTarget) {
+        controller = new ParallelController(motor, atTarget);
         controller.setPIDConstants(conf.getDoubleArray("pid_constants"));
         thread = new Thread(controller);
         thread.start();
+    }
+
+    public MotorController(DcMotor motor, Runnable atTarget) {
+        this(motor, null, atTarget);
     }
 
     /**
@@ -140,7 +141,7 @@ public class MotorController implements Closeable {
      * @see #MotorController(DcMotor)
      */
     public MotorController(DcMotor motor, Config conf) {
-        this(motor, conf, false);
+        this(motor, conf, null);
     }
 
     /**

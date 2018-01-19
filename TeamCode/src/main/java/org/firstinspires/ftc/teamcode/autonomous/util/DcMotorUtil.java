@@ -46,7 +46,7 @@ public class DcMotorUtil {
     public static void holdUntilComplete(DcMotor motor, int encoderValue, double power, Config conf) {
         MotorController controller;
         if ((controller = controllers.get(motor)) == null || controller.closed()) {
-            controller = new MotorController(motor, conf, true);
+            controller = new MotorController(motor, conf);
             controllers.put(motor, controller);
         }
         controller.setPower(power);
