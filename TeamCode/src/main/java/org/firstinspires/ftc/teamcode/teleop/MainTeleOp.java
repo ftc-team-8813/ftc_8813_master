@@ -151,7 +151,7 @@ public class MainTeleOp extends OpMode {
             base.setPower(0);
         }
 
-        wrist.setPosition(Utils.constrain(wrist.getPosition() + (wrist_speed * -gamepad2.right_stick_y), 0, 1));
+        wrist.setPosition(gamepad1.right_trigger);
 
         driver.setWaistAngle(driver.getWaistAngle() - (gamepad1.left_stick_x * maxRotate));
         //getState same as !isPressed, except for DigitalChannels (which are needed for REV sensors)
