@@ -98,7 +98,7 @@ public class MotorController implements Closeable {
         }
 
         boolean nearTarget(int error) {
-            return Math.abs(target - motor.getCurrentPosition()) > error;
+            return Math.abs(target - motor.getCurrentPosition()) <= error;
         }
 
         double[] getPIDConstants() {

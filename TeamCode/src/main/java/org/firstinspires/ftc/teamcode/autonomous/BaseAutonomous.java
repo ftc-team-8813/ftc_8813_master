@@ -7,9 +7,12 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.Task;
 import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Utils;
 import org.opencv.android.OpenCVLoader;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,13 +99,17 @@ public abstract class BaseAutonomous extends LinearOpMode {
      */
     @Override
     public final void runOpMode() throws InterruptedException {
+        Logger log = null;
         //Catch any InterruptedExceptions or other unchecked exceptions so that we can unset the
         //instance in case of an error.
         Throwable exc = null;
         try {
             //Run initialization operations here
-            //GZip old log files to save space :P
+            //GZip old robot log files to save space :P
             Utils.gzipLogs();
+            //Create our latest.log file
+            Logger.init(new File(Config.storageDir + "latest.log"));
+            log = new Logger("BaseAutonomous");
             //Initialize the configuration file
             config = new Config(Config.configFile);
 
@@ -126,8 +133,11 @@ public abstract class BaseAutonomous extends LinearOpMode {
             run();
             //Run any leftover tasks
             runTasks();
-            while (opModeIsActive()) {}
-        } catch (InterruptedException | RuntimeException | Error e) {
+            finish();
+            while (opModeIsActive()) {
+                Thread.sleep(100);
+            }
+        } catch (InterruptedException | RuntimeException | IOException | Error e) {
             exc = e;
         } finally {
             instance = null;
@@ -141,8 +151,10 @@ public abstract class BaseAutonomous extends LinearOpMode {
                 //able to throw.
                 if (exc instanceof Error) throw (Error)exc;
                 else if (exc instanceof RuntimeException) throw (RuntimeException)exc;
+                else if (exc instanceof IOException) log.e(exc);
                 else throw (InterruptedException)exc;
             }
+            Logger.close();
         }
     }
 
@@ -159,6 +171,12 @@ public abstract class BaseAutonomous extends LinearOpMode {
      * @throws InterruptedException if the OpMode is trying to stop
      */
     public abstract void run() throws InterruptedException;
+
+    /**
+     * Executed after all tasks have completed.
+     * @throws InterruptedException if the OpMode is trying to stop
+     */
+    public void finish() throws InterruptedException { }
 
     /**
      * Use this method to run all of the tasks currently in the list. This is executed after run()

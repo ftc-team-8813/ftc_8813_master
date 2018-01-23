@@ -24,6 +24,8 @@ public class Config {
     /** The name of the default config file (other ones can be used, but this is the default) */
     public static final String configFile = "config.properties";
 
+    private static Logger log;
+
     /**
      * Encodeable - An interface for reading custom data types from a Config object. Examples:
      * <ul>
@@ -50,15 +52,17 @@ public class Config {
      * @param filename The name of the file to load the configuration from.
      */
     public Config(String filename) {
+        log = new Logger("Config");
         new File(storageDir).mkdirs();
         try {
             this.properties = new Properties();
             properties.load(new FileInputStream(storageDir + filename));
         } catch (IOException e) {
-            RobotLog.ee("Config", "No config file found");
+            log.e("No config file '%s' found", filename);
         } catch (IllegalArgumentException e) {
-            RobotLog.ee("Config", "Bad properties file");
+            log.e("Bad properties file '%s'", filename);
         }
+        log.v("Successfully loaded config file %s", filename);
     }
 
     /**
@@ -71,7 +75,7 @@ public class Config {
         try {
             return Integer.parseInt(properties.getProperty(name));
         } catch (NumberFormatException | NullPointerException e) {
-            RobotLog.ww("Config", "No int property named " + name + " found");
+            log.w("No valid integer property named %s", name);
             return def;
         }
     }
@@ -86,7 +90,7 @@ public class Config {
         try {
             return Double.parseDouble(properties.getProperty(name));
         } catch (NumberFormatException | NullPointerException e) {
-            RobotLog.ww("Config", "No double property named " + name + " found");
+            log.w("No valid double property named %s", name);
             return def;
         }
     }
@@ -101,7 +105,7 @@ public class Config {
         if (properties.getProperty(name) != null) {
             return properties.getProperty(name);
         } else {
-            RobotLog.ww("Config", "No string property named " + name + " found");
+            log.w("No string property named %s", name);
             return def;
         }
     }
@@ -117,7 +121,7 @@ public class Config {
         if (properties.getProperty(name) != null) {
             return Boolean.parseBoolean(properties.getProperty(name));
         } else {
-            RobotLog.ww("Config", "No boolean property named " + name + " found");
+            log.w("No boolean property named %s", name);
             return def;
         }
     }
@@ -137,11 +141,11 @@ public class Config {
                 }
                 return out;
             } else {
-                RobotLog.ww("Config", "No int array property named " + name + " found");
+                log.w("No int array property named %s", name);
                 return null;
             }
         } catch (NumberFormatException e) {
-            RobotLog.ww("Config", "No int array property named " + name + " found");
+            log.w("No valid int array property named %s", name);
             return null;
         }
     }
@@ -161,11 +165,11 @@ public class Config {
                 }
                 return out;
             } else {
-                RobotLog.ww("Config", "No double array property named " + name + " found");
+                log.w("No double array property named %s", name);
                 return null;
             }
         } catch (NumberFormatException e) {
-            RobotLog.ww("Config", "No double array property named " + name + " found");
+            log.w("No valid double array property named %s", name);
             return null;
         }
     }
@@ -180,7 +184,7 @@ public class Config {
         if (properties.getProperty(name) != null) {
             return csv(properties.getProperty(name));
         } else {
-            RobotLog.ww("Config", "No string array property named " + name + " found");
+            log.w("No string array property named %s", name);
             return null;
         }
     }
@@ -201,7 +205,7 @@ public class Config {
             }
             return out;
         } else {
-            RobotLog.ww("Config", "No boolean array property named " + name + " found");
+            log.w("No boolean array property named %s", name);
             return null;
         }
     }
@@ -224,17 +228,17 @@ public class Config {
             try {
                 output = klass.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
-                RobotLog.ww("Config", "Invalid encodeable " + klass.getName());
+                log.w("Uninstantiable class %s", klass.getName());
                 return null;
             }
             try {
                 output.parse(value);
                 return output;
             } catch (IllegalArgumentException e) {
-                RobotLog.ww("Config", "No valid " + klass.getSimpleName() + " property named " + name + " found");
+                log.w("No valid %s property named %s", klass.getName(), name);
             }
         }
-        RobotLog.ww("Config", "No " + klass.getSimpleName() + " property named " + name + " found");
+        log.w("No %s property named %s", klass.getName(), name);
         return null;
     }
 

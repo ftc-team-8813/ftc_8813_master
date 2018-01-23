@@ -56,7 +56,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
         TelemetryWrapper.setLines(2);
         TelemetryWrapper.setLine(0, "Result: " + result.name());
 
-        Config move = new Config(c.getString("move_quad_" + quadrant, ""));
+        Config move = new Config(c.getString("pos_quadrant_" + quadrant, ""));
 
         base.runToPosition(0);
 //        double[] vals = move.getDoubleArray("init_move");

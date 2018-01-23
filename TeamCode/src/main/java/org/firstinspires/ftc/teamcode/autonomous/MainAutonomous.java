@@ -66,7 +66,10 @@ public abstract class MainAutonomous extends BaseAutonomous {
         tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result, base, arm));
         //Knock jewel
         if (COLOR_SENSOR) tasks.add(new TaskScoreJewel(quadrant()));
+    }
 
+    @Override
+    public void finish() throws InterruptedException {
         base.close();
     }
 }
