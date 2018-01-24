@@ -9,6 +9,11 @@ import com.sun.tools.javac.Main;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.teleop.MainTeleOp;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
+import org.firstinspires.ftc.teamcode.util.Config;
+import org.firstinspires.ftc.teamcode.util.Logger;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * PIDTuner - OpMode to adjust PID constants for the MotorController.
@@ -23,6 +28,11 @@ public class PIDTuner extends OpMode {
 
     @Override
     public void init() {
+        try {
+            Logger.init(new File(Config.storageDir + "latest.log"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         controller = new MotorController(hardwareMap.dcMotor.get("motor"));
         buttons = new ButtonHelper(gamepad1);
         controller.hold(0);
@@ -64,5 +74,6 @@ public class PIDTuner extends OpMode {
     @Override
     public void stop() {
         controller.close();
+        Logger.close();
     }
 }

@@ -5,8 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.Config;
+import org.firstinspires.ftc.teamcode.util.Logger;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,6 +26,11 @@ public class TestOPMode extends OpMode {
 
     @Override
     public void init() {
+        try {
+            Logger.init(new File(Config.storageDir + "latest.log"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         servo = hardwareMap.servo.get("s0");
         servo2 = hardwareMap.servo.get("s1");
         servo3 = hardwareMap.servo.get("s2");
@@ -78,5 +85,10 @@ public class TestOPMode extends OpMode {
         }   catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void stop() {
+        Logger.close();
     }
 }

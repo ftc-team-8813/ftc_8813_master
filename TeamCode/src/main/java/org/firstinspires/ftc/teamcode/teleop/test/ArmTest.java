@@ -10,7 +10,11 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskExtendSlide;
 import org.firstinspires.ftc.teamcode.util.Config;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Utils;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * ArmTest - TeleOp arm drive. Controls:
@@ -45,6 +49,11 @@ public class ArmTest extends OpMode{
 
     @Override
     public void init() {
+        try {
+            Logger.init(new File(Config.storageDir + "latest.log"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         //Loadsa servos
         shoulderX   = hardwareMap.servo.get("s0"); //Assuming that s0, s1, s2, etc. are names of servos
         shoulderY   = hardwareMap.servo.get("s1");
@@ -191,5 +200,10 @@ public class ArmTest extends OpMode{
         telemetry.addData("Rotation motor encoder", base.getCurrentPosition());
 //        telemetry.addData("Limit switch pressed", extendLimit.isPressed());
         telemetry.update();
+    }
+
+    @Override
+    public void stop() {
+        Logger.close();
     }
 }

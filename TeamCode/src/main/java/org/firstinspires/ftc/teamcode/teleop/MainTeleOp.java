@@ -13,7 +13,11 @@ import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
 import org.firstinspires.ftc.teamcode.teleop.util.ServoAngleFinder;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Utils;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Main TeleOp control to control the {@link ArmDriver}.
@@ -68,6 +72,11 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public void init() {
+        try {
+            Logger.init(new File(Config.storageDir + "latest.log"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         buttonHelper_1 = new ButtonHelper(gamepad1);
         //Get motors and servos from hardware map
         Servo waist = hardwareMap.servo.get("s0");
@@ -108,6 +117,11 @@ public class MainTeleOp extends OpMode {
                       conf.getDouble("adj_init", 0));
         driver.setWaistAngle(conf.getDouble("waist_init", 0));
         wrist.setPosition(conf.getDouble("wrist_init", 0));
+    }
+
+    @Override
+    public void stop() {
+        Logger.close();
     }
 
     private void moveTo(double[] armPos) {

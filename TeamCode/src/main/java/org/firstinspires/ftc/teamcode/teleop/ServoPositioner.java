@@ -7,8 +7,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
+import org.firstinspires.ftc.teamcode.util.Config;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +40,11 @@ public class ServoPositioner extends OpMode {
 
     @Override
     public void init() {
+        try {
+            Logger.init(new File(Config.storageDir + "latest.log"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         state = STATE_CHOOSING;
         helper = new ButtonHelper(gamepad1);
     }
@@ -78,6 +87,11 @@ public class ServoPositioner extends OpMode {
                 break;
             default: break;
         }
+    }
+
+    @Override
+    public void stop() {
+        Logger.close();
     }
 
     private void draw() {

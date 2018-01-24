@@ -57,5 +57,6 @@ public class PositionFinder extends MainTeleOp {
         if (outFile.exists()) {
             Utils.scanFile(outFile);
         }
+        super.stop();
     }
 }
