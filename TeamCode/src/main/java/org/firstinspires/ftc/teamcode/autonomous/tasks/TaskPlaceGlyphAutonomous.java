@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.util.Config;
+import org.firstinspires.ftc.teamcode.util.Logger;
 
 import static java.lang.Thread.sleep;
 
@@ -34,6 +35,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
     private Arm arm;
     private TaskClassifyPictograph.Result result;
     private MotorController base;
+    private Logger log = new Logger("Glyph Placer");
 
 
     public TaskPlaceGlyphAutonomous(int quadrant, TaskClassifyPictograph.Result result, MotorController base, Arm arm) {
@@ -131,6 +133,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
      * A simple method that takes arm positions and moves the arm and turntable.
      **/
     private void moveArm(double waist, double shoulder, double elbow, double wrist, double rotate) {
+        log.i("Moving to waist: %.4f, shoulder: %.4f, elbow: %.4f, wrist: %.4f, rotation: %d", waist, shoulder, elbow, wrist, (int)rotate);
         arm.moveTo(waist, shoulder, elbow);
         arm.moveWrist(wrist);
         base.hold((int)rotate);
