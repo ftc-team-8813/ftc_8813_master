@@ -10,5 +10,5 @@ import org.firstinspires.ftc.teamcode.autonomous.MainAutonomous;
 @Autonomous(name = "Blue Lower Autonomous")
 public class BlueLowerAutonomous extends MainAutonomous{
     @Override
-    public int quadrant(){return 1;}
+    public int quadrant(){return 2;}
 }

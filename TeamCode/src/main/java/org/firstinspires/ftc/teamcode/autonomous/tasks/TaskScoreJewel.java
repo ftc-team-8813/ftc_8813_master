@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.autonomous.util.DcMotorUtil;
 import static java.lang.Thread.sleep;
 
 /**
- * Created by Joseph Murphy on 12/1/2017.
+ * Created by Joseph Murphy on 12/1/2017
  */
 
 public class TaskScoreJewel implements Task{

@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomous;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomousSimple;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRotate;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskScoreJewel;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
@@ -40,7 +41,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
         base = new MotorController(hardwareMap.dcMotor.get("base"));
         //moveArm(.4134, .1303, .05);
         ArmDriver driver = new ArmDriver(arm, config.getDouble("l1", 1),
-                                              config.getDouble("l2", 1), config);
+                config.getDouble("l2", 1), config);
         claw.setPosition(config.getDouble("claw_closed", 0));
         //claw_closed = true;
         driver.moveTo(config.getDouble("dist_init", 0),
@@ -63,7 +64,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
         //Set result to NONE if result is null
         if (result == null) result = TaskClassifyPictograph.Result.NONE;
         //Place glyph
-        tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result, base, arm));
+        tasks.add(new TaskPlaceGlyphAutonomousSimple(quadrant(), result, base, arm));
         //Knock jewel
         if (COLOR_SENSOR) tasks.add(new TaskScoreJewel(quadrant()));
     }
@@ -89,7 +90,6 @@ abstract class BasicAutonomous extends MainAutonomous {
             /////////////////////
             //BLUE CODE HERE!!!//
             /////////////////////
-
             //Go to the cryptobox column
             if (finder.getResult().equals(TaskClassifyPictograph.Result.LEFT)) {
                 tasks.add(new TaskRunServo(w, cf.getDouble("blue.left.waist",0)));
@@ -118,7 +118,6 @@ abstract class BasicAutonomous extends MainAutonomous {
             /////////////////
             //RED CODE HERE//
             /////////////////
-
             //Go to the relic zone
             if (finder.getResult().equals(TaskClassifyPictograph.Result.LEFT)) {
                 tasks.add(new TaskRunServo(w, cf.getDouble("red.left.waist",0)));
