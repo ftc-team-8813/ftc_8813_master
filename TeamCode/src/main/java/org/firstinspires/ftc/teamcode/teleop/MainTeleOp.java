@@ -109,7 +109,7 @@ public class MainTeleOp extends OpMode {
         claw.setPosition(conf.getDouble("claw_closed", 0));
         claw_closed = true;
         driver.moveTo(conf.getDouble("dist_init", l1+l2),
-                conf.getDouble("adj_init", 0));
+                      conf.getDouble("adj_init", 0));
         driver.setWaistAngle(conf.getDouble("waist_init", 0));
         wrist.setPosition(conf.getDouble("wrist_init", 0));
     }
