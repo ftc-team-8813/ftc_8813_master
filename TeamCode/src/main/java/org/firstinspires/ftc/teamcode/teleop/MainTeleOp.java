@@ -72,11 +72,6 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public void init() {
-        try {
-            Logger.init(new File(Config.storageDir + "latest.log"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         buttonHelper_1 = new ButtonHelper(gamepad1);
         //Get motors and servos from hardware map
         Servo waist = hardwareMap.servo.get("s0");

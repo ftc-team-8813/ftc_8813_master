@@ -24,6 +24,7 @@ public class Logger {
     }
 
     private static PrintStream writer;
+    private static boolean open = false;
     private static int maxLevel = Level.ALL;
 
     private String tag;
@@ -62,6 +63,13 @@ public class Logger {
     }
 
     public void log(int level, String fmt, Object... args) {
+        if (writer == null) {
+            try {
+                init(new File(Config.storageDir + "latest.log"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
         if (level <= maxLevel) {
             String lvl;
             if (level <= 0) lvl = "FATAL";
@@ -100,6 +108,13 @@ public class Logger {
     }
 
     public synchronized void e(Throwable t) {
+        if (writer == null) {
+            try {
+                init(new File(Config.storageDir + "latest.log"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
         if (1 <= maxLevel) {
             String lvl = "ERROR";
             Calendar c = Calendar.getInstance();
