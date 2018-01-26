@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
@@ -38,7 +39,8 @@ public abstract class MainAutonomous extends BaseAutonomous {
         Servo wrist = hardwareMap.servo.get("s4");
         arm = new Arm(ws, ss, es, claw, wrist);
         arm.closeClaw();
-        base = new MotorController(hardwareMap.dcMotor.get("base"));
+        DcMotor motor = hardwareMap.dcMotor.get("base");
+        base = new MotorController(motor);
         //moveArm(.4134, .1303, .05);
         ArmDriver driver = new ArmDriver(arm, config.getDouble("l1", 1),
                 config.getDouble("l2", 1), config);

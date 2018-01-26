@@ -14,8 +14,9 @@ import java.util.Map;
 
 /**
  * DcMotorUtil - Utility class for moving DC motors to specific positions.
+ * @Deprecated Resets encoder every move
  */
-
+@Deprecated
 public class DcMotorUtil {
 
     private static Map<DcMotor, MotorController> controllers = new HashMap<>();

@@ -70,6 +70,8 @@ public class MainTeleOp extends OpMode {
 
     private long start = 0;
 
+    protected int initEncoder;
+
     @Override
     public void init() {
         try {
@@ -85,8 +87,7 @@ public class MainTeleOp extends OpMode {
         wrist = hardwareMap.servo.get("s4");
         claw = hardwareMap.servo.get("s3");
         base = hardwareMap.dcMotor.get("base");
-        base.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        base.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        initEncoder = base.getCurrentPosition();
         extend = hardwareMap.dcMotor.get("extend");
         //extend has no encoder
         limit = hardwareMap.analogInput.get("limit");
@@ -108,6 +109,10 @@ public class MainTeleOp extends OpMode {
         //Set up
         setInitialPositions();
         ServoAngleFinder.create(hardwareMap);
+    }
+
+    protected int getTurntablePosition() {
+        return base.getCurrentPosition() - initEncoder;
     }
 
     private void setInitialPositions() {
@@ -231,7 +236,7 @@ public class MainTeleOp extends OpMode {
         telemetry.addData("Elbow Angle", Utils.shortFloat(driver.getElbowAngle()));
         telemetry.addData("Extend Position", extend.getCurrentPosition());
         telemetry.addData("Extend Minimum", extMin);
-        telemetry.addData("Turntable Position", base.getCurrentPosition());
+        telemetry.addData("Turntable Position", getTurntablePosition());
         telemetry.addData("Wrist Position", wrist.getPosition());
     }
 

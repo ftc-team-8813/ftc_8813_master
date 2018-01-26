@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.util.Config;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 import java.io.Closeable;
@@ -19,6 +20,7 @@ public class MotorController implements Closeable {
     private class ParallelController implements Runnable {
 
         private volatile double power = 1;
+        private Logger log;
         private volatile int target;
         private volatile boolean holding = false;
         private volatile boolean stopNearTarget = false;
@@ -26,10 +28,14 @@ public class MotorController implements Closeable {
         private DcMotor motor;
         private double integral;
         private double prev_error;
+        private int initEncoder;
         private Runnable atTarget;
 
         ParallelController(DcMotor motor, Runnable atTarget) {
+            log = new Logger("Motor " + motor.getPortNumber() + " Controller");
+            log.d("Initializing!");
             this.motor = motor;
+            initEncoder = motor.getCurrentPosition();
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             target = 0;
             kP = 0;
@@ -39,9 +45,10 @@ public class MotorController implements Closeable {
 
         @Override
         public void run() {
+            log.i("Starting!");
             while (true) {
                 if (holding) {
-                    double error = target - motor.getCurrentPosition(); //target > pos : error positive
+                    double error = target - getCurrentPosition(); //target > pos : error positive
                     integral += error;
                     double derivative = error - prev_error;
                     prev_error = error;
@@ -49,7 +56,7 @@ public class MotorController implements Closeable {
                     speed = Utils.constrain(speed, -1, 1) * power;
                     if (Math.abs(error) < 5) {
                         if (stopNearTarget) {
-                            holding = false;
+                            stopHolding();
                             stopNearTarget = false;
                         }
                         integral -= error;
@@ -62,6 +69,7 @@ public class MotorController implements Closeable {
                     integral = 0;
                 }
                 if (Thread.interrupted()) {
+                    log.i("Stopping motor controller!");
                     motor.setPower(0);
                     integral = 0;
                     return;
@@ -71,6 +79,7 @@ public class MotorController implements Closeable {
 
         void setTarget(int target) {
             this.target = target;
+            log.d("Position set to %d", target);
         }
 
         int getTarget() {
@@ -79,10 +88,12 @@ public class MotorController implements Closeable {
 
         void hold() {
             holding = true;
+            log.d("Holding position");
         }
 
         void stopHolding() {
             holding = false;
+            log.d("Stop holding position");
         }
 
         boolean isHolding() {
@@ -94,11 +105,11 @@ public class MotorController implements Closeable {
         }
 
         int getCurrentPosition() {
-            return motor.getCurrentPosition();
+            return motor.getCurrentPosition() - initEncoder;
         }
 
         boolean nearTarget(int error) {
-            return Math.abs(target - motor.getCurrentPosition()) <= error;
+            return Math.abs(target - getCurrentPosition()) <= error;
         }
 
         double[] getPIDConstants() {
@@ -106,6 +117,7 @@ public class MotorController implements Closeable {
         }
 
         void setPIDConstants(double kP, double kI, double kD) {
+            log.i("Updated PID constants to kP = %.4f, kI = %.4f, kD = %.4f", kP, kI, kD);
             this.kP = kP;
             this.kI = kI;
             this.kD = kD;
@@ -125,7 +137,7 @@ public class MotorController implements Closeable {
     public MotorController(DcMotor motor, Config conf, Runnable atTarget) {
         controller = new ParallelController(motor, atTarget);
         controller.setPIDConstants(conf.getDoubleArray("pid_constants"));
-        thread = new Thread(controller);
+        thread = new Thread(controller, "Motor " + motor.getPortNumber() + " controller thread");
         thread.start();
     }
 

@@ -133,13 +133,13 @@ public abstract class BaseAutonomous extends LinearOpMode {
             run();
             //Run any leftover tasks
             runTasks();
-            finish();
             while (opModeIsActive()) {
                 Thread.sleep(100);
             }
         } catch (InterruptedException | RuntimeException | IOException | Error e) {
             exc = e;
         } finally {
+            finish();
             instance = null;
             if (stream != null) {
                 stream.stop();
