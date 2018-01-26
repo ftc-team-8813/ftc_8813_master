@@ -66,7 +66,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
         //Set result to NONE if result is null
         if (result == null) result = TaskClassifyPictograph.Result.NONE;
         //Place glyph
-        tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result, base, arm));
+        tasks.add(new TaskPlaceGlyphAutonomousSimple(quadrant(), result, base, arm));
         //Knock jewel
         if (COLOR_SENSOR) tasks.add(new TaskScoreJewel(quadrant()));
     }
