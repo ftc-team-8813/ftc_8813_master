@@ -53,7 +53,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
         if (result == TaskClassifyPictograph.Result.NONE) {
             result = TaskClassifyPictograph.Result.CENTER;
         }
-        TelemetryWrapper.setLines(2);
+        TelemetryWrapper.setLines(15);
         TelemetryWrapper.setLine(0, "Result: " + result.name());
 
         Config move = new Config(c.getString("pos_quadrant_" + quadrant, ""));
@@ -68,24 +68,62 @@ public class TaskPlaceGlyphAutonomous implements Task {
 //        TelemetryWrapper.setLine(1, "Moving to start position");
 //        sleep(2000);
 
-        double[] vals = move.getDoubleArray("move_" + result.name());
+        double[] vals = move.getDoubleArray("pictograph");
+        TelemetryWrapper.setLine(1, vals.toString());
         if (vals == null) {
-            TelemetryWrapper.setLine(1, "No move_" + result.name() + " data!");
+            TelemetryWrapper.setLine(1, "No pictograph data!");
             return;
         }
         moveArm(vals);
-        TelemetryWrapper.setLine(1, "Moving to key column");
-        sleep(4000);
+        TelemetryWrapper.setLine(2, "Moving to pictograph");
+        sleep(5000);
+
+        vals = move.getDoubleArray("floating");
+        if (vals == null) {
+            TelemetryWrapper.setLine(3, "No floating data!");
+            return;
+        }
+            moveArm(vals);
+            TelemetryWrapper.setLine(4, "Moving to floating");
+            sleep(5000);
+
+        vals = move.getDoubleArray("floating_" + result.name());
+        if (vals == null) {
+            TelemetryWrapper.setLine(5, "No floating_" + result.name() + " data!");
+            return;
+        }else {
+            moveArm(vals);
+            TelemetryWrapper.setLine(6, "Moving to secondary floating!");
+            sleep(5000);
+        }
+
+        vals = move.getDoubleArray("move_" + result.name());
+        if (vals == null) {
+            TelemetryWrapper.setLine(7, "No move_" + result.name() + " data!");
+            return;
+        }
+        moveArm(vals);
+        TelemetryWrapper.setLine(8, "Moving to key column!");
+        sleep(5000);
         arm.openClaw();
 
-        vals = move.getDoubleArray("park");
+        vals = move.getDoubleArray("floating");
         if (vals == null) {
-            TelemetryWrapper.setLine(1, "No park data!");
+            TelemetryWrapper.setLine(9, "No floating data!");
             return;
         }
         moveArm(vals);
-        TelemetryWrapper.setLine(1, "Moving to park position");
-        sleep(1000);
+        TelemetryWrapper.setLine(10, "Moving to floating again!");
+        sleep(5000);
+
+        vals = move.getDoubleArray("parking");
+        if (vals == null) {
+            TelemetryWrapper.setLine(11, "No park data!");
+            return;
+        }
+        moveArm(vals);
+        TelemetryWrapper.setLine(12, "Moving to park position");
+        sleep(5000);
 
     }
 
