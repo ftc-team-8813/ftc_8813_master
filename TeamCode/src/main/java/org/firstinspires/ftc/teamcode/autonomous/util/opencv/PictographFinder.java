@@ -11,7 +11,6 @@ import org.firstinspires.ftc.teamcode.R;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.ProgressBar;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream.CameraListener;
-import org.firstinspires.ftc.teamcode.util.Config;
 import org.opencv.android.Utils;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
@@ -24,19 +23,11 @@ import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.FeatureDetector;
 import org.opencv.features2d.FlannBasedMatcher;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -156,7 +147,6 @@ public class PictographFinder implements CameraListener {
             //rgba is destroyed after this method ends, so we need to make a copy and use it
             mat = new Mat();
             rgba.copyTo(mat);
-            Imgproc.resize(mat, mat, new Size(mat.width()/2, mat.height()/2));
             workerThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -195,10 +185,10 @@ public class PictographFinder implements CameraListener {
         TelemetryWrapper.setLine(0, "Pictograph Finder -- Force Stop");
         finished = true;
         Log.w("PictographFinder", "Force-killing pictograph finder thread. Any errors after this");
-        Log.w("PictographFinder", "are probably a consequence.");
+        Log.w("PictographFinder", "are completely normal.");
         //We can delete the scene Mat, which should cause enough havoc to kill the thread!
         mat.release();
-        //Releasing the Mat does not make it *completely* unusable; make it null!
+        //Releasing the Mat does not make it *completely* unusable; just makes it 0 by 0.
         mat = null;
     }
 
@@ -206,11 +196,8 @@ public class PictographFinder implements CameraListener {
         // 1: Detect features. 2: Compute descriptors. 3: Find matches. 4: Calculate object position.
         // 5: Classify.
         pb = new ProgressBar(5, 30, ' ', '#', '[', ']');
-        //Read descriptors from a file
-        readDescriptors();
         //First, we want to find the image
         boolean found = findImage(trainImage);
-        if (!new File(Config.storageDir, "desc.dat").exists()) writeDescriptors();
         if (found) {
             //If we found the image, we need to classify it.
             prevClassification = classify(flattened, find_mask);
@@ -221,73 +208,6 @@ public class PictographFinder implements CameraListener {
         pb.setProgress(5);
         status = "Finished";
         finished = true;
-    }
-
-    private void writeDescriptors() {
-        try (DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(Config.storageDir, "desc.dat")))){
-            int rows = desc_obj.rows();
-            int cols = desc_obj.cols();
-            int type = desc_obj.type();
-            out.writeInt(rows);
-            out.writeInt(cols);
-            out.writeShort(type);
-            for (int y = 0; y < rows; y++) {
-                for (int x = 0; x < cols; x++) {
-                    float datum = (float) desc_obj.get(y, x)[0];
-                    out.writeFloat(datum);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try (DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(Config.storageDir, "kp.dat")))){
-            KeyPoint[] kp = kp_obj.toArray();
-            out.writeInt(kp.length);
-            for (KeyPoint p : kp) {
-                out.writeFloat(p.angle);
-                out.writeFloat(p.class_id);
-                out.writeFloat(p.octave);
-                out.writeFloat(p.response);
-                out.writeFloat(p.size);
-                out.writeDouble(p.pt.x);
-                out.writeDouble(p.pt.y);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void readDescriptors() {
-        try (DataInputStream in = new DataInputStream(new FileInputStream(new File(Config.storageDir, "desc.dat")))) {
-            int rows = in.readInt();
-            int cols = in.readInt();
-            int type = in.readShort();
-            desc_obj = new Mat(new Size(cols, rows), type);
-            for (int y = 0; y < rows; y++) {
-                for (int x = 0; x < cols; x++) {
-                    desc_obj.put(y, x, new float[] {in.readFloat()});
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try (DataInputStream in = new DataInputStream(new FileInputStream(new File(Config.storageDir, "kp.dat")))) {
-            int l = in.readInt();
-            List<KeyPoint> kp = new ArrayList<>();
-            for (int y = 0; y < l; y++) {
-                float angle = in.readFloat();
-                float class_id = in.readFloat();
-                float octave = in.readFloat();
-                float response = in.readFloat();
-                float size = in.readFloat();
-                double x = in.readDouble();
-                double _y = in.readDouble();
-                kp.add(new KeyPoint((float)x, (float)y, size, angle, response, (int)octave, (int)class_id));
-            }
-            kp_obj = new MatOfKeyPoint(kp.toArray(new KeyPoint[0]));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private ClassificationType classify(Mat img, Mat mask) {
