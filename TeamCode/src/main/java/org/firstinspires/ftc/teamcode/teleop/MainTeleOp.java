@@ -70,7 +70,7 @@ public class MainTeleOp extends OpMode {
 
     private long start = 0;
 
-    protected int initEncoder;
+    //protected int initEncoder;
 
     @Override
     public void init() {
@@ -87,7 +87,8 @@ public class MainTeleOp extends OpMode {
         wrist = hardwareMap.servo.get("s4");
         claw = hardwareMap.servo.get("s3");
         base = hardwareMap.dcMotor.get("base");
-        initEncoder = base.getCurrentPosition();
+        base.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        base.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         extend = hardwareMap.dcMotor.get("extend");
         //extend has no encoder
         limit = hardwareMap.analogInput.get("limit");
@@ -112,7 +113,7 @@ public class MainTeleOp extends OpMode {
     }
 
     protected int getTurntablePosition() {
-        return base.getCurrentPosition() - initEncoder;
+        return base.getCurrentPosition();
     }
 
     private void setInitialPositions() {
