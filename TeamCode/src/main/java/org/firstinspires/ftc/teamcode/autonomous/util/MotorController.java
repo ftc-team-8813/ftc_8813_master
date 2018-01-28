@@ -28,14 +28,13 @@ public class MotorController implements Closeable {
         private DcMotor motor;
         private double integral;
         private double prev_error;
-        private int initEncoder;
         private Runnable atTarget;
 
         ParallelController(DcMotor motor, Runnable atTarget) {
             log = new Logger("Motor " + motor.getPortNumber() + " Controller");
             log.d("Initializing!");
             this.motor = motor;
-            initEncoder = motor.getCurrentPosition();
+            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             target = 0;
             kP = 0;
@@ -105,7 +104,7 @@ public class MotorController implements Closeable {
         }
 
         int getCurrentPosition() {
-            return motor.getCurrentPosition() - initEncoder;
+            return motor.getCurrentPosition();
         }
 
         boolean nearTarget(int error) {

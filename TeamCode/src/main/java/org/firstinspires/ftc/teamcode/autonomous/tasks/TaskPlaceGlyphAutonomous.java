@@ -36,6 +36,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
     private TaskClassifyPictograph.Result result;
     private MotorController base;
     private Logger log = new Logger("Glyph Placer");
+    Config move;
 
 
     public TaskPlaceGlyphAutonomous(int quadrant, TaskClassifyPictograph.Result result, MotorController base, Arm arm) {
@@ -43,12 +44,12 @@ public class TaskPlaceGlyphAutonomous implements Task {
         this.base = base;
         this.result = result;
         this.quadrant = quadrant;
-
+        Config c = BaseAutonomous.instance().config;
+        move = new Config(c.getString("pos_quadrant_" + quadrant, ""));
     }
 
     @Override
     public void runTask() throws InterruptedException {
-        Config c = BaseAutonomous.instance().config;
         double waist;
         double elbow;
         double shoulder;
@@ -58,9 +59,6 @@ public class TaskPlaceGlyphAutonomous implements Task {
         TelemetryWrapper.setLines(15);
         TelemetryWrapper.setLine(0, "Result: " + result.name());
 
-        Config move = new Config(c.getString("pos_quadrant_" + quadrant, ""));
-
-        base.runToPosition(0);
 //        double[] vals = move.getDoubleArray("init_move");
 //        if (vals == null) {
 //            TelemetryWrapper.setLine(1, "No init_move data!");
@@ -70,64 +68,29 @@ public class TaskPlaceGlyphAutonomous implements Task {
 //        TelemetryWrapper.setLine(1, "Moving to start position");
 //        sleep(2000);
 
-        double[] vals = move.getDoubleArray("pictograph");
-        TelemetryWrapper.setLine(1, vals.toString());
-        if (vals == null) {
-            TelemetryWrapper.setLine(1, "No pictograph data!");
-            return;
-        }
-        moveArm(vals);
-        TelemetryWrapper.setLine(2, "Moving to pictograph");
-        sleep(5000);
-
-        vals = move.getDoubleArray("floating");
-        if (vals == null) {
-            TelemetryWrapper.setLine(3, "No floating data!");
-            return;
-        }
-            moveArm(vals);
-            TelemetryWrapper.setLine(4, "Moving to floating");
-            sleep(5000);
-
-        vals = move.getDoubleArray("floating_" + result.name());
-        if (vals == null) {
-            TelemetryWrapper.setLine(5, "No floating_" + result.name() + " data!");
-            return;
-        }else {
-            moveArm(vals);
-            TelemetryWrapper.setLine(6, "Moving to secondary floating!");
-            sleep(5000);
-        }
-
-        vals = move.getDoubleArray("move_" + result.name());
-        if (vals == null) {
-            TelemetryWrapper.setLine(7, "No move_" + result.name() + " data!");
-            return;
-        }
-        moveArm(vals);
-        TelemetryWrapper.setLine(8, "Moving to key column!");
-        sleep(5000);
+        move("floating");
+        sleep(2500);
+        move("move_" + result.name());
+        sleep(4000);
         arm.openClaw();
-
-        vals = move.getDoubleArray("floating");
-        if (vals == null) {
-            TelemetryWrapper.setLine(9, "No floating data!");
-            return;
-        }
-        moveArm(vals);
-        TelemetryWrapper.setLine(10, "Moving to floating again!");
-        sleep(5000);
-
-        vals = move.getDoubleArray("parking");
-        if (vals == null) {
-            TelemetryWrapper.setLine(11, "No park data!");
-            return;
-        }
-        moveArm(vals);
-        TelemetryWrapper.setLine(12, "Moving to park position");
-        sleep(5000);
-
+        move("safe_" + result.name());
+        sleep(4000);
+        move("parking");
+        sleep(4000);
+        /*
+        move_LEFT: 0.4480, 0.5029, 0.1929, 0.42, -1085
+safe_LEFT: 0.4365, 0.4613, 0.2201, 0, -1085
+move_CENTER: 0.4551, 0.5932, 0.3210, 0.1985, -1085
+safe_CENTER: 0.4458, 0.5610, 0.3210, 0.1985, -1085
+move_RIGHT: 0.4462, 0.6059, 0.3210, 0.1158, -1085
+safe_RIGHT: 0.4462, 0.5417, 0.3210, 0.1158, -1085
+parking: 0.3908, 0.5534, 0.2411, 0, -1085
+start: 0.3934, 0.1108, 0.3207, 0.42, 0
+pictograph: 0.3878, 0.1745, .2943, 0.8912, -2979
+floating: 0.3937, 0.4810, 0.2369, 0.42, -1085
+         */
     }
+
 
     /**
      * A simple method that takes arm positions and moves the arm and turntable.
@@ -141,5 +104,16 @@ public class TaskPlaceGlyphAutonomous implements Task {
 
     private void moveArm(double... pos) {
         moveArm(pos[0], pos[1], pos[2], pos[3], pos[4]);
+    }
+
+    private void move(String values){
+        double[] vals = move.getDoubleArray(values);
+        if (vals == null) {
+            TelemetryWrapper.setLine(5, "No "+ values + " data!");
+            return;
+        }else {
+            moveArm(vals);
+            TelemetryWrapper.setLine(6, "Moving to " + values);
+        }
     }
 }

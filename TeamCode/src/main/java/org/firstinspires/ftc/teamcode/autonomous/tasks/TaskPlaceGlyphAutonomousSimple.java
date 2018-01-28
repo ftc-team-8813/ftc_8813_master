@@ -47,6 +47,16 @@ public class TaskPlaceGlyphAutonomousSimple implements Task {
         }
         switch(quadrant){
             case(1):
+                moveArm(0.3934, 0.1786, 0.1210, .42, 3510);
+                sleep(5000);
+                moveArm(0.3969, .3190, .1952, .42, 5832);
+                sleep(5000);
+                moveArm(0.4256, 0.6066, 0.3210, 0.42, 5832);
+                sleep(5000);
+                moveArm(0.4143, 0.4612, 0.2289, 0.2183, 5832);
+                sleep(5000);
+                moveArm(0.3855, 0.5947, 0.2289, 0.1272, 5832);
+                sleep(5000);
                 break;
             case(2):
                 break;
