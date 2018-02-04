@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.R;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.ProgressBar;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream.CameraListener;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.opencv.android.Utils;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
@@ -66,6 +67,8 @@ public class PictographFinder implements CameraListener {
     private volatile ProgressBar pb;
     //The status message
     private volatile String status;
+
+    private Logger log = new Logger("Pictograph Finder -- Worker");
 
     /**
      * A pictograph classification result. Contains a name along with the number of left, center,
@@ -195,7 +198,7 @@ public class PictographFinder implements CameraListener {
     private void work() {
         // 1: Detect features. 2: Compute descriptors. 3: Find matches. 4: Calculate object position.
         // 5: Classify.
-        pb = new ProgressBar(5, 30, ' ', '#', '[', ']');
+        pb = new ProgressBar(5, 50, '_', '#', '[', ']');
         //First, we want to find the image
         boolean found = findImage(trainImage);
         if (found) {
@@ -270,6 +273,7 @@ public class PictographFinder implements CameraListener {
     }
 
     private boolean findImage(Mat find) {
+        long start = System.currentTimeMillis();
         //We should be able to find ~20-70 matches for good detections, but 10 is enough
         final int MIN_MATCHES = 10;
 
@@ -371,6 +375,8 @@ public class PictographFinder implements CameraListener {
         desc_scene.release();
         object.release();
         kp_scene.release();
+        long end = System.currentTimeMillis();
+        log.i("Finding completed in %.3f seconds", (end-start)/1000.0);
         return goodMatches.size() >= MIN_MATCHES;
     }
 
