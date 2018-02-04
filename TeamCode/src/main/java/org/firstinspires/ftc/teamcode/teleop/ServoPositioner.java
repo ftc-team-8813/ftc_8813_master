@@ -27,6 +27,7 @@ public class ServoPositioner extends OpMode {
 
     private static final int STATE_CHOOSING = 1;
     private static final int STATE_RUNNING = 2;
+    private boolean init_draw = true;
     private int state;
     private String servo;
     private String[] servos;
@@ -47,6 +48,7 @@ public class ServoPositioner extends OpMode {
         }
         state = STATE_CHOOSING;
         helper = new ButtonHelper(gamepad1);
+        init_draw = true;
     }
 
     @Override
@@ -56,8 +58,12 @@ public class ServoPositioner extends OpMode {
                 if (servos == null) {
                     servos = keys(hardwareMap.servo.entrySet());
                     TelemetryWrapper.init(telemetry, VISIBLE_LINES+1);
-                    TelemetryWrapper.setLine(0, "Choose a servo to move; press START to select");
+                    TelemetryWrapper.setLine(0, "Choose a servo to move; press B to select");
                 } else {
+                    if (init_draw) {
+                        init_draw = false;
+                        draw();
+                    }
                     if (helper.pressing(dpad_up) && chosen > 0) {
                         chosen--;
                         if (chosen < scroll) scroll = chosen;
@@ -65,13 +71,14 @@ public class ServoPositioner extends OpMode {
                     }
                     if (helper.pressing(dpad_down) && chosen < servos.length-1) {
                         chosen++;
-                        if (chosen > scroll + VISIBLE_LINES) scroll = chosen - VISIBLE_LINES;
+                        if (chosen >= scroll + VISIBLE_LINES) scroll = chosen - VISIBLE_LINES + 1;
                         draw();
                     }
-                    if (helper.pressing(start)) {
+                    if (helper.pressing(b)) {
                         servo = servos[chosen];
                         state = STATE_RUNNING;
                     }
+                    helper.update();
                 }
                 break;
             case STATE_RUNNING:
@@ -84,6 +91,11 @@ public class ServoPositioner extends OpMode {
                 value = Utils.constrain(value, 0, 1);
                 s.setPosition(value);
                 TelemetryWrapper.setLine(1, "Value: " + value);
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    return;
+                }
                 break;
             default: break;
         }

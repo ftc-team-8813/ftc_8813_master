@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.teleop.util;
 
 import android.text.TextUtils;
 
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
 import org.firstinspires.ftc.teamcode.teleop.MainTeleOp;
 import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.util.Logger;
@@ -23,7 +25,7 @@ import java.util.zip.GZIPOutputStream;
  * separated by spaces. The file starts with a header commented with '#' that contains the
  * creation time, length, and order of data.
  */
-
+@TeleOp(name="Realtime Motion Capture")
 public class MoveRecorder extends MainTeleOp {
     //We'll make it floats to save RAM space
     private List<float[]> moves = new ArrayList<>();

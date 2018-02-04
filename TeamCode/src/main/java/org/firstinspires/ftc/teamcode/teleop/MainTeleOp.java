@@ -219,6 +219,8 @@ public class MainTeleOp extends OpMode {
             moveTo(new double[] {conf.getDouble("relic_adj", 0), conf.getDouble("relic_dist", 0), conf.getDouble("relic_waist", 0)});
         }
 
+        buttonHelper_1.update();
+
         if (gamepad1.left_bumper) {
             setInitialPositions();
         }
