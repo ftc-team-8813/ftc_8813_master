@@ -17,7 +17,6 @@ public class ButtonHelper {
     left_stick_button right_stick_button (15)
      */
     private boolean[] buttons = new boolean[15];
-    private boolean[] held = new boolean[15];
     /**
      * A button for use in the pressed(), released(), and pressing() methods
      */
@@ -41,30 +40,32 @@ public class ButtonHelper {
         this.gamepad = gamepad;
     }
 
-    public void update() {
-        boolean[] buttons2 = Arrays.copyOf(buttons, 15);
-        buttons[dpad_up] = gamepad.dpad_up;
-        buttons[dpad_down] = gamepad.dpad_down;
-        buttons[dpad_left] = gamepad.dpad_left;
-        buttons[dpad_right] = gamepad.dpad_right;
-        buttons[a] = gamepad.a;
-        buttons[b] = gamepad.b;
-        buttons[x] = gamepad.x;
-        buttons[y] = gamepad.y;
-        buttons[guide] = gamepad.guide;
-        buttons[start] = gamepad.start;
-        buttons[back] = gamepad.back;
-        buttons[left_bumper] = gamepad.left_bumper;
-        buttons[right_bumper] = gamepad.right_bumper;
-        buttons[left_stick_button] = gamepad.left_stick_button;
-        buttons[right_stick_button] = gamepad.right_stick_button;
-        for (int i = 0; i < 15; i++) {
-            held[i] = buttons[i] && buttons2[i];
-        }
+    public void update(int button) {
+        buttons[button] = getButton(button);
+    }
+
+    private boolean getButton(int button) {
+        if (button == dpad_up) return gamepad.dpad_up;
+        else if (button == dpad_down) return gamepad.dpad_down;
+        else if (button == dpad_left) return gamepad.dpad_left;
+        else if (button == dpad_right) return gamepad.dpad_right;
+        else if (button == a) return gamepad.a;
+        else if (button == b) return gamepad.b;
+        else if (button == x) return gamepad.x;
+        else if (button == y) return gamepad.y;
+        else if (button == guide) return gamepad.guide;
+        else if (button == start) return gamepad.start;
+        else if (button == back) return gamepad.back;
+        else if (button == left_bumper) return gamepad.left_bumper;
+        else if (button == right_bumper) return gamepad.right_bumper;
+        else if (button == left_stick_button) return gamepad.left_stick_button;
+        else if (button == right_stick_button) return gamepad.right_stick_button;
+        else return false;
     }
 
     public boolean pressed(int idx) {
-        boolean pressed = buttons[idx];
+        boolean pressed = getButton(idx);
+        update(idx);
         return pressed;
     }
 
@@ -73,6 +74,6 @@ public class ButtonHelper {
     }
 
     public boolean pressing(int idx) {
-        return !held[idx] && pressed(idx);
+        return !buttons[idx] && pressed(idx);
     }
 }
