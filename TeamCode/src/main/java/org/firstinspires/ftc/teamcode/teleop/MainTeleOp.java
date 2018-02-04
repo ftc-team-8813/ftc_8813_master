@@ -150,7 +150,6 @@ public class MainTeleOp extends OpMode {
      */
     @Override
     public void loop() {
-        buttonHelper_1.update();
         double newDist = -(gamepad1.right_stick_y * maxMove);
         double newAngle = (gamepad1.left_stick_y * maxMove);
         if (Math.abs(Utils.sum(rotateWindow)) > maxIncrease)
@@ -198,8 +197,6 @@ public class MainTeleOp extends OpMode {
             return;
         }
 
-        buttonHelper_1.update();
-
         //Used to be A, but that would trigger the claw when Start+A was pressed to connect gamepad1
         if (buttonHelper_1.pressing(ButtonHelper.x)) {
             claw_closed = !claw_closed;
@@ -220,8 +217,6 @@ public class MainTeleOp extends OpMode {
         if (buttonHelper_1.pressing(ButtonHelper.right_bumper)) {
             moveTo(new double[] {conf.getDouble("relic_adj", 0), conf.getDouble("relic_dist", 0), conf.getDouble("relic_waist", 0)});
         }
-
-        buttonHelper_1.update();
 
         if (gamepad1.left_bumper) {
             setInitialPositions();

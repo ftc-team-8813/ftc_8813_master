@@ -78,7 +78,6 @@ public class ServoPositioner extends OpMode {
                         servo = servos[chosen];
                         state = STATE_RUNNING;
                     }
-                    helper.update();
                 }
                 break;
             case STATE_RUNNING:
