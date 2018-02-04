@@ -42,8 +42,8 @@ public class ProgressBar {
         if (border != null)
             build += border.charAt(0);
         for (int i = 0; i < len; i++) {
-            int equiv = (i * len) / max;
-            if (progress <= equiv)
+            int equiv = (progress * len) / max;
+            if (i <= equiv)
                 build += finished;
             else
                 build += unfinished;

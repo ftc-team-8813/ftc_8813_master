@@ -171,7 +171,7 @@ public class MainTeleOp extends OpMode {
             base.setPower(0);
         }
 
-        wrist.setPosition(Utils.constrain(wrist.getPosition() + (wrist_speed * -gamepad2.right_stick_y), 0, 1));
+        wrist.setPosition(Utils.constrain(wrist.getPosition() + (wrist_speed * gamepad2.right_stick_y), 0, 1));
 
         driver.setWaistAngle(driver.getWaistAngle() - (gamepad1.left_stick_x * maxRotate));
         //getState same as !isPressed, except for DigitalChannels (which are needed for REV sensors)
@@ -198,6 +198,8 @@ public class MainTeleOp extends OpMode {
         } catch (InterruptedException e) {
             return;
         }
+
+        buttonHelper_1.update();
 
         //Used to be A, but that would trigger the claw when Start+A was pressed to connect gamepad1
         if (buttonHelper_1.pressing(ButtonHelper.x)) {
