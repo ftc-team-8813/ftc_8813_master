@@ -150,6 +150,7 @@ public class MainTeleOp extends OpMode {
      */
     @Override
     public void loop() {
+        buttonHelper_1.update();
         double newDist = -(gamepad1.right_stick_y * maxMove);
         double newAngle = (gamepad1.left_stick_y * maxMove);
         if (Math.abs(Utils.sum(rotateWindow)) > maxIncrease)

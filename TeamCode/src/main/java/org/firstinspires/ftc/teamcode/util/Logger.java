@@ -13,6 +13,7 @@ import static java.util.Calendar.*;
 public class Logger {
 
     public static class Level {
+        private Level() {}
         public static final int NONE    = Integer.MIN_VALUE;
         public static final int FATAL   = 0;
         public static final int ERROR   = 1;
@@ -25,6 +26,8 @@ public class Logger {
 
     private static PrintStream writer;
     private static boolean open = false;
+    private static long start;
+    private static boolean started = false;
     private static int maxLevel = Level.ALL;
 
     private String tag;
@@ -35,6 +38,7 @@ public class Logger {
      * @throws IOException If an I/O error occurs
      */
     public static void init(File file) throws IOException {
+        started = false;
         close();
         writer = new PrintStream(file);
     }
@@ -51,11 +55,16 @@ public class Logger {
     }
 
     /**
-     * Set the maximum logging level to print
-     * @param level
+     * Set the maximum logging level to print. The default is {@link Level#ALL ALL}.
+     * @param level The maximum log level
      */
     public static void setLevel(int level) {
         maxLevel = level;
+    }
+
+    public static void startTimer() {
+        start = System.currentTimeMillis();
+        started = true;
     }
 
     public Logger(String tag) {
@@ -71,18 +80,7 @@ public class Logger {
             }
         }
         if (level <= maxLevel) {
-            String lvl;
-            if (level <= 0) lvl = "FATAL";
-            else if (level == 1) lvl = "ERROR";
-            else if (level == 2) lvl = "WARN";
-            else if (level == 3) lvl = "INFO";
-            else if (level == 4) lvl = "DEBUG";
-            else lvl = "VERBOSE";
-            Calendar c = Calendar.getInstance();
-            //                           year  mo   dy  hour min  sec
-            String base = String.format("%04d/%02d/%02d %02d:%02d:%02d %s/%s: ",
-                    c.get(YEAR), c.get(MONTH)+1, c.get(DAY_OF_MONTH), c.get(HOUR), c.get(MINUTE),
-                    c.get(SECOND), tag, lvl);
+            String base = base(level);
             writer.println(base + String.format(fmt, args));
         }
     }
@@ -116,15 +114,31 @@ public class Logger {
             }
         }
         if (1 <= maxLevel) {
-            String lvl = "ERROR";
-            Calendar c = Calendar.getInstance();
-            //                           year  mo   dy  hour min  sec
-            String base = String.format("%04d/%02d/%02d %02d:%02d:%02d %s/%s: ",
-                    c.get(YEAR), c.get(MONTH)+1, c.get(DAY_OF_MONTH), c.get(HOUR), c.get(MINUTE),
-                    c.get(SECOND), tag, lvl);
+            String base = base(1);
             writer.print(base);
             t.printStackTrace(writer);
         }
+    }
+
+    private String base(int level) {
+        String lvl;
+        if (level <= 0) lvl = "FATAL";
+        else if (level == 1) lvl = "ERROR";
+        else if (level == 2) lvl = "WARN";
+        else if (level == 3) lvl = "INFO";
+        else if (level == 4) lvl = "DEBUG";
+        else lvl = "VERBOSE";
+        Calendar c = Calendar.getInstance();
+        //                     year  mo   dy  hour min  sec tg lv
+        if (started) {
+            long secs = (System.currentTimeMillis() - start)/1000;
+            return String.format("%04d/%02d/%02d %02d:%02d:%02d [%ds] %s/%s: ",
+                    c.get(YEAR), c.get(MONTH)+1, c.get(DAY_OF_MONTH), c.get(HOUR), c.get(MINUTE),
+                    c.get(SECOND), secs, tag, lvl);
+        }
+        return String.format("%04d/%02d/%02d %02d:%02d:%02d %s/%s: ",
+                c.get(YEAR), c.get(MONTH)+1, c.get(DAY_OF_MONTH), c.get(HOUR), c.get(MINUTE),
+                c.get(SECOND), tag, lvl);
     }
 
     public synchronized void f(String fmt, Object... args) {

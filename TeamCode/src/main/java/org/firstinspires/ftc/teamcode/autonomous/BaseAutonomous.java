@@ -129,10 +129,12 @@ public abstract class BaseAutonomous extends LinearOpMode {
             //initialize stuff, so it makes it simpler to use one method.
             waitForStart();
             if (!opModeIsActive()) return;
+            Logger.startTimer();
             //Run the tasks
             run();
             //Run any leftover tasks
             runTasks();
+            log.i("Finished all tasks");
             while (opModeIsActive()) {
                 Thread.sleep(100);
             }
