@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -29,6 +30,8 @@ public abstract class MainAutonomous extends BaseAutonomous {
     private TaskClassifyPictograph finder;
     private Arm arm;
     private MotorController base;
+    private Servo colorArm;
+    private ColorSensor colorSensor;
     private Logger log;
 
     @Override
@@ -40,6 +43,8 @@ public abstract class MainAutonomous extends BaseAutonomous {
         Servo es = hardwareMap.servo.get("s2");
         Servo claw = hardwareMap.servo.get("s3");
         Servo wrist = hardwareMap.servo.get("s4");
+        colorArm = hardwareMap.servo.get("s5");
+        colorSensor = hardwareMap.colorSensor.get("color_sensor");
         arm = new Arm(ws, ss, es, claw, wrist);
         arm.closeClaw();
         DcMotor motor = hardwareMap.dcMotor.get("base");
@@ -75,7 +80,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
         log.i("Placing glyph");
         tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result, base, arm));
         //Knock jewel
-        if (COLOR_SENSOR) tasks.add(new TaskScoreJewel(quadrant()));
+        if (COLOR_SENSOR) tasks.add(new TaskScoreJewel(quadrant(), base, colorArm, colorSensor));
     }
 
     @Override
