@@ -44,6 +44,12 @@ public class ButtonHelper {
         buttons[button] = getButton(button);
     }
 
+    public void update() {
+        for (int i = 0; i < 15; i++) {
+            update(i);
+        }
+    }
+
     private boolean getButton(int button) {
         if (button == dpad_up) return gamepad.dpad_up;
         else if (button == dpad_down) return gamepad.dpad_down;
@@ -64,9 +70,7 @@ public class ButtonHelper {
     }
 
     public boolean pressed(int idx) {
-        boolean pressed = getButton(idx);
-        update(idx);
-        return pressed;
+        return getButton(idx);
     }
 
     public boolean released(int idx) {

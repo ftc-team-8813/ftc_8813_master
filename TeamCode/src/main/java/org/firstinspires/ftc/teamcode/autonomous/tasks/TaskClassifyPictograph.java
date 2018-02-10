@@ -45,10 +45,10 @@ public class TaskClassifyPictograph implements Task {
     public void runTask() throws InterruptedException {
         PictographFinder finder = new PictographFinder();
         stream.addListener(finder);
-        long end = -1;
         while (!taskList.isEmpty()) {
             taskList.remove(0).runTask();
         }
+        log.i("All parallel tasks finished");
         while (!finder.finished() && !Thread.interrupted()) {
             try {
                 Thread.sleep(20);

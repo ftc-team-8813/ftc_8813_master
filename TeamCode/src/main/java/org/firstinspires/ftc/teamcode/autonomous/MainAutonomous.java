@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
 import org.firstinspires.ftc.teamcode.teleop.MainTeleOp;
 import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
+import org.firstinspires.ftc.teamcode.util.Logger;
 
 /**
  * Main autonomous program.
@@ -31,9 +32,11 @@ public abstract class MainAutonomous extends BaseAutonomous {
     private MotorController base;
     private Servo colorArm;
     private ColorSensor colorSensor;
+    private Logger log;
 
     @Override
     public void initialize() {
+        log = new Logger("Autonomous");
         find = config.getBoolean("run_finder", false);
         Servo ws = hardwareMap.servo.get("s0");
         Servo ss = hardwareMap.servo.get("s1");
@@ -47,6 +50,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
         DcMotor motor = hardwareMap.dcMotor.get("base");
         base = new MotorController(motor);
         //moveArm(.4134, .1303, .05);
+        //Same as TeleOp
         ArmDriver driver = new ArmDriver(arm, config.getDouble("l1", 1),
                 config.getDouble("l2", 1), config);
         claw.setPosition(config.getDouble("claw_closed", 0));
@@ -62,7 +66,9 @@ public abstract class MainAutonomous extends BaseAutonomous {
     public void run() throws InterruptedException {
         //Run finder if enabled
         if (find) {
+            log.i("Rotating to pictograph");
             tasks.add(new TaskRotate(base, config.getInt("toPict_" + quadrant(), 0)));
+            log.i("Detecting pictograph");
             tasks.add(finder);
             runTasks();
         }
@@ -71,7 +77,8 @@ public abstract class MainAutonomous extends BaseAutonomous {
         //Set result to NONE if result is null
         if (result == null) result = TaskClassifyPictograph.Result.NONE;
         //Place glyph
-        tasks.add(new TaskPlaceGlyphAutonomousSimple(quadrant(), result, base, arm));
+        log.i("Placing glyph");
+        tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result, base, arm));
         //Knock jewel
         if (COLOR_SENSOR) tasks.add(new TaskScoreJewel(quadrant(), base, colorArm, colorSensor));
     }

@@ -228,7 +228,7 @@ public class Config {
             try {
                 output = klass.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
-                log.w("Uninstantiable class %s", klass.getName());
+                log.w("Unable to instantiate class %s", klass.getName());
                 return null;
             }
             try {
