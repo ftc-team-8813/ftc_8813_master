@@ -69,6 +69,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
             log.i("Rotating to pictograph");
             tasks.add(new TaskRotate(base, config.getInt("toPict_" + quadrant(), 0)));
             log.i("Detecting pictograph");
+            finder.addTask(new TaskScoreJewel(quadrant(), base, colorArm, colorSensor));
             tasks.add(finder);
             runTasks();
         }
@@ -80,7 +81,6 @@ public abstract class MainAutonomous extends BaseAutonomous {
         log.i("Placing glyph");
         tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result, base, arm));
         //Knock jewel
-        if (COLOR_SENSOR) tasks.add(new TaskScoreJewel(quadrant(), base, colorArm, colorSensor));
     }
 
     @Override

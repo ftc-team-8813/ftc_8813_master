@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
+import org.firstinspires.ftc.teamcode.util.Logger;
 
 import static java.lang.Thread.sleep;
 
@@ -17,7 +18,9 @@ public class TaskScoreJewel implements Task{
     Servo colorArm;
     boolean isBlue;
     ColorSensor colorSensor;
+    private Logger log;
     public TaskScoreJewel(int quadrant, MotorController base, Servo colorArm, ColorSensor colorSensor){
+        log = new Logger("Jewel Scorer");
         this.base = base;
         this.colorArm = colorArm;
         this.colorSensor = colorSensor;
@@ -30,6 +33,7 @@ public class TaskScoreJewel implements Task{
     }
     @Override
     public void runTask() throws InterruptedException {
+        log.i("Started");
         base.hold(1); //FIND POSITION
         sleep(2000);
         boolean isRed = false;
@@ -59,5 +63,6 @@ public class TaskScoreJewel implements Task{
         sleep(500); //Not sure if needed
         colorArm.setPosition(0);
         colorSensor.enableLed(false);
+        log.i("Finished");
     }
 }
