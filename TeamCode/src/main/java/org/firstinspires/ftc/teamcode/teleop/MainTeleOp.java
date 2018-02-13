@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import com.qualcomm.hardware.lynx.LynxController;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -39,18 +41,18 @@ public class MainTeleOp extends OpMode {
     //Range of extend motor
     protected int extRange;
     //Configuration
-    protected Config conf = new Config(Config.configFile);
+    protected Config conf;
 
     protected ButtonHelper buttonHelper_1;
     //Maximum speed of arm servos (some arbitrary unit)
-    private double maxMove = conf.getDouble("max_move", 0.002);
+    private double maxMove;
     //Maximum amount of change allowed in 200ms second
-    private double maxIncrease = conf.getDouble("max_inc", 0.02);
+    private double maxIncrease;
     //Maximum speed of waist servo (radians per 20ms)
-    private double maxRotate = conf.getDouble("max_rotate_speed", 0.02);
+    private double maxRotate;
 
-    private double[] wristRange = conf.getDoubleArray("wrist_range");
-    private double wrist_speed = conf.getDouble("wrist_speed", 0.01);
+    private double[] wristRange;
+    private double wrist_speed;
 
     private double[] rotateWindow = new double[10];
     private double[] extWindow = new double[10];
@@ -61,12 +63,12 @@ public class MainTeleOp extends OpMode {
     //Whether the claw is open or closed
     private boolean claw_closed;
     //The amount to close the claw
-    private double clawCloseAmount = conf.getDouble("claw_closed", 0);
+    private double clawCloseAmount;
     //The amount to open the claw
-    private double clawOpenAmount = conf.getDouble("claw_open", 0);
+    private double clawOpenAmount;
 
-    private double l1 = conf.getDouble("l1", 1);
-    private double l2 = conf.getDouble("l2", 1);
+    private double l1;
+    private double l2;
 
     private long start = 0;
 
@@ -79,6 +81,27 @@ public class MainTeleOp extends OpMode {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        //If we're on robot 1, use robot 1 config
+        if (hardwareMap.getAll(LynxModule.class).get(0).getSerialNumber().toString().equals
+                ("DQ168FFD")) {
+            conf = new Config("config.robot1.properties");
+            if (conf.readFailed()) {
+                conf = new Config("config.properties"); // Use old config as a backup option
+            }
+        } else {
+            conf = new Config("config.properties");
+        }
+
+        maxMove = conf.getDouble("max_move", 0.002);
+        maxIncrease = conf.getDouble("max_inc", 0.02);
+        maxRotate = conf.getDouble("max_rotate_speed", 0.02);
+        wristRange = conf.getDoubleArray("wrist_range");
+        wrist_speed = conf.getDouble("wrist_speed", 0.01);
+        clawCloseAmount = conf.getDouble("claw_closed", 0);
+        clawOpenAmount = conf.getDouble("claw_open", 0);
+        l1 = conf.getDouble("l1", 1);
+        l2 = conf.getDouble("l2", 1);
+
         buttonHelper_1 = new ButtonHelper(gamepad1);
         //Get motors and servos from hardware map
         Servo waist = hardwareMap.servo.get("s0");

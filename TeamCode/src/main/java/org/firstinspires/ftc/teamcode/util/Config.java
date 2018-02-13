@@ -44,6 +44,7 @@ public class Config {
     }
 
     private Properties properties;
+    private boolean readSuccess = false;
 
     /**
      * Construct a configuration from a config file. If the file is invalid, unreadable, or corrupted,
@@ -54,15 +55,20 @@ public class Config {
     public Config(String filename) {
         log = new Logger("Config");
         new File(storageDir).mkdirs();
-        try {
+        try (FileInputStream in =  new FileInputStream(storageDir + filename)) {
             this.properties = new Properties();
-            properties.load(new FileInputStream(storageDir + filename));
+            properties.load(in);
+            readSuccess = true; //Only if we get here did it succeed
         } catch (IOException e) {
             log.e("No config file '%s' found", filename);
         } catch (IllegalArgumentException e) {
             log.e("Bad properties file '%s'", filename);
         }
         log.v("Successfully loaded config file %s", filename);
+    }
+
+    public boolean readFailed() {
+        return !readSuccess;
     }
 
     /**
