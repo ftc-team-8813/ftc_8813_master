@@ -7,12 +7,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomous;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomousSimple;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRotate;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskScoreJewel;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
-import org.firstinspires.ftc.teamcode.teleop.MainTeleOp;
 import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
 import org.firstinspires.ftc.teamcode.util.Logger;
 
