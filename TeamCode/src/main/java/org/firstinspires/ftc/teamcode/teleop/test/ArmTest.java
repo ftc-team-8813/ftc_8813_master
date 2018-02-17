@@ -114,7 +114,7 @@ public class ArmTest extends OpMode{
             extMin = 0;
 
         claw.setPosition(clawOpenAmount);
-        shoulderX.setPosition(0.4145);
+        shoulderX.setPosition(0.7);
         shoulderY.setPosition(0);
         elbow.setPosition(0.1201);
         turnX = 0.4145;

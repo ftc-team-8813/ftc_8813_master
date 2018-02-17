@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.sun.tools.javac.util.Position;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.DcMotorUtil;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
@@ -69,6 +70,7 @@ public class MainTeleOp extends OpMode {
 
     private double l1;
     private double l2;
+    private boolean robot1;
 
     private long start = 0;
 
@@ -85,6 +87,7 @@ public class MainTeleOp extends OpMode {
         if (hardwareMap.getAll(LynxModule.class).get(0).getSerialNumber().toString().equals
                 ("DQ168FFD")) {
             conf = new Config("config.robot1.properties");
+            robot1 = true;
             if (conf.readFailed()) {
                 conf = new Config("config.properties"); // Use old config as a backup option
             }
@@ -113,8 +116,10 @@ public class MainTeleOp extends OpMode {
         base.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         base.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         extend = hardwareMap.dcMotor.get("extend");
-        //extend has no encoder
-        limit = hardwareMap.analogInput.get("limit");
+        //extend has an encoder now!
+        extend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extend.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        if (!robot1) limit = hardwareMap.analogInput.get("limit");
         //Initialize arm controller
         driver = new ArmDriver(waist, shoulder, elbow, l1, l2, conf);
 
@@ -234,7 +239,8 @@ public class MainTeleOp extends OpMode {
             moveTo(new double[] {conf.getDouble("glyph_adj", 0), conf.getDouble("glyph_dist", 0), conf.getDouble("glyph_waist", 0)});
         }
 
-        if (buttonHelper_1.pressing(ButtonHelper.b)) {
+        //We don't need this in PositionCollector
+        if (buttonHelper_1.pressing(ButtonHelper.b) && !(this instanceof PositionFinder)) {
             moveTo(new double[] {conf.getDouble("cryptobox_adj", 0), conf.getDouble("cryptobox_dist", 0), conf.getDouble("cryptobox_waist", 0)});
         }
 
@@ -248,7 +254,8 @@ public class MainTeleOp extends OpMode {
 
         telemetry.addData("Elapsed Time", Utils.elapsedTime(System.currentTimeMillis() - start));
         telemetry.addData("Claw", claw_closed ? "CLOSED" : "OPEN");
-        telemetry.addData("Limit Switch", (limit.getVoltage() < 0.8) ? "PRESSED" : "RELEASED");
+        if (!robot1) telemetry.addData("Limit Switch", (limit.getVoltage() < 0.8) ? "PRESSED" :
+                "RELEASED");
         telemetry.addData("Arm Angle", Utils.shortFloat(driver.getArmAngle()));
         telemetry.addData("Distance", Utils.shortFloat(driver.getClawDistance()));
         telemetry.addData("Waist Position", Utils.shortFloat(driver.getWaistPos()));
@@ -261,6 +268,7 @@ public class MainTeleOp extends OpMode {
         telemetry.addData("Extend Minimum", extMin);
         telemetry.addData("Turntable Position", getTurntablePosition());
         telemetry.addData("Wrist Position", wrist.getPosition());
+        telemetry.addData("Running on", robot1 ? "Robot 1" : "Robot 2");
     }
 
     private void addToEndOfRotateWindow(double value) {

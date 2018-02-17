@@ -83,15 +83,17 @@ public class TaskPlaceGlyphAutonomous implements Task {
     /**
      * A simple method that takes arm positions and moves the arm and turntable.
      **/
-    private void moveArm(double waist, double shoulder, double elbow, double wrist, double rotate) {
-        log.i("Moving to waist: %.4f, shoulder: %.4f, elbow: %.4f, wrist: %.4f, rotation: %d", waist, shoulder, elbow, wrist, (int)rotate);
+    private void moveArm(double waist, double shoulder, double elbow, double wrist, double
+            rotate, double extend) {
+        log.i("Moving to waist: %.4f, shoulder: %.4f, elbow: %.4f, wrist: %.4f, rotation: %d, " +
+                "extend: %d", waist, shoulder, elbow, wrist, (int)rotate, (int)extend);
         arm.moveTo(waist, shoulder, elbow);
         arm.moveWrist(wrist);
         base.hold((int)rotate);
     }
 
     private void moveArm(double... pos) {
-        moveArm(pos[0], pos[1], pos[2], pos[3], pos[4]);
+        moveArm(pos[0], pos[1], pos[2], pos[3], pos[4], pos[5]);
     }
 
     private void move(String values){
@@ -100,8 +102,8 @@ public class TaskPlaceGlyphAutonomous implements Task {
             TelemetryWrapper.setLine(5, "No "+ values + " data!");
             return;
         }else {
-            moveArm(vals);
             TelemetryWrapper.setLine(6, "Moving to " + values);
+            moveArm(vals);
         }
     }
 }
