@@ -50,23 +50,11 @@ public class TaskPlaceGlyphAutonomous implements Task {
 
     @Override
     public void runTask() throws InterruptedException {
-        double waist;
-        double elbow;
-        double shoulder;
         if (result == TaskClassifyPictograph.Result.NONE) {
             result = TaskClassifyPictograph.Result.CENTER;
         }
         TelemetryWrapper.setLines(15);
         TelemetryWrapper.setLine(0, "Result: " + result.name());
-
-//        double[] vals = move.getDoubleArray("init_move");
-//        if (vals == null) {
-//            TelemetryWrapper.setLine(1, "No init_move data!");
-//            return;
-//        }
-//        moveArm(vals);
-//        TelemetryWrapper.setLine(1, "Moving to start position");
-//        sleep(2000);
 
         move("floating");
         sleep(2500);

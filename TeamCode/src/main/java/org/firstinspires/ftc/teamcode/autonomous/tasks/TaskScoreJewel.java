@@ -3,7 +3,10 @@ package org.firstinspires.ftc.teamcode.autonomous.tasks;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
+import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
+import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.util.Logger;
 
 import static java.lang.Thread.sleep;
@@ -19,50 +22,55 @@ public class TaskScoreJewel implements Task{
     boolean isBlue;
     ColorSensor colorSensor;
     private Logger log;
+    int move;
     public TaskScoreJewel(int quadrant, MotorController base, Servo colorArm, ColorSensor colorSensor){
         log = new Logger("Jewel Scorer");
         this.base = base;
         this.colorArm = colorArm;
         this.colorSensor = colorSensor;
         colorSensor.enableLed(true);
-        if(quadrant == 2 || quadrant == 4){
-            isBlue = false;
-        }else{
+        if(quadrant == 2 || quadrant == 1){
             isBlue = true;
+        }else{
+            isBlue = false;
         }
+        Config c = BaseAutonomous.instance().config;
+        move = c.getInt("toJewel_" + quadrant, 1);
     }
     @Override
     public void runTask() throws InterruptedException {
         log.i("Started");
-        base.hold(1); //FIND POSITION
+        base.hold(move);
         sleep(2000);
-        boolean isRed = false;
-        colorArm.setPosition(.75); //MUST CHANGE
+        int isRed = 0;
+        colorArm.setPosition(.6305);
+        sleep(2000);
         if(colorSensor.red() > colorSensor.blue()){
-            isRed = true;
+            isRed = 1;
         }else if (colorSensor.blue() > colorSensor.red()){
-            isRed = false;
+            isRed = 2;
         }
+        TelemetryWrapper.setLine(3, String.valueOf(isRed));
         /*
             isBlue: Variable for what side of the field we are on.
-            isRed:  Variable for color of the jewel.
+            isRed:  Variable for color of the jewel. 1 is true, 2 is false
          */
         if(isBlue){
-            if(isRed == true){
-                base.hold(2039); //Knock off red
-            }else{
-                base.hold(9090); //Knock off blue
-            }
+            if(isRed == 1){
+                base.hold(move + 1000); //Turn right
+            }else if(isRed == 2){
+                base.hold(move - 1000); //Turn left
+            }else{}
         }else{
-            if(isRed == false){
-                base.hold(8734); //Knock off red
-            }else{
-                base.hold(5837); //Knock off blue
-            }
+            if(isRed == 2){
+                base.hold(move + 1000); //Knock off red
+            }else if (isRed == 1){
+                base.hold(move - 1000); //Knock off blue
+            }else{}
         }
         sleep(500); //Not sure if needed
-        colorArm.setPosition(0);
         colorSensor.enableLed(false);
+        colorArm.setPosition(0.57);
         log.i("Finished");
     }
 }
