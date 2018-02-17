@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
@@ -46,6 +47,9 @@ public abstract class MainAutonomous extends BaseAutonomous {
         arm = new Arm(ws, ss, es, claw, wrist);
         arm.closeClaw();
         DcMotor motor = hardwareMap.dcMotor.get("base");
+        if (config.getBoolean("base_reverse", false))
+            motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        //TODO Add extend too!
         base = new MotorController(motor);
         //moveArm(.4134, .1303, .05);
         //Same as TeleOp

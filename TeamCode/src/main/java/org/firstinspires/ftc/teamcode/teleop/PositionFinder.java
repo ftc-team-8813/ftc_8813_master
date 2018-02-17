@@ -41,6 +41,7 @@ public class PositionFinder extends MainTeleOp {
 
     @Override
     public void stop() {
+        if (positions.size() == 0) return; //Forget it, we don't have anything to save
         File outFile = new File(Config.storageDir + "pos_" + new SimpleDateFormat
                 ("yyMMdd_HHmmss", Locale.US).format(new Date()) + ".txt");
         try (FileWriter w = new FileWriter(outFile)) {
