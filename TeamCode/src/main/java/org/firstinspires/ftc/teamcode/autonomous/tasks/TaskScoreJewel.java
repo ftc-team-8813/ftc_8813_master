@@ -43,7 +43,7 @@ public class TaskScoreJewel implements Task{
         base.hold(move);
         sleep(2000);
         int isRed = 0;
-        colorArm.setPosition(.6305);
+        colorArm.setPosition(BaseAutonomous.instance().config.getDouble("color_arm_down", .6305));
         sleep(2000);
         if(colorSensor.red() > colorSensor.blue()){
             isRed = 1;
