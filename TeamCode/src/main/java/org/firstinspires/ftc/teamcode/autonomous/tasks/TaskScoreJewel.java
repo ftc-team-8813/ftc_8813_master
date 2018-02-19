@@ -70,7 +70,7 @@ public class TaskScoreJewel implements Task{
         }
         sleep(500); //Not sure if needed
         colorSensor.enableLed(false);
-        colorArm.setPosition(0.57);
+        colorArm.setPosition(0.1);
         log.i("Finished");
     }
 }

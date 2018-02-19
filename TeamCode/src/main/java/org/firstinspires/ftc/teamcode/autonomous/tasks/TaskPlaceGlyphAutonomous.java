@@ -44,6 +44,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
                                     MotorController base, MotorController extend, Arm arm) {
         this.arm = arm;
         this.base = base;
+        this.extend = extend;
         this.result = result;
         this.quadrant = quadrant;
         Config c = BaseAutonomous.instance().config;
@@ -80,6 +81,7 @@ public class TaskPlaceGlyphAutonomous implements Task {
         arm.moveTo(waist, shoulder, elbow);
         arm.moveWrist(wrist);
         base.hold((int)rotate);
+        this.extend.hold((int)extend);
     }
 
     private void moveArm(double... pos) {

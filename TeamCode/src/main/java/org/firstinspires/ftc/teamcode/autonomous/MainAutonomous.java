@@ -87,13 +87,14 @@ public abstract class MainAutonomous extends BaseAutonomous {
         if (result == null) result = TaskClassifyPictograph.Result.NONE;
         //Place glyph
         log.i("Placing glyph");
-        tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result, base, arm));
+        tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result, base, extend, arm));
         //Knock jewel
     }
 
     @Override
     public void finish() throws InterruptedException {
         base.close();
+        extend.close();
     }
 }
 /*
