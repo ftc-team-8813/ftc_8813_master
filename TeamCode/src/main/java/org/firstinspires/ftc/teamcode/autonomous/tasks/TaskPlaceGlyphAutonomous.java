@@ -1,13 +1,5 @@
 package org.firstinspires.ftc.teamcode.autonomous.tasks;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
-import com.qualcomm.robotcore.util.RobotLog;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
@@ -74,12 +66,13 @@ public class TaskPlaceGlyphAutonomous implements Task {
      * A simple method that takes arm positions and moves the arm and turntable.
      **/
     private void moveArm(double waist, double shoulder, double elbow, double wrist, double
-            rotate, double extend) {
+            rotate, double extension) {
         log.i("Moving to waist: %.4f, shoulder: %.4f, elbow: %.4f, wrist: %.4f, rotation: %d, " +
-                "extend: %d", waist, shoulder, elbow, wrist, (int)rotate, (int)extend);
+                "extend: %d", waist, shoulder, elbow, wrist, (int)rotate, (int)extension);
         arm.moveTo(waist, shoulder, elbow);
         arm.moveWrist(wrist);
         base.hold((int)rotate);
+        extend.hold((int)extension);
     }
 
     private void moveArm(double... pos) {
