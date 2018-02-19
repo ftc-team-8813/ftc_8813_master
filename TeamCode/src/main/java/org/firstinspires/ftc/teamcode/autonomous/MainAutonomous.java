@@ -29,6 +29,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
     private TaskClassifyPictograph finder;
     private Arm arm;
     private MotorController base;
+    private MotorController extend;
     private Servo colorArm;
     private ColorSensor colorSensor;
     private Logger log;
@@ -49,8 +50,13 @@ public abstract class MainAutonomous extends BaseAutonomous {
         DcMotor motor = hardwareMap.dcMotor.get("base");
         if (config.getBoolean("base_reverse", false))
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
-        //TODO Add extend too!
+
+        DcMotor motor2 = hardwareMap.dcMotor.get("extend");
+        if (config.getBoolean("ext_reverse", false))
+            motor.setDirection(DcMotorSimple.Direction.REVERSE);
+
         base = new MotorController(motor);
+        extend = new MotorController(motor2);
         //moveArm(.4134, .1303, .05);
         //Same as TeleOp
         ArmDriver driver = new ArmDriver(arm, config.getDouble("l1", 1),

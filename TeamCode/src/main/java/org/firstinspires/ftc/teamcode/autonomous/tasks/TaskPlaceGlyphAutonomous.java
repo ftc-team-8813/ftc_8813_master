@@ -35,11 +35,13 @@ public class TaskPlaceGlyphAutonomous implements Task {
     private Arm arm;
     private TaskClassifyPictograph.Result result;
     private MotorController base;
+    private MotorController extend;
     private Logger log = new Logger("Glyph Placer");
     Config move;
 
 
-    public TaskPlaceGlyphAutonomous(int quadrant, TaskClassifyPictograph.Result result, MotorController base, Arm arm) {
+    public TaskPlaceGlyphAutonomous(int quadrant, TaskClassifyPictograph.Result result,
+                                    MotorController base, MotorController extend, Arm arm) {
         this.arm = arm;
         this.base = base;
         this.result = result;
