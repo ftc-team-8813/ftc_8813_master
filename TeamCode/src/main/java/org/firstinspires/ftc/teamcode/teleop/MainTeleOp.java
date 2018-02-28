@@ -160,7 +160,7 @@ public class MainTeleOp extends OpMode {
 
     private void moveTo(double[] armPos) {
         if (armPos == null) return;
-        driver.moveTo(armPos[0], armPos[1]);
+        driver.moveTo(armPos[1], armPos[0]);
         if (armPos.length > 2) driver.setWaistAngle(armPos[2]);
     }
 
