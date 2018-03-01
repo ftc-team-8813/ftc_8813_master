@@ -1,11 +1,15 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 
+import android.view.View;
+
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRotate;
@@ -19,12 +23,15 @@ import org.firstinspires.ftc.teamcode.util.Logger;
  * Main autonomous program.
  */
 
-public abstract class MainAutonomous extends BaseAutonomous {
+public class MainAutonomous extends BaseAutonomous {
     /** Set to true if a color sensor is available and the jewel knocker should run */
     private static final boolean COLOR_SENSOR = false;
 
     //public abstract boolean isBlue();
-    public abstract int quadrant();
+    private int quadrant;
+    public int quadrant() {
+        return quadrant;
+    }
     public boolean find;
     private TaskClassifyPictograph finder;
     private Arm arm;
@@ -37,6 +44,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
     @Override
     public void initialize() {
         log = new Logger("Autonomous");
+        log.v("Initializing autonomous program");
         find = config.getBoolean("run_finder", false);
         Servo ws = hardwareMap.servo.get("s0");
         Servo ss = hardwareMap.servo.get("s1");
@@ -67,7 +75,21 @@ public abstract class MainAutonomous extends BaseAutonomous {
                 config.getDouble("adj_init", 0));
         driver.setWaistAngle(config.getDouble("waist_init", 0));
         wrist.setPosition(config.getDouble("wrist_init", 0));
+        chooseQuadrant();
         finder = new TaskClassifyPictograph();
+    }
+
+    private void chooseQuadrant() {
+        telemetry.addData("","Please choose a quadrant on the robot controller");
+        telemetry.update();
+        FtcRobotControllerActivity activity = (FtcRobotControllerActivity) AppUtil.getInstance()
+                .getActivity();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        });
     }
 
     @Override
@@ -93,6 +115,7 @@ public abstract class MainAutonomous extends BaseAutonomous {
 
     @Override
     public void finish() throws InterruptedException {
+        //All motor controllers need to be closed or strange bugs will crop up
         base.close();
         extend.close();
     }
