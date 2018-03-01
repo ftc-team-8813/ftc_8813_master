@@ -1,17 +1,12 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
-import com.qualcomm.hardware.lynx.LynxController;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.sun.tools.javac.util.Position;
 
-import org.firstinspires.ftc.teamcode.autonomous.util.DcMotorUtil;
+import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
@@ -33,7 +28,7 @@ public class MainTeleOp extends OpMode {
     //Claw servo
     protected Servo claw, wrist;
     //Drive motors
-    protected DcMotor base, extend;
+    protected MotorController base, extend;
     //Limit switch
 //    protected DigitalChannel limit; //Not a digital channel anymore
     protected AnalogInput limit;
@@ -68,6 +63,9 @@ public class MainTeleOp extends OpMode {
     //The amount to open the claw
     private double clawOpenAmount;
 
+    private int base_speed;
+    private int ext_speed;
+
     private double l1;
     private double l2;
     private boolean robot1;
@@ -100,6 +98,8 @@ public class MainTeleOp extends OpMode {
         maxRotate = conf.getDouble("max_rotate_speed", 0.02);
         wristRange = conf.getDoubleArray("wrist_range");
         wrist_speed = conf.getDouble("wrist_speed", 0.01);
+        base_speed = conf.getInt("base_speed", 5);
+        ext_speed = conf.getInt("ext_speed", 10);
         clawCloseAmount = conf.getDouble("claw_closed", 0);
         clawOpenAmount = conf.getDouble("claw_open", 0);
         l1 = conf.getDouble("l1", 1);
@@ -112,13 +112,8 @@ public class MainTeleOp extends OpMode {
         Servo elbow = hardwareMap.servo.get("s2");
         wrist = hardwareMap.servo.get("s4");
         claw = hardwareMap.servo.get("s3");
-        base = hardwareMap.dcMotor.get("base");
-        base.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        base.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        extend = hardwareMap.dcMotor.get("extend");
-        //extend has an encoder now!
-        extend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        extend.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        base = new MotorController(hardwareMap.dcMotor.get("base"));
+        extend = new MotorController(hardwareMap.dcMotor.get("extend"));
         if (!robot1) limit = hardwareMap.analogInput.get("limit");
         //Initialize arm controller
         driver = new ArmDriver(waist, shoulder, elbow, l1, l2, conf);
@@ -127,9 +122,9 @@ public class MainTeleOp extends OpMode {
         extRange = conf.getInt("ext_range", Integer.MAX_VALUE/2);
 
         if (conf.getBoolean("base_reverse", false))
-            base.setDirection(DcMotorSimple.Direction.REVERSE);
+            base.setReverse(true);
         if (conf.getBoolean("ext_reverse", false))
-            extend.setDirection(DcMotorSimple.Direction.REVERSE);
+            extend.setReverse(true);
 
         if (wristRange != null) {
             wrist.scaleRange(wristRange[0], wristRange[1]);
@@ -155,6 +150,8 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public void stop() {
+        base.close();
+        extend.close();
         Logger.close();
     }
 
@@ -162,6 +159,18 @@ public class MainTeleOp extends OpMode {
         if (armPos == null) return;
         driver.moveTo(armPos[1], armPos[0]);
         if (armPos.length > 2) driver.setWaistAngle(armPos[2]);
+        if (armPos.length > 3) extend.hold((int)armPos[3]);
+    }
+
+    private void moveToConfigured(String name, int terms) {
+        String[] termNames = {"_adj", "_dist", "_waist", "_extend"};
+        if (terms > termNames.length) throw new IllegalArgumentException(terms + "-term positions" +
+                " are not currently supported!");
+        double[] vals = new double[terms];
+        for (int i = 0; i < terms; i++) {
+            vals[i] = conf.getDouble(name + termNames[i], 0);
+        }
+        moveTo(vals);
     }
 
     private void setExtendedPositions() {
@@ -192,34 +201,22 @@ public class MainTeleOp extends OpMode {
                 driver.getClawDistance() + newDist,
                 driver.getArmAngle() + newAngle);
         if (gamepad2.dpad_left) {
-            base.setPower(0.8);
+            base.hold(base.getCurrentPosition() + base_speed);
         } else if (gamepad2.dpad_right) {
-            base.setPower(-0.8);
+            base.hold(base.getCurrentPosition() - base_speed);
         } else {
-            base.setPower(0);
+            base.hold(base.getCurrentPosition());
         }
 
         wrist.setPosition(Utils.constrain(wrist.getPosition() + (wrist_speed * gamepad2.right_stick_y), 0, 1));
 
         driver.setWaistAngle(driver.getWaistAngle() - (gamepad1.left_stick_x * maxRotate));
-        //getState same as !isPressed, except for DigitalChannels (which are needed for REV sensors)
-        //For AnalogInputs, getVoltage() should be around 0 when active
-        //CMOS logic LOW is < 0.8V
-        //if (limit.getVoltage() >= 0.8) {
-        //Only allows user to go backward if the minimum switch hasn't been triggered.
-        if (gamepad2.dpad_down) {
-            extend.setPower(-1);
+        if (gamepad2.dpad_up) {
+            extend.hold(extend.getCurrentPosition() + ext_speed);
+        } else if (gamepad1.dpad_down) {
+            extend.hold(extend.getCurrentPosition() - ext_speed);
         } else {
-            extend.setPower(0);
-        }
-        //} else {
-        //    extend.setPower(0);
-        //    extMin = extend.getCurrentPosition();
-        //}
-        if (gamepad2.dpad_up /*&& extMin != null && extend.getCurrentPosition() < extMin + extRange*/) {
-            extend.setPower(1);
-        } else if (extend.getPower() != -1) {
-            extend.setPower(0);
+            extend.hold(extend.getCurrentPosition());
         }
         try {
             Thread.sleep(20);
@@ -237,16 +234,16 @@ public class MainTeleOp extends OpMode {
         }
 
         if (buttonHelper_1.pressing(ButtonHelper.y)) {
-            moveTo(new double[] {conf.getDouble("glyph_adj", 0), conf.getDouble("glyph_dist", 0), conf.getDouble("glyph_waist", 0)});
+            moveToConfigured("glyph", 3);
         }
 
         //We don't need this in PositionCollector
         if (buttonHelper_1.pressing(ButtonHelper.b) && !(this instanceof PositionFinder)) {
-            moveTo(new double[] {conf.getDouble("cryptobox_adj", 0), conf.getDouble("cryptobox_dist", 0), conf.getDouble("cryptobox_waist", 0)});
+            moveToConfigured("cryptobox", 3);
         }
 
         if (buttonHelper_1.pressing(ButtonHelper.right_bumper)) {
-            moveTo(new double[] {conf.getDouble("relic_adj", 0), conf.getDouble("relic_dist", 0), conf.getDouble("relic_waist", 0)});
+            moveToConfigured("relic", 4);
         }
 
         if (gamepad1.left_bumper) {
