@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous.util;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.util.Config;
@@ -124,6 +125,10 @@ public class MotorController implements Closeable {
 
         void setPIDConstants(double[] constants) {
             setPIDConstants(constants[0], constants[1], constants[2]);
+        }
+
+        void setReverse(boolean reverse) {
+            motor.setDirection(reverse ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
         }
     }
     /* Thread that runs the ParallelControler */
@@ -288,6 +293,19 @@ public class MotorController implements Closeable {
     public void setPIDConstants(double kP, double kI, double kD) {
         if (closed) throw new IllegalStateException("Motor controller closed");
         controller.setPIDConstants(kP, kI, kD);
+    }
+
+    /**
+     * Set the direction of the motor. Does not invert the position; instead, adjustments will be in
+     * the opposite direction. It is recommended that the motor position be 0 when changing
+     * direction.
+     * @param reverse If true, this function reverses the motor direction from the default.
+     *                Otherwise, it will reset the direction to the default.
+     * @throws IllegalArgumentException if the motor controller has been closed
+     */
+    public void setReverse(boolean reverse) {
+        if (closed) throw new IllegalStateException("Motor controller closed");
+        controller.setReverse(reverse);
     }
 
     /**
