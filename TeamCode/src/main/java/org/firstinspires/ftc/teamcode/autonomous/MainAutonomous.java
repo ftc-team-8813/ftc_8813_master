@@ -1,7 +1,11 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 
+import android.annotation.SuppressLint;
+import android.graphics.BitmapFactory;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,6 +14,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.R;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRotate;
@@ -28,7 +33,7 @@ public class MainAutonomous extends BaseAutonomous {
     private static final boolean COLOR_SENSOR = false;
 
     //public abstract boolean isBlue();
-    private int quadrant;
+    private volatile int quadrant;
     public int quadrant() {
         return quadrant;
     }
@@ -40,6 +45,7 @@ public class MainAutonomous extends BaseAutonomous {
     private Servo colorArm;
     private ColorSensor colorSensor;
     private Logger log;
+    private int touch_x, touch_y;
 
     @Override
     public void initialize() {
@@ -79,17 +85,75 @@ public class MainAutonomous extends BaseAutonomous {
         finder = new TaskClassifyPictograph();
     }
 
+    //TODO Must debug; very experimental!!!
     private void chooseQuadrant() {
         telemetry.addData("","Please choose a quadrant on the robot controller");
         telemetry.update();
-        FtcRobotControllerActivity activity = (FtcRobotControllerActivity) AppUtil.getInstance()
+        final FtcRobotControllerActivity activity = (FtcRobotControllerActivity) AppUtil.getInstance()
                 .getActivity();
+        final int center_x = 210;
+        final int center_y = 244;
+        final int w = 421, h = 559;
+        final Logger log = new Logger("Quadrant Chooser");
         activity.runOnUiThread(new Runnable() {
+            @SuppressLint("ClickableViewAccessibility")
             @Override
             public void run() {
+                ImageView image = new ImageView(activity);
+                image.setImageBitmap(BitmapFactory.decodeResource(activity.getResources(), R
+                        .drawable.field));
+                activity.cameraMonitorLayout.addView(image);
+                image.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                            touch_x = (int)event.getX();
+                            touch_y = (int)event.getY();
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+                image.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int dx = (int)-v.getX();
+                        int dy = (int)-v.getY();
+                        int vw = (int)v.getWidth();
+                        int vh = (int)v.getHeight();
+                        int px = (touch_x + dx) * w / vw;
+                        int py = (touch_y + dy) * h / vh;
+                        log.d("Click event at (%d,%d); transformed to image pixel (%d, %d)",
+                                touch_x, touch_y, px, py);
+                        if (px < center_x) {
+                            if (py < center_y) {
+                                quadrant = 1;
+                            } else {
+                                quadrant = 2;
+                            }
+                        } else {
+                            if (py < center_y) {
+                                quadrant = 4;
+                            } else {
+                                quadrant = 3;
+                            }
+                        }
+                        activity.cameraMonitorLayout.removeView(v);
+                    }
+                });
+                log.i("Listening for click events");
 
             }
         });
+        quadrant = 0;
+        while (quadrant == 0) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                return;
+            }
+        }
+        log.i("Quadrant chosen: " + quadName(quadrant));
     }
 
     @Override
@@ -118,6 +182,16 @@ public class MainAutonomous extends BaseAutonomous {
         //All motor controllers need to be closed or strange bugs will crop up
         base.close();
         extend.close();
+    }
+
+    private String quadName(int quadrant) {
+        switch (quadrant) {
+            case 1: return "Blue Upper";
+            case 2: return "Blue Lower";
+            case 3: return "Red Lower";
+            case 4: return "Red Upper";
+            default: return "Unknown";
+        }
     }
 }
 /*
