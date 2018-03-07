@@ -112,8 +112,8 @@ public class MainTeleOp extends OpMode {
         Servo elbow = hardwareMap.servo.get("s2");
         wrist = hardwareMap.servo.get("s4");
         claw = hardwareMap.servo.get("s3");
-        base = new MotorController(hardwareMap.dcMotor.get("base"));
-        extend = new MotorController(hardwareMap.dcMotor.get("extend"));
+        base = new MotorController(hardwareMap.dcMotor.get("base"), conf);
+        extend = new MotorController(hardwareMap.dcMotor.get("extend"), conf);
         if (!robot1) limit = hardwareMap.analogInput.get("limit");
         //Initialize arm controller
         driver = new ArmDriver(waist, shoulder, elbow, l1, l2, conf);
@@ -205,7 +205,6 @@ public class MainTeleOp extends OpMode {
         } else if (gamepad2.dpad_right) {
             base.hold(base.getCurrentPosition() - base_speed);
         } else {
-            base.hold(base.getCurrentPosition());
         }
 
         wrist.setPosition(Utils.constrain(wrist.getPosition() + (wrist_speed * gamepad2.right_stick_y), 0, 1));
@@ -216,7 +215,6 @@ public class MainTeleOp extends OpMode {
         } else if (gamepad1.dpad_down) {
             extend.hold(extend.getCurrentPosition() - ext_speed);
         } else {
-            extend.hold(extend.getCurrentPosition());
         }
         try {
             Thread.sleep(20);

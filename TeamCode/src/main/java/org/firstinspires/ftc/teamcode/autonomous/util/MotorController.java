@@ -69,7 +69,6 @@ public class MotorController implements Closeable {
                     integral = 0;
                 }
                 if (Thread.interrupted()) {
-                    log.i("Stopping motor controller!");
                     motor.setPower(0);
                     integral = 0;
                     return;
