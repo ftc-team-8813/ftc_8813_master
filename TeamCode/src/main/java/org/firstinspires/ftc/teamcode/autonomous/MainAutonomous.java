@@ -7,12 +7,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.R;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
@@ -21,13 +23,14 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRotate;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskScoreJewel;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
+import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
 import org.firstinspires.ftc.teamcode.util.Logger;
 
 /**
  * Main autonomous program.
  */
-
+@Autonomous(name="Autonomous")
 public class MainAutonomous extends BaseAutonomous {
     /** Set to true if a color sensor is available and the jewel knocker should run */
     private static final boolean COLOR_SENSOR = false;
@@ -45,7 +48,6 @@ public class MainAutonomous extends BaseAutonomous {
     private Servo colorArm;
     private ColorSensor colorSensor;
     private Logger log;
-    private int touch_x, touch_y;
 
     @Override
     public void initialize() {
@@ -85,7 +87,6 @@ public class MainAutonomous extends BaseAutonomous {
         finder = new TaskClassifyPictograph();
     }
 
-    //TODO Must debug; very experimental!!!
     private void chooseQuadrant() {
         telemetry.addData("","Please choose a quadrant on the robot controller");
         telemetry.update();
@@ -107,38 +108,34 @@ public class MainAutonomous extends BaseAutonomous {
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                            touch_x = (int)event.getX();
-                            touch_y = (int)event.getY();
+                            int touch_x = (int)event.getX();
+                            int touch_y = (int)event.getY();
+                            log.d("Received touch event at (%d, %d)", touch_x, touch_y);
+                            int dx = (int)-v.getX();
+                            int dy = (int)-v.getY();
+                            int vw = (int)v.getWidth();
+                            int vh = (int)v.getHeight();
+                            int px = (touch_x + dx) * w / vw;
+                            int py = (touch_y + dy) * h / vh;
+                            log.d("Click event at (%d,%d); transformed to image pixel (%d, %d)",
+                                    touch_x, touch_y, px, py);
+                            if (px < center_x) {
+                                if (py < center_y) {
+                                    quadrant = 1;
+                                } else {
+                                    quadrant = 2;
+                                }
+                            } else {
+                                if (py < center_y) {
+                                    quadrant = 4;
+                                } else {
+                                    quadrant = 3;
+                                }
+                            }
+                            activity.cameraMonitorLayout.removeView(v);
                             return true;
                         }
                         return false;
-                    }
-                });
-                image.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int dx = (int)-v.getX();
-                        int dy = (int)-v.getY();
-                        int vw = (int)v.getWidth();
-                        int vh = (int)v.getHeight();
-                        int px = (touch_x + dx) * w / vw;
-                        int py = (touch_y + dy) * h / vh;
-                        log.d("Click event at (%d,%d); transformed to image pixel (%d, %d)",
-                                touch_x, touch_y, px, py);
-                        if (px < center_x) {
-                            if (py < center_y) {
-                                quadrant = 1;
-                            } else {
-                                quadrant = 2;
-                            }
-                        } else {
-                            if (py < center_y) {
-                                quadrant = 4;
-                            } else {
-                                quadrant = 3;
-                            }
-                        }
-                        activity.cameraMonitorLayout.removeView(v);
                     }
                 });
                 log.i("Listening for click events");
@@ -154,10 +151,13 @@ public class MainAutonomous extends BaseAutonomous {
             }
         }
         log.i("Quadrant chosen: " + quadName(quadrant));
+        telemetry.clear();
+        telemetry.addData("Quadrant chosen", quadName(quadrant));
     }
 
     @Override
     public void run() throws InterruptedException {
+        TelemetryWrapper.clear();
         //Run finder if enabled
         if (find) {
             log.i("Rotating to pictograph");
