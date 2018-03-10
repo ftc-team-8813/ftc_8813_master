@@ -23,6 +23,8 @@ public class TaskScoreJewel implements Task{
     ColorSensor colorSensor;
     private Logger log;
     int move;
+    int add, over;
+    Config c;
     public TaskScoreJewel(int quadrant, MotorController base, Servo colorArm, ColorSensor colorSensor){
         log = new Logger("Jewel Scorer");
         this.base = base;
@@ -34,43 +36,49 @@ public class TaskScoreJewel implements Task{
         }else{
             isBlue = false;
         }
-        Config c = BaseAutonomous.instance().config;
+        c = BaseAutonomous.instance().config;
         move = c.getInt("toJewel_" + quadrant, 1);
+        //TODO add to config
+        add = c.getInt("knock_dist", 1000);
+        over = c.getInt("over_dist", 500);
+        if (isBlue) {
+            add = -add;
+            over = -over;
+        }
     }
     @Override
     public void runTask() throws InterruptedException {
         log.i("Started");
-        base.hold(move);
-        sleep(2000);
+        base.runToPosition(move + over);
         int isRed = 0;
-        colorArm.setPosition(BaseAutonomous.instance().config.getDouble("color_arm_down", .6305));
-        sleep(2000);
+        // up, mid, down
+        // TODO add to config
+        double[] armPos = c.getDoubleArray("color_arm_positions");
+        colorArm.setPosition(armPos[1]);
+        sleep(800);
         if(colorSensor.red() > colorSensor.blue()){
             isRed = 1;
-        }else if (colorSensor.blue() > colorSensor.red()){
+        } else if (colorSensor.blue() > colorSensor.red()){
             isRed = 2;
+        } else {
+            log.w("Unable to detect blue or red (detected r=%d,g=%d,b=%d", colorSensor.red(),
+                    colorSensor.green(), colorSensor.blue());
         }
         TelemetryWrapper.setLine(3, String.valueOf(isRed));
+        base.runToPosition(move);
+        colorArm.setPosition(armPos[2]);
         /*
             isBlue: Variable for what side of the field we are on.
             isRed:  Variable for color of the jewel. 1 is true, 2 is false
          */
-        if(isBlue){
-            if(isRed == 1){
-                base.hold(move + 1000); //Turn right
-            }else if(isRed == 2){
-                base.hold(move - 1000); //Turn left
-            }else{}
-        }else{
-            if(isRed == 2){
-                base.hold(move + 1000); //Knock off red
-            }else if (isRed == 1){
-                base.hold(move - 1000); //Knock off blue
-            }else{}
+        if(isRed == 1){
+            base.hold(move + add); //Turn right
+        }else if(isRed == 2){
+            base.hold(move - add); //Turn left
         }
         sleep(500); //Not sure if needed
         colorSensor.enableLed(false);
-        colorArm.setPosition(0.1);
+        colorArm.setPosition(armPos[0]);
         log.i("Finished");
     }
 }
