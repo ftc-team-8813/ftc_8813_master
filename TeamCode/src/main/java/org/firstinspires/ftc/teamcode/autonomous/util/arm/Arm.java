@@ -59,7 +59,7 @@ public class Arm {
 
     public void closeClaw() {
         claw_closed = true;
-        claw.setPosition(conf.getDouble("claw_closed", 0));
+        claw.setPosition(conf.getDouble("claw_part", 0));
     }
 
     public void toggleClaw() {
