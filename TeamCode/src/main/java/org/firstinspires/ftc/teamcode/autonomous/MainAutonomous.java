@@ -77,7 +77,7 @@ public class MainAutonomous extends BaseAutonomous {
         //Same as TeleOp
         ArmDriver driver = new ArmDriver(arm, config.getDouble("l1", 1),
                 config.getDouble("l2", 1), config);
-        claw.setPosition(config.getDouble("claw_closed", 0));
+        claw.setPosition(config.getDouble("claw_part", 0));
         //claw_closed = true;
         driver.moveTo(config.getDouble("dist_init", 0),
                 config.getDouble("adj_init", 0));

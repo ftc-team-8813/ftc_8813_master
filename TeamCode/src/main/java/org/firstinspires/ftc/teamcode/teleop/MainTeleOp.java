@@ -23,7 +23,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Main TeleOp control to control the {@link ArmDriver}.
+ * Main TeleOp control to control the {@link ArmDriver}. Most disorganized part of the code; can
+ * be cleaned up
  */
 @TeleOp(name="Driver Control")
 public class MainTeleOp extends OpMode {
@@ -31,7 +32,7 @@ public class MainTeleOp extends OpMode {
     //The arm controller
     protected ArmDriver driver;
     //Claw servo
-    protected Servo claw, wrist;
+    protected Servo claw, wrist, yaw;
     //Drive motors
     protected DcMotor base, extend;
     //Limit switch
@@ -44,7 +45,7 @@ public class MainTeleOp extends OpMode {
     //Configuration
     protected Config conf;
 
-    protected ButtonHelper buttonHelper_1;
+    protected ButtonHelper buttonHelper_1, buttonHelper_2;
     //Maximum speed of arm servos (some arbitrary unit)
     private double maxMove;
     //Maximum amount of change allowed in 200ms second
@@ -55,6 +56,9 @@ public class MainTeleOp extends OpMode {
     private double[] wristRange;
     private double wrist_speed;
 
+    private double[] yawRange;
+    private double yaw_speed;
+
     private double[] rotateWindow = new double[10];
     private double[] extWindow = new double[10];
     private int nextWindowSlotR = 0;
@@ -62,11 +66,13 @@ public class MainTeleOp extends OpMode {
     //Whether the claw open/close button is currently being held down
     private boolean aHeld;
     //Whether the claw is open or closed
-    private boolean claw_closed;
+    private int clawPos = 0;
     //The amount to close the claw
     private double clawCloseAmount;
     //The amount to open the claw
     private double clawOpenAmount;
+    //The amount to close the claw halfway to grab the glyph gently without destroying the servo
+    private double clawGlyphAmount;
 
     private double l1;
     private double l2;
@@ -78,11 +84,15 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public void init() {
+
+        //Initialize logging
         try {
             Logger.init(new File(Config.storageDir + "latest.log"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        //Initialize config
         //If we're on robot 1, use robot 1 config
         if (hardwareMap.getAll(LynxModule.class).get(0).getSerialNumber().toString().equals
                 ("DQ168FFD")) {
@@ -95,23 +105,35 @@ public class MainTeleOp extends OpMode {
             conf = new Config("config.properties");
         }
 
+        //Load configuration values
         maxMove = conf.getDouble("max_move", 0.002);
         maxIncrease = conf.getDouble("max_inc", 0.02);
         maxRotate = conf.getDouble("max_rotate_speed", 0.02);
         wristRange = conf.getDoubleArray("wrist_range");
         wrist_speed = conf.getDouble("wrist_speed", 0.01);
+        yawRange = conf.getDoubleArray("yaw_range");
+        yaw_speed = conf.getDouble("yaw_speed", 0.01);
         clawCloseAmount = conf.getDouble("claw_closed", 0);
+        clawGlyphAmount = conf.getDouble("claw_part", 0);
         clawOpenAmount = conf.getDouble("claw_open", 0);
         l1 = conf.getDouble("l1", 1);
         l2 = conf.getDouble("l2", 1);
+        extRange = conf.getInt("ext_range", Integer.MAX_VALUE/2);
 
+        //Create button helpers
         buttonHelper_1 = new ButtonHelper(gamepad1);
+        buttonHelper_2 = new ButtonHelper(gamepad2);
+
         //Get motors and servos from hardware map
         Servo waist = hardwareMap.servo.get("s0");
         Servo shoulder = hardwareMap.servo.get("s1");
         Servo elbow = hardwareMap.servo.get("s2");
         wrist = hardwareMap.servo.get("s4");
         claw = hardwareMap.servo.get("s3");
+        yaw = hardwareMap.servo.get("s5");
+        Servo colorArm = hardwareMap.servo.get("s6");
+        if (conf.getDoubleArray("armPos") != null) colorArm.setPosition(conf.getDoubleArray
+                ("armPos")[1]);
         base = hardwareMap.dcMotor.get("base");
         base.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         base.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -123,16 +145,18 @@ public class MainTeleOp extends OpMode {
         //Initialize arm controller
         driver = new ArmDriver(waist, shoulder, elbow, l1, l2, conf);
 
-        //Get extend motor range
-        extRange = conf.getInt("ext_range", Integer.MAX_VALUE/2);
-
+        //Reverse base and extend if configured to
         if (conf.getBoolean("base_reverse", false))
             base.setDirection(DcMotorSimple.Direction.REVERSE);
         if (conf.getBoolean("ext_reverse", false))
             extend.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        //Scale the wrist and yaw ranges
         if (wristRange != null) {
             wrist.scaleRange(wristRange[0], wristRange[1]);
+        }
+        if (yawRange != null) {
+            yaw.scaleRange(yawRange[0], yawRange[1]);
         }
 
         //Set up
@@ -145,12 +169,13 @@ public class MainTeleOp extends OpMode {
     }
 
     private void setInitialPositions() {
-        claw.setPosition(conf.getDouble("claw_closed", 0));
-        claw_closed = true;
+        claw.setPosition(clawOpenAmount);
+        clawPos = 0;
         driver.moveTo(conf.getDouble("dist_init", l1+l2),
                 conf.getDouble("adj_init", 0));
         driver.setWaistAngle(conf.getDouble("waist_init", 0));
         wrist.setPosition(conf.getDouble("wrist_init", 0));
+        yaw.setPosition(conf.getDouble("yaw_init", 0.5));
     }
 
     @Override
@@ -180,6 +205,7 @@ public class MainTeleOp extends OpMode {
     @Override
     public void loop() {
         buttonHelper_1.update();
+        buttonHelper_2.update();
         double newDist = -(gamepad1.right_stick_y * maxMove);
         double newAngle = (gamepad1.left_stick_y * maxMove);
         if (Math.abs(Utils.sum(rotateWindow)) > maxIncrease)
@@ -199,7 +225,10 @@ public class MainTeleOp extends OpMode {
             base.setPower(0);
         }
 
-        wrist.setPosition(Utils.constrain(wrist.getPosition() + (wrist_speed * gamepad2.right_stick_y), 0, 1));
+        wrist.setPosition(Utils.constrain(wrist.getPosition() + (wrist_speed *
+                        gamepad2.right_stick_y),
+                0, 1));
+        yaw.setPosition(Utils.constrain(yaw.getPosition() + (yaw_speed * gamepad1.right_stick_x), 0, 1));
 
         driver.setWaistAngle(driver.getWaistAngle() - (gamepad1.left_stick_x * maxRotate));
         //getState same as !isPressed, except for DigitalChannels (which are needed for REV sensors)
@@ -229,8 +258,18 @@ public class MainTeleOp extends OpMode {
 
         //Used to be A, but that would trigger the claw when Start+A was pressed to connect gamepad1
         if (buttonHelper_1.pressing(ButtonHelper.x)) {
-            claw_closed = !claw_closed;
-            if (claw_closed)
+            if (clawPos == 0) clawPos = 1;
+            else clawPos = 0;
+            if (clawPos == 1)
+                claw.setPosition(clawGlyphAmount);
+            else
+                claw.setPosition(clawOpenAmount);
+        }
+
+        if (buttonHelper_2.pressing(ButtonHelper.y)) {
+            if (clawPos == 0) clawPos = 2;
+            else clawPos = 0;
+            if (clawPos == 2)
                 claw.setPosition(clawCloseAmount);
             else
                 claw.setPosition(clawOpenAmount);
@@ -254,7 +293,8 @@ public class MainTeleOp extends OpMode {
         }
 
         telemetry.addData("Elapsed Time", Utils.elapsedTime(System.currentTimeMillis() - start));
-        telemetry.addData("Claw", claw_closed ? "CLOSED" : "OPEN");
+        telemetry.addData("Claw", (clawPos == 0 ? "OPEN" : (clawPos == 1 ? "PART CLOSED" :
+                "CLOSED")));
         if (!robot1) telemetry.addData("Limit Switch", (limit.getVoltage() < 0.8) ? "PRESSED" :
                 "RELEASED");
         telemetry.addData("Arm Angle", Utils.shortFloat(driver.getArmAngle()));
