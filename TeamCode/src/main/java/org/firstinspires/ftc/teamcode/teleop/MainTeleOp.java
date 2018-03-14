@@ -132,8 +132,8 @@ public class MainTeleOp extends OpMode {
         claw = hardwareMap.servo.get("s3");
         yaw = hardwareMap.servo.get("s5");
         Servo colorArm = hardwareMap.servo.get("s6");
-        if (conf.getDoubleArray("armPos") != null) colorArm.setPosition(conf.getDoubleArray
-                ("armPos")[1]);
+        if (conf.getDoubleArray("color_arm_positions") != null) colorArm.setPosition(conf
+                .getDoubleArray("color_arm_positions")[1]);
         base = hardwareMap.dcMotor.get("base");
         base.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         base.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -275,6 +275,10 @@ public class MainTeleOp extends OpMode {
                 claw.setPosition(clawOpenAmount);
         }
 
+        if (gamepad1.a) {
+            yaw.setPosition(conf.getDouble("yaw_init", 0));
+        }
+
         if (buttonHelper_1.pressing(ButtonHelper.y)) {
             moveTo(new double[] {conf.getDouble("glyph_adj", 0), conf.getDouble("glyph_dist", 0), conf.getDouble("glyph_waist", 0)});
         }
@@ -309,6 +313,7 @@ public class MainTeleOp extends OpMode {
         telemetry.addData("Extend Minimum", extMin);
         telemetry.addData("Turntable Position", getTurntablePosition());
         telemetry.addData("Wrist Position", wrist.getPosition());
+        telemetry.addData("Yaw Position", yaw.getPosition());
         telemetry.addData("Running on", robot1 ? "Robot 1" : "Robot 2");
     }
 

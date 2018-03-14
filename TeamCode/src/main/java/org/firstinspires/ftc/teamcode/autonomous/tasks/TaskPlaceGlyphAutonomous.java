@@ -66,18 +66,20 @@ public class TaskPlaceGlyphAutonomous implements Task {
     /**
      * A simple method that takes arm positions and moves the arm and turntable.
      **/
-    private void moveArm(double waist, double shoulder, double elbow, double wrist, double
-            rotate, double extension) {
-        log.i("Moving to waist: %.4f, shoulder: %.4f, elbow: %.4f, wrist: %.4f, rotation: %d, " +
-                "extend: %d", waist, shoulder, elbow, wrist, (int)rotate, (int)extension);
+    private void moveArm(double waist, double shoulder, double elbow, double wrist, double yaw,
+                         double rotate, double extension) {
+        log.i("Moving to waist: %.4f, shoulder: %.4f, elbow: %.4f, wrist: %.4f, yaw: %.4f " +
+                "rotation: %d, " + "extend: %d", waist, shoulder, elbow, wrist, yaw, (int)rotate,
+                (int)extension);
         arm.moveTo(waist, shoulder, elbow);
         arm.moveWrist(wrist);
+        arm.moveYaw(yaw);
         base.hold((int)rotate);
         extend.hold((int)extension);
     }
 
     private void moveArm(double... pos) {
-        moveArm(pos[0], pos[1], pos[2], pos[3], pos[4], pos[5]);
+        moveArm(pos[0], pos[1], pos[2], pos[3], pos[6], pos[4], pos[5]);
     }
 
     private void move(String values){

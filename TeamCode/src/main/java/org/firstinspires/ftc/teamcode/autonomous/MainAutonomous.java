@@ -59,9 +59,10 @@ public class MainAutonomous extends BaseAutonomous {
         Servo es = hardwareMap.servo.get("s2");
         Servo claw = hardwareMap.servo.get("s3");
         Servo wrist = hardwareMap.servo.get("s4");
-        colorArm = hardwareMap.servo.get("s5");
+        Servo yaw = hardwareMap.servo.get("s5");
+        colorArm = hardwareMap.servo.get("s6");
         colorSensor = hardwareMap.colorSensor.get("color_sensor");
-        arm = new Arm(ws, ss, es, claw, wrist);
+        arm = new Arm(ws, ss, es, claw, wrist, yaw);
         arm.closeClaw();
         DcMotor motor = hardwareMap.dcMotor.get("base");
         if (config.getBoolean("base_reverse", false))
