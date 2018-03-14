@@ -30,7 +30,7 @@ public class PositionFinder extends MainTeleOp {
                 bHeld = true;
                 positions.add(new double[]{
                        driver.getWaistPos(), driver.getShoulderPos(), driver.getElbowPos(), wrist
-                        .getPosition(), getTurntablePosition(), extend.getCurrentPosition()
+                        .getPosition(), getTurntablePosition(), extend.getCurrentPosition(), yaw.getPosition()
                 });
             }
         } else {
