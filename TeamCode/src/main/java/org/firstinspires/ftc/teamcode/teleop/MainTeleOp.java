@@ -175,7 +175,7 @@ public class MainTeleOp extends OpMode {
                 conf.getDouble("adj_init", 0));
         driver.setWaistAngle(conf.getDouble("waist_init", 0));
         wrist.setPosition(conf.getDouble("wrist_init", 0));
-        yaw.setPosition(conf.getDouble("yaw_init", 0.5));
+        yaw.setPosition(conf.getDouble("yaw_mid", 0.5));
     }
 
     @Override
@@ -276,7 +276,7 @@ public class MainTeleOp extends OpMode {
         }
 
         if (gamepad1.a) {
-            yaw.setPosition(conf.getDouble("yaw_init", 0));
+            yaw.setPosition(conf.getDouble("yaw_mid", 0));
         }
 
         if (buttonHelper_1.pressing(ButtonHelper.y)) {

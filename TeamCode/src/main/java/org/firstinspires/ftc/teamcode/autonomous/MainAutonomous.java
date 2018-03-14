@@ -84,6 +84,7 @@ public class MainAutonomous extends BaseAutonomous {
                 config.getDouble("adj_init", 0));
         driver.setWaistAngle(config.getDouble("waist_init", 0));
         wrist.setPosition(config.getDouble("wrist_init", 0));
+        yaw.setPosition(config.getDouble("yaw_init", 0));
         chooseQuadrant();
         finder = new TaskClassifyPictograph();
     }
