@@ -143,6 +143,7 @@ public abstract class BaseAutonomous extends LinearOpMode {
         } finally {
             finish();
             instance = null;
+            Logger.close();
             if (stream != null) {
                 stream.stop();
                 stream = null;
@@ -156,7 +157,6 @@ public abstract class BaseAutonomous extends LinearOpMode {
                 else if (exc instanceof IOException) log.e(exc);
                 else throw (InterruptedException)exc;
             }
-            Logger.close();
         }
     }
 

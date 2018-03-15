@@ -70,7 +70,7 @@ public class MainAutonomous extends BaseAutonomous {
 
         DcMotor motor2 = hardwareMap.dcMotor.get("extend");
         if (config.getBoolean("ext_reverse", false))
-            motor.setDirection(DcMotorSimple.Direction.REVERSE);
+            motor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         base = new MotorController(motor);
         extend = new MotorController(motor2);
