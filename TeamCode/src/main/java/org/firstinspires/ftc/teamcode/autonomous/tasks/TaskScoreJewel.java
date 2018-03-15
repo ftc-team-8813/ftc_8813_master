@@ -43,7 +43,7 @@ public class TaskScoreJewel implements Task{
         over = c.getInt("over_dist", 500);
         if (isBlue) {
             add = -add;
-            over = -over;
+            //over = over;
         }
     }
     @Override
@@ -52,9 +52,9 @@ public class TaskScoreJewel implements Task{
         base.runToPosition(move + over);
         int isRed = 0;
         // up, mid, down
-        // TODO add to config
+
         double[] armPos = c.getDoubleArray("color_arm_positions");
-        colorArm.setPosition(armPos[1]);
+        colorArm.setPosition(armPos[2]);
         sleep(800);
         if(colorSensor.red() > colorSensor.blue()){
             isRed = 1;
@@ -65,20 +65,23 @@ public class TaskScoreJewel implements Task{
                     colorSensor.green(), colorSensor.blue());
         }
         TelemetryWrapper.setLine(3, String.valueOf(isRed));
+        colorArm.setPosition(armPos[1]);
+        sleep(800);
         base.runToPosition(move);
-        colorArm.setPosition(armPos[2]);
+        colorArm.setPosition(armPos[3]);
+        sleep(800);
         /*
             isBlue: Variable for what side of the field we are on.
             isRed:  Variable for color of the jewel. 1 is true, 2 is false
          */
         if(isRed == 1){
-            base.hold(move + add); //Turn right
+            base.hold(move - add); //Turn right
         }else if(isRed == 2){
-            base.hold(move - add); //Turn left
+            base.hold(move + add); //Turn left
         }
         sleep(500); //Not sure if needed
         colorSensor.enableLed(false);
-        colorArm.setPosition(armPos[0]);
+        colorArm.setPosition(armPos[1]);
         log.i("Finished");
     }
 }

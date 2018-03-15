@@ -53,7 +53,7 @@ public class MainAutonomous extends BaseAutonomous {
     public void initialize() {
         log = new Logger("Autonomous");
         log.v("Initializing autonomous program");
-        find = config.getBoolean("run_finder", false);
+        find = config.getBoolean("run_finder", true);
         Servo ws = hardwareMap.servo.get("s0");
         Servo ss = hardwareMap.servo.get("s1");
         Servo es = hardwareMap.servo.get("s2");
@@ -85,7 +85,8 @@ public class MainAutonomous extends BaseAutonomous {
         driver.setWaistAngle(config.getDouble("waist_init", 0));
         wrist.setPosition(config.getDouble("wrist_init", 0));
         yaw.setPosition(config.getDouble("yaw_init", 0));
-        chooseQuadrant();
+        //chooseQuadrant();
+        quadrant = 2;
         finder = new TaskClassifyPictograph();
     }
 

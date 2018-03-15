@@ -87,7 +87,7 @@ public class MotorController implements Closeable {
 
         void hold() {
             holding = true;
-            log.d("Holding position");
+            log.d("Holding position @ power = %.4f", power);
         }
 
         void stopHolding() {

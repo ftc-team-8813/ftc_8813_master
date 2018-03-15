@@ -53,6 +53,8 @@ public class TaskPlaceGlyphAutonomous implements Task {
 
         move("floating");
         sleep(2500);
+        move("floating_extended");
+        sleep(2500);
         move("move_" + result.name());
         sleep(4000);
         arm.openClaw();
