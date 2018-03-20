@@ -261,9 +261,6 @@ public class MainTeleOp extends OpMode {
             return;
         }
 
-        buttonHelper_1.update();
-        buttonHelper_2.update();
-
         //Used to be A, but that would trigger the claw when Start+A was pressed to connect gamepad1
         if (buttonHelper_1.pressing(ButtonHelper.x)) {
             if (clawPos == 0) clawPos = 1;
