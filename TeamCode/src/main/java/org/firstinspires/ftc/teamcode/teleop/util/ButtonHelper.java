@@ -40,16 +40,6 @@ public class ButtonHelper {
         this.gamepad = gamepad;
     }
 
-    public void update(int button) {
-        buttons[button] = getButton(button);
-    }
-
-    public void update() {
-        for (int i = 0; i < 15; i++) {
-            update(i);
-        }
-    }
-
     private boolean getButton(int button) {
         if (button == dpad_up) return gamepad.dpad_up;
         else if (button == dpad_down) return gamepad.dpad_down;
@@ -78,6 +68,8 @@ public class ButtonHelper {
     }
 
     public boolean pressing(int idx) {
-        return !buttons[idx] && pressed(idx);
+        boolean held = buttons[idx];
+        buttons[idx] = pressed(idx);
+        return !held && pressed(idx);
     }
 }
