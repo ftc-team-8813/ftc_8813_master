@@ -79,18 +79,23 @@ public class IMUTest extends BaseAutonomous {
     @Override
     public void run() throws InterruptedException {
 
-        imu.initialize(params);
 
         tasks.add(new Task() {
 
             @Override
             public void runTask() throws InterruptedException {
+                if (autoCalibrating) {
+                    params.mode = BNO055IMU.SensorMode.IMU; //Enable fusion mode so we can calibrate
+                }
+                TelemetryWrapper.setLine(0, "Initializing sensor...");
+                imu.initialize(params);
                 while (!Thread.interrupted()) {
                     if (autoCalibrating) {
                         TelemetryWrapper.setLine(0, "Calibrating... Please do not disturb the " +
                                 "robot!");
                         int progress = (imu.getCalibrationStatus().calibrationStatus >> 4) & 3;
                         TelemetryWrapper.setLine(1, "Progress: " + progress + "/3");
+                        TelemetryWrapper.setLine(2, "Status: " + imu.getSystemStatus().toString());
                         if (progress == 3) {
                             TelemetryWrapper.setLine(1, "Progress: Saving calibration");
                             autoCalibrating = false;
@@ -103,6 +108,9 @@ public class IMUTest extends BaseAutonomous {
                             } catch (IOException e) {
                                 log.e("Unable to write calibration data");
                             }
+                            TelemetryWrapper.setLine(1, "Progress: Re-initializing");
+                            params.mode = BNO055IMU.SensorMode.GYRONLY;
+                            imu.initialize(params);
                         }
                     } else {
                         TelemetryWrapper.setLine(0, "IMU Test");
