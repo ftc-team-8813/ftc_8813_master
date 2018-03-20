@@ -105,8 +105,6 @@ public abstract class BaseAutonomous extends LinearOpMode {
         Throwable exc = null;
         try {
             //Run initialization operations here
-            //GZip old robot log files to save space :P
-            Utils.gzipLogs();
             //Create our latest.log file
             Logger.init(new File(Config.storageDir + "latest.log"));
             log = new Logger("BaseAutonomous");

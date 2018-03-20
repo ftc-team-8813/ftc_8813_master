@@ -18,18 +18,18 @@ public class MotorController implements Closeable {
     /*
     Internal motor controller. Runs in parallel with the main controller.
      */
-    private class ParallelController implements Runnable {
+    protected static class ParallelController implements Runnable {
 
-        private volatile double power = 1;
-        private Logger log;
-        private volatile int target;
-        private volatile boolean holding = false;
-        private volatile boolean stopNearTarget = false;
-        private volatile double kP, kI, kD;
-        private DcMotor motor;
-        private double integral;
-        private double prev_error;
-        private Runnable atTarget;
+        protected volatile double power = 1;
+        protected Logger log;
+        protected volatile int target;
+        protected volatile boolean holding = false;
+        protected volatile boolean stopNearTarget = false;
+        protected volatile double kP, kI, kD;
+        protected DcMotor motor;
+        protected double integral;
+        protected double prev_error;
+        protected Runnable atTarget;
 
         ParallelController(DcMotor motor, Runnable atTarget) {
             log = new Logger("Motor " + motor.getPortNumber() + " Controller");
@@ -133,15 +133,20 @@ public class MotorController implements Closeable {
     /* Thread that runs the ParallelControler */
     private Thread thread;
     /* The ParallelController */
-    private ParallelController controller;
+    protected ParallelController controller;
     /* Whether or not the controller has been closed */
     private boolean closed = false;
 
-    public MotorController(DcMotor motor, Config conf, Runnable atTarget) {
-        controller = new ParallelController(motor, atTarget);
-        controller.setPIDConstants(conf.getDoubleArray("pid_constants"));
-        thread = new Thread(controller, "Motor " + motor.getPortNumber() + " controller thread");
+    protected MotorController(ParallelController controller, Config conf) {
+        this.controller = controller;
+        this.controller.setPIDConstants(conf.getDoubleArray("pid_constants"));
+        thread = new Thread(this.controller, "Motor " + controller.motor + " controller " +
+                "thread");
         thread.start();
+    }
+
+    public MotorController(DcMotor motor, Config conf, Runnable atTarget) {
+        this(new ParallelController(motor, atTarget), conf);
     }
 
     public MotorController(DcMotor motor, Runnable atTarget) {
