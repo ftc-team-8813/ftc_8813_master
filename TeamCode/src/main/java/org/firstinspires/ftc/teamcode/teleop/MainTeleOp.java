@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import android.widget.Button;
+
 import com.qualcomm.hardware.lynx.LynxController;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -79,6 +81,9 @@ public class MainTeleOp extends OpMode {
     private boolean robot1;
 
     private long start = 0;
+    private long lastPress = 0;
+
+    private Logger log;
 
     //protected int initEncoder;
 
@@ -91,6 +96,8 @@ public class MainTeleOp extends OpMode {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        log = new Logger("TeleOp");
 
         //Initialize config
         //If we're on robot 1, use robot 1 config
@@ -204,8 +211,6 @@ public class MainTeleOp extends OpMode {
      */
     @Override
     public void loop() {
-        buttonHelper_1.update();
-        buttonHelper_2.update();
         double newDist = -(gamepad1.right_stick_y * maxMove);
         double newAngle = (gamepad1.left_stick_y * maxMove);
         if (Math.abs(Utils.sum(rotateWindow)) > maxIncrease)
@@ -256,6 +261,9 @@ public class MainTeleOp extends OpMode {
             return;
         }
 
+        buttonHelper_1.update();
+        buttonHelper_2.update();
+
         //Used to be A, but that would trigger the claw when Start+A was pressed to connect gamepad1
         if (buttonHelper_1.pressing(ButtonHelper.x)) {
             if (clawPos == 0) clawPos = 1;
@@ -273,6 +281,14 @@ public class MainTeleOp extends OpMode {
                 claw.setPosition(clawCloseAmount);
             else
                 claw.setPosition(clawOpenAmount);
+        }
+
+        if (buttonHelper_2.pressing(ButtonHelper.right_bumper)) {
+            long time = System.currentTimeMillis();
+            float sinceStart = (float)(time-start)/1000f;
+            float sinceLast  = (float)(time-lastPress)/1000f;
+            log.i("Lap cycle trigger @ %.3f sec (%.3f sec since last press)", sinceStart, sinceLast);
+            lastPress = time;
         }
 
         if (gamepad1.a) {
