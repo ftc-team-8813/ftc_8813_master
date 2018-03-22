@@ -5,6 +5,7 @@ import android.graphics.drawable.GradientDrawable;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
@@ -18,6 +19,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.security.spec.ECParameterSpec;
 import java.util.Arrays;
 
 /**
@@ -30,10 +32,15 @@ public class IMUTest extends BaseAutonomous {
     private boolean autoCalibrating;
     private BNO055IMU imu;
     private BNO055IMU.Parameters params;
+    private float lastAngle;
+    private int revolutions;
+    private DcMotor base;
+    private int encoderRevolution;
 
     @Override
     public void initialize() throws InterruptedException {
         log = new Logger("IMU Test");
+        base = hardwareMap.dcMotor.get("base");
         //Initialize telemetry
         TelemetryWrapper.init(telemetry, 5);
         //Set up
@@ -41,7 +48,7 @@ public class IMUTest extends BaseAutonomous {
         params = new BNO055IMU.Parameters();
         params.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         params.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        params.mode                = BNO055IMU.SensorMode.GYRONLY;
+        params.mode                = BNO055IMU.SensorMode.IMU;
         try {
             File f = new File(Config.storageDir + "imu_calibration.json");
             if (f.exists()) {
@@ -108,9 +115,9 @@ public class IMUTest extends BaseAutonomous {
                             } catch (IOException e) {
                                 log.e("Unable to write calibration data");
                             }
-                            TelemetryWrapper.setLine(1, "Progress: Re-initializing");
-                            params.mode = BNO055IMU.SensorMode.GYRONLY;
-                            imu.initialize(params);
+//                            TelemetryWrapper.setLine(1, "Progress: Re-initializing");
+//                            params.mode = BNO055IMU.SensorMode.GYRONLY;
+//                            imu.initialize(params);
                         }
                     } else {
                         TelemetryWrapper.setLine(0, "IMU Test");
@@ -119,9 +126,25 @@ public class IMUTest extends BaseAutonomous {
                         float heading = o.firstAngle;
                         float roll    = o.secondAngle;
                         float pitch   = o.thirdAngle;
-                        TelemetryWrapper.setLine(2, "Heading: " + heading);
-                        TelemetryWrapper.setLine(3, "Roll: " + roll);
-                        TelemetryWrapper.setLine(4, "Pitch: " + pitch);
+                        float delta = heading - lastAngle;
+                        if (delta < -300) {
+                            //Looped past 180 to -179
+                            revolutions++;
+                        } else if (delta > 300) {
+                            //Looped past -179 to 180
+                            revolutions--;
+                        }
+
+                        float cHeading = (heading + 360 * revolutions);
+                        if (Math.abs(cHeading - 360) < 0.05) {
+                            encoderRevolution = base.getCurrentPosition();
+                        }
+
+                        TelemetryWrapper.setLine(2, "Heading: " + cHeading);
+                        TelemetryWrapper.setLine(3, "Encoder: " + (base.getCurrentPosition()));
+                        TelemetryWrapper.setLine(4, "360 Deg: " + (encoderRevolution));
+
+                        lastAngle = heading;
                     }
                     try {
                         Thread.sleep(50);

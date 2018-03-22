@@ -139,7 +139,7 @@ public class MotorController implements Closeable {
 
     protected MotorController(ParallelController controller, Config conf) {
         this.controller = controller;
-        this.controller.setPIDConstants(conf.getDoubleArray("pid_constants"));
+        if (conf != null) this.controller.setPIDConstants(conf.getDoubleArray("pid_constants"));
         thread = new Thread(this.controller, "Motor " + controller.motor + " controller " +
                 "thread");
         thread.start();
