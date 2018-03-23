@@ -140,16 +140,17 @@ public class MotorController implements Closeable {
     /* Whether or not the controller has been closed */
     private boolean closed = false;
 
-    protected MotorController(ParallelController controller, Config conf) {
+    protected MotorController(ParallelController controller, Config conf, String constants) {
         this.controller = controller;
-        if (conf != null) this.controller.setPIDConstants(conf.getDoubleArray("pid_constants"));
+        if (conf != null) this.controller.setPIDConstants(conf.getDoubleArray(constants));
         thread = new Thread(this.controller, "Motor " + controller.motor + " controller " +
                 "thread");
         thread.start();
     }
 
     public MotorController(DcMotor motor, Config conf, Runnable atTarget) {
-        this(new ParallelController(motor, atTarget, conf.getInt("steady_state_error", 0)), conf);
+        this(new ParallelController(motor, atTarget, conf.getInt("steady_state_error", 0)),
+                conf, "pid_constants");
     }
 
     public MotorController(DcMotor motor, Runnable atTarget) {

@@ -30,7 +30,7 @@ public class IMUMotorController extends MotorController {
 
     public IMUMotorController(DcMotor motor, Config conf, IMU imu, Runnable atTarget) {
         super(new IMUParallelController(motor, atTarget, imu,
-                        conf.getInt("steady_state_error_imu", 0)), conf);
+                        conf.getInt("steady_state_error_imu", 0)), conf, "pid_constants_imu");
     }
 
     public IMUMotorController(DcMotor motor, IMU imu, Runnable atTarget) {
