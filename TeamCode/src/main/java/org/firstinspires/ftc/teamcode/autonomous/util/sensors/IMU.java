@@ -46,6 +46,7 @@ public class IMU {
         try {
             File f = new File(Config.storageDir + "imu_calibration.json");
             if (f.exists()) {
+                TelemetryWrapper.setLine(0, "Reading calibration file");
                 //Read the entire file into a String so we can then deserialize it
                 FileReader reader = new FileReader(f);
                 char[] buffer = new char[1024];
@@ -78,6 +79,7 @@ public class IMU {
     }
 
     public void start() {
+        TelemetryWrapper.setLine(0, "Initializing IMU");
         imu.initialize(params);
         while (autoCalibrating && !Thread.interrupted()) {
             if (autoCalibrating) {
