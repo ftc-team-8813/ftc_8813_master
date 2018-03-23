@@ -31,7 +31,10 @@ public class MotorController implements Closeable {
         protected double prev_error;
         protected Runnable atTarget;
 
-        ParallelController(DcMotor motor, Runnable atTarget) {
+        public final int sse;
+
+        ParallelController(DcMotor motor, Runnable atTarget, int steady_state_error) {
+            this.sse = steady_state_error;
             log = new Logger("Motor " + motor.getPortNumber() + " Controller");
             log.d("Initializing!");
             this.motor = motor;
@@ -54,7 +57,7 @@ public class MotorController implements Closeable {
                     prev_error = error;
                     double speed = error*kP + integral*(kI) + derivative*kD;
                     speed = Utils.constrain(speed, -1, 1) * power;
-                    if (Math.abs(error) < 5) {
+                    if (Math.abs(error) < sse) {
                         if (stopNearTarget) {
                             stopHolding();
                             stopNearTarget = false;
@@ -146,7 +149,7 @@ public class MotorController implements Closeable {
     }
 
     public MotorController(DcMotor motor, Config conf, Runnable atTarget) {
-        this(new ParallelController(motor, atTarget), conf);
+        this(new ParallelController(motor, atTarget, conf.getInt("steady_state_error", 0)), conf);
     }
 
     public MotorController(DcMotor motor, Runnable atTarget) {

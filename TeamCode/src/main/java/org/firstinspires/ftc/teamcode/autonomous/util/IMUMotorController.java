@@ -17,8 +17,8 @@ public class IMUMotorController extends MotorController {
 
         private IMU imu;
 
-        IMUParallelController(DcMotor motor, Runnable atTarget, IMU imu) {
-            super(motor, atTarget);
+        IMUParallelController(DcMotor motor, Runnable atTarget, IMU imu, int sse) {
+            super(motor, atTarget, sse);
             this.imu = imu;
         }
 
@@ -29,7 +29,8 @@ public class IMUMotorController extends MotorController {
     }
 
     public IMUMotorController(DcMotor motor, Config conf, IMU imu, Runnable atTarget) {
-        super(new IMUParallelController(motor, atTarget, imu), conf);
+        super(new IMUParallelController(motor, atTarget, imu,
+                        conf.getInt("steady_state_error_imu", 0)), conf);
     }
 
     public IMUMotorController(DcMotor motor, IMU imu, Runnable atTarget) {
