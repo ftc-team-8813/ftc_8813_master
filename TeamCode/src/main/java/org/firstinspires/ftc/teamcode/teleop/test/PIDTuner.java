@@ -41,6 +41,8 @@ public class PIDTuner extends OpMode {
         imu.start();
         controller = new IMUMotorController(hardwareMap.dcMotor.get("base"), imu);
         buttons = new ButtonHelper(gamepad1);
+        controller.setPIDConstants(0, 0, 0);
+        //controller.setPower(0.5);
         controller.hold(0);
     }
 
@@ -72,6 +74,21 @@ public class PIDTuner extends OpMode {
                 controller.setPIDConstants(constants[0], constants[1], constants[2] -
                         gamepad1.right_stick_y / 10000);
                 break;
+        }
+        if (gamepad1.right_bumper) {
+            switch (changing) {
+                case 0:
+                    controller.setPIDConstants(0, constants[1], constants[2]);
+                    break;
+                case 1:
+                    telemetry.addData("Changing", "Integral Gain");
+                    controller.setPIDConstants(constants[0], 0, constants[2]);
+                    break;
+                case 2:
+                    telemetry.addData("Changing", "Derivative Gain");
+                    controller.setPIDConstants(constants[0], constants[1], 0);
+                    break;
+            }
         }
         telemetry.addData("Target", controller.getTargetPosition());
         telemetry.addData("Position", controller.getCurrentPosition());
