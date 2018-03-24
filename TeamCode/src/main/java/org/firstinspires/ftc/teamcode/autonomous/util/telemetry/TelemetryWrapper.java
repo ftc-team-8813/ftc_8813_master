@@ -41,5 +41,6 @@ public class TelemetryWrapper {
         for (int i = 0; i < lines.length; i++) {
             lines[i] = "";
         }
+        render();
     }
 }

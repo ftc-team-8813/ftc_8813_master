@@ -96,27 +96,28 @@ public class Utils {
         return c * (1.0 - (x - a) / (b - a)) + d * ((x - a) / (b - a));
     }
 
-    /**
-     * GZips all non-GZipped old Robot Controller log files, renaming them to
-     * 'robotControllerLog.txt.[n].gz'
-     */
-    public static void gzipLogs() {
-        String base = Config.baseDir + "/robotControllerLog.txt.";
-        File input;
-        for (int i = 1; (input = new File(base + i)).exists(); i++) {
-            try (InputStream inp = new FileInputStream(input);
-                 OutputStream out = new GZIPOutputStream(
-                         new FileOutputStream(input.getAbsolutePath() + ".gz"))) {
-                byte[] buffer = new byte[1024];
-                int r;
-                while ((r = inp.read(buffer)) > 0) {
-                    out.write(buffer, 0, r);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            input.delete();
-            Log.i("LogZipper", "GZipped log #" + i);
-        }
-    }
+    //Useless function
+//    /**
+//     * GZips all non-GZipped old Robot Controller log files, renaming them to
+//     * 'robotControllerLog.txt.[n].gz'
+//     */
+//    public static void gzipLogs() {
+//        String base = Config.baseDir + "/robotControllerLog.txt.";
+//        File input;
+//        for (int i = 1; (input = new File(base + i)).exists(); i++) {
+//            try (InputStream inp = new FileInputStream(input);
+//                 OutputStream out = new GZIPOutputStream(
+//                         new FileOutputStream(input.getAbsolutePath() + ".gz"))) {
+//                byte[] buffer = new byte[1024];
+//                int r;
+//                while ((r = inp.read(buffer)) > 0) {
+//                    out.write(buffer, 0, r);
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            input.delete();
+//            Log.i("LogZipper", "GZipped log #" + i);
+//        }
+//    }
 }

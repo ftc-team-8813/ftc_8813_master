@@ -2,11 +2,14 @@ package org.firstinspires.ftc.teamcode.teleop.test;
 
 import android.widget.Button;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.sun.tools.javac.Main;
 
+import org.firstinspires.ftc.teamcode.autonomous.util.IMUMotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
+import org.firstinspires.ftc.teamcode.autonomous.util.sensors.IMU;
 import org.firstinspires.ftc.teamcode.teleop.MainTeleOp;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 import org.firstinspires.ftc.teamcode.util.Config;
@@ -33,8 +36,13 @@ public class PIDTuner extends OpMode {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        controller = new MotorController(hardwareMap.dcMotor.get("motor"));
+        IMU imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+        imu.initialize(telemetry);
+        imu.start();
+        controller = new IMUMotorController(hardwareMap.dcMotor.get("base"), imu);
         buttons = new ButtonHelper(gamepad1);
+        controller.setPIDConstants(0, 0, 0);
+        //controller.setPower(0.5);
         controller.hold(0);
     }
 
@@ -53,16 +61,34 @@ public class PIDTuner extends OpMode {
         switch (changing) {
             case 0:
                 telemetry.addData("Changing", "Proportional Gain");
-                controller.setPIDConstants(constants[0] - gamepad1.right_stick_y / 100, constants[1], constants[2]);
+                controller.setPIDConstants(constants[0] - gamepad1.right_stick_y / 10000,
+                        constants[1], constants[2]);
                 break;
             case 1:
                 telemetry.addData("Changing", "Integral Gain");
-                controller.setPIDConstants(constants[0], constants[1] - gamepad1.right_stick_y / 100, constants[2]);
+                controller.setPIDConstants(constants[0], constants[1] - gamepad1.right_stick_y /
+                        10000, constants[2]);
                 break;
             case 2:
                 telemetry.addData("Changing", "Derivative Gain");
-                controller.setPIDConstants(constants[0], constants[1], constants[2] - gamepad1.right_stick_y / 100);
+                controller.setPIDConstants(constants[0], constants[1], constants[2] -
+                        gamepad1.right_stick_y / 10000);
                 break;
+        }
+        if (gamepad1.right_bumper) {
+            switch (changing) {
+                case 0:
+                    controller.setPIDConstants(0, constants[1], constants[2]);
+                    break;
+                case 1:
+                    telemetry.addData("Changing", "Integral Gain");
+                    controller.setPIDConstants(constants[0], 0, constants[2]);
+                    break;
+                case 2:
+                    telemetry.addData("Changing", "Derivative Gain");
+                    controller.setPIDConstants(constants[0], constants[1], 0);
+                    break;
+            }
         }
         telemetry.addData("Target", controller.getTargetPosition());
         telemetry.addData("Position", controller.getCurrentPosition());
