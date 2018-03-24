@@ -24,7 +24,7 @@ public class PositionFinder extends MainTeleOp {
     private List<double[]> positions = new ArrayList<>();
     private boolean bHeld = false;
     @Override
-    public void loop() {
+    public void run() {
         if (gamepad1.b) {
             if (!bHeld) {
                 bHeld = true;

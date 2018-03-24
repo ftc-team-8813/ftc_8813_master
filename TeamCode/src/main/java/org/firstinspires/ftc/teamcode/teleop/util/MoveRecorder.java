@@ -40,7 +40,7 @@ public class MoveRecorder extends MainTeleOp {
     }
 
     @Override
-    public void loop() {
+    public void run() {
         super.loop();
         //Currently there is a fixed 20ms delay, giving us 50 frames per second. We will only take
         //every other frame, giving us 25fps
@@ -55,7 +55,6 @@ public class MoveRecorder extends MainTeleOp {
 
     @Override
     public void stop() {
-        super.stop();
         try {
             //This is going to be a potentially massive text file; we will gzip it to save phone space
             PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(new File(Config.storageDir, "move_" + System.currentTimeMillis() + ".txt.gz"))));
@@ -72,8 +71,10 @@ public class MoveRecorder extends MainTeleOp {
         } catch (IOException e) {
             log.e(e);
         } finally {
-            //Deallocate our large data
+            //Deallocate our possibly large data
             moves.clear();
+            //Finish everything else
+            super.stop();
         }
     }
 }

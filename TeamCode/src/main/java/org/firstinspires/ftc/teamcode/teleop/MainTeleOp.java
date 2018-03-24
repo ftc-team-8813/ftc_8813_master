@@ -1,24 +1,23 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
-import android.widget.Button;
-
-import com.qualcomm.hardware.lynx.LynxController;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.sun.tools.javac.util.Position;
 
-import org.firstinspires.ftc.teamcode.autonomous.util.DcMotorUtil;
+import org.firstinspires.ftc.teamcode.autonomous.util.IMUMotorController;
+import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
+import org.firstinspires.ftc.teamcode.autonomous.util.sensors.IMU;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
 import org.firstinspires.ftc.teamcode.teleop.util.ServoAngleFinder;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 import java.io.File;
@@ -40,9 +39,11 @@ public class MainTeleOp extends OpMode {
     //Limit switch
 //    protected DigitalChannel limit; //Not a digital channel anymore
     protected AnalogInput limit;
+
+    protected IMU imu;
     //Extend motor minimum position
     protected Integer extMin = null;
-    //Range of extend motor
+    //Range of extension motor
     protected int extRange;
     //Configuration
     protected Config conf;
@@ -85,7 +86,73 @@ public class MainTeleOp extends OpMode {
 
     private Logger log;
 
-    //protected int initEncoder;
+    protected class MotorDriver implements Runnable {
+
+        public static final int ROTATE = 1;
+        public static final int EXTEND = 2;
+
+        private int rotate, extension, mode;
+        private volatile boolean finished = false;
+
+        public MotorDriver(int rotate, int extend, int mode) {
+            this.rotate = rotate;
+            this.extension = extend;
+            this.mode = mode;
+        }
+
+        @Override
+        public void run() {
+            if (mode <= 0 || mode > 3) {
+                finished = true;
+                return;
+            }
+            MotorController turntable = new IMUMotorController(base, imu, conf);
+            MotorController chaindrive = new MotorController(extend, conf);
+
+            if ((mode & ROTATE) != 0) turntable.startRunToPosition(rotate);
+            if ((mode & EXTEND) != 0) chaindrive.startRunToPosition(extension);
+
+            while ((turntable.isHolding() || chaindrive.isHolding()) && !Thread.interrupted()) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+            turntable.close();
+            chaindrive.close();
+            finished = true;
+        }
+
+        public boolean isFinished() {
+            return finished;
+        }
+    }
+
+    private MotorDriver motorDriver;
+    private Thread motorDriverThread;
+
+    public void driveMotors(int base, int extend) {
+        startDriver(new MotorDriver(base, extend, MotorDriver.ROTATE | MotorDriver.EXTEND));
+    }
+
+    public void driveTurntable(int base) {
+        startDriver(new MotorDriver(base, 0, MotorDriver.ROTATE));
+    }
+
+    public void driveExtend(int extend) {
+        startDriver(new MotorDriver(0, extend, MotorDriver.EXTEND));
+    }
+
+    private void startDriver(MotorDriver driver) {
+        motorDriver = driver;
+        motorDriverThread = new Thread(driver, "Motor driver");
+    }
+
+    private void stopDriver() {
+        motorDriverThread.interrupt();
+    }
+
 
     @Override
     public void init() {
@@ -144,15 +211,15 @@ public class MainTeleOp extends OpMode {
         base = hardwareMap.dcMotor.get("base");
         base.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         base.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        extend = hardwareMap.dcMotor.get("extend");
-        //extend has an encoder now!
+        extend = hardwareMap.dcMotor.get("extension");
+        //extension has an encoder now!
         extend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extend.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         if (!robot1) limit = hardwareMap.analogInput.get("limit");
         //Initialize arm controller
         driver = new ArmDriver(waist, shoulder, elbow, l1, l2, conf);
 
-        //Reverse base and extend if configured to
+        //Reverse base and extension if configured to
         if (conf.getBoolean("base_reverse", false))
             base.setDirection(DcMotorSimple.Direction.REVERSE);
         if (conf.getBoolean("ext_reverse", false))
@@ -165,6 +232,12 @@ public class MainTeleOp extends OpMode {
         if (yawRange != null) {
             yaw.scaleRange(yawRange[0], yawRange[1]);
         }
+
+        //Initialize the IMU
+        imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+        imu.initialize(telemetry);
+        imu.start();
+        telemetry.clearAll();
 
         //Set up
         setInitialPositions();
@@ -187,6 +260,7 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public void stop() {
+        Persistent.clear();
         Logger.close();
     }
 
@@ -207,127 +281,135 @@ public class MainTeleOp extends OpMode {
     }
 
     /**
-     * Always use super.loop() if overriding
+     * Override this method instead of loop(). Does nothing by default; super.run() not required.
      */
+    public void run() {}
+
     @Override
-    public void loop() {
-        double newDist = -(gamepad1.right_stick_y * maxMove);
-        double newAngle = (gamepad1.left_stick_y * maxMove);
-        if (Math.abs(Utils.sum(rotateWindow)) > maxIncrease)
-            newDist = 0;
-        if (Math.abs(Utils.sum(extWindow)) > maxIncrease)
-            newAngle = 0;
-        addToEndOfRotateWindow(newDist);
-        addToEndOfExtendWindow(newAngle);
-        driver.moveTo(
-                driver.getClawDistance() + newDist,
-                driver.getArmAngle() + newAngle);
-        if (gamepad2.dpad_left) {
-            base.setPower(0.8);
-        } else if (gamepad2.dpad_right) {
-            base.setPower(-0.8);
+    public final void loop() {
+        if (motorDriver != null && !motorDriver.isFinished()) {
+            telemetry.clearAll();
+            telemetry.addData("Autonomous move in progress", "Press RB to stop");
+            if (gamepad1.right_bumper) stopDriver();
         } else {
-            base.setPower(0);
-        }
+            run();
+            double newDist = -(gamepad1.right_stick_y * maxMove);
+            double newAngle = (gamepad1.left_stick_y * maxMove);
+            if (Math.abs(Utils.sum(rotateWindow)) > maxIncrease)
+                newDist = 0;
+            if (Math.abs(Utils.sum(extWindow)) > maxIncrease)
+                newAngle = 0;
+            addToEndOfRotateWindow(newDist);
+            addToEndOfExtendWindow(newAngle);
+            driver.moveTo(
+                    driver.getClawDistance() + newDist,
+                    driver.getArmAngle() + newAngle);
+            if (gamepad2.dpad_left) {
+                base.setPower(0.8);
+            } else if (gamepad2.dpad_right) {
+                base.setPower(-0.8);
+            } else {
+                base.setPower(0);
+            }
 
-        wrist.setPosition(Utils.constrain(wrist.getPosition() + (wrist_speed *
-                        gamepad2.right_stick_y),
-                0, 1));
-        yaw.setPosition(Utils.constrain(yaw.getPosition() + (yaw_speed * gamepad1.right_stick_x), 0, 1));
+            wrist.setPosition(Utils.constrain(wrist.getPosition() + (wrist_speed *
+                    gamepad2.right_stick_y), 0, 1));
+            yaw.setPosition(Utils.constrain(yaw.getPosition() + (yaw_speed * gamepad1.right_stick_x), 0, 1));
 
-        driver.setWaistAngle(driver.getWaistAngle() - (gamepad1.left_stick_x * maxRotate));
-        //getState same as !isPressed, except for DigitalChannels (which are needed for REV sensors)
-        //For AnalogInputs, getVoltage() should be around 0 when active
-        //CMOS logic LOW is < 0.8V
-        //if (limit.getVoltage() >= 0.8) {
-        //Only allows user to go backward if the minimum switch hasn't been triggered.
-        if (gamepad2.dpad_down) {
-            extend.setPower(-1);
-        } else {
-            extend.setPower(0);
-        }
-        //} else {
-        //    extend.setPower(0);
-        //    extMin = extend.getCurrentPosition();
-        //}
-        if (gamepad2.dpad_up /*&& extMin != null && extend.getCurrentPosition() < extMin + extRange*/) {
-            extend.setPower(1);
-        } else if (extend.getPower() != -1) {
-            extend.setPower(0);
-        }
-        try {
-            Thread.sleep(20);
-        } catch (InterruptedException e) {
-            return;
-        }
+            driver.setWaistAngle(driver.getWaistAngle() - (gamepad1.left_stick_x * maxRotate));
+            //getState same as !isPressed, except for DigitalChannels (which are needed for REV sensors)
+            //For AnalogInputs, getVoltage() should be around 0 when active
+            //CMOS logic LOW is < 0.8V
+            //if (limit.getVoltage() >= 0.8) {
+            //Only allows user to go backward if the minimum switch hasn't been triggered.
+            if (gamepad2.dpad_down) {
+                extend.setPower(-1);
+            } else {
+                extend.setPower(0);
+            }
+            //} else {
+            //    extension.setPower(0);
+            //    extMin = extension.getCurrentPosition();
+            //}
+            if (gamepad2.dpad_up /*&& extMin != null && extension.getCurrentPosition() < extMin + extRange*/) {
+                extend.setPower(1);
+            } else if (extend.getPower() != -1) {
+                extend.setPower(0);
+            }
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                return;
+            }
 
-        //Used to be A, but that would trigger the claw when Start+A was pressed to connect gamepad1
-        if (buttonHelper_1.pressing(ButtonHelper.x)) {
-            if (clawPos == 0) clawPos = 1;
-            else clawPos = 0;
-            if (clawPos == 1)
-                claw.setPosition(clawGlyphAmount);
-            else
-                claw.setPosition(clawOpenAmount);
-        }
+            //Used to be A, but that would trigger the claw when Start+A was pressed to connect gamepad1
+            if (buttonHelper_1.pressing(ButtonHelper.x)) {
+                if (clawPos == 0) clawPos = 1;
+                else clawPos = 0;
+                if (clawPos == 1)
+                    claw.setPosition(clawGlyphAmount);
+                else
+                    claw.setPosition(clawOpenAmount);
+            }
 
-        if (buttonHelper_2.pressing(ButtonHelper.y)) {
-            if (clawPos == 0) clawPos = 2;
-            else clawPos = 0;
-            if (clawPos == 2)
-                claw.setPosition(clawCloseAmount);
-            else
-                claw.setPosition(clawOpenAmount);
-        }
+            if (buttonHelper_2.pressing(ButtonHelper.y)) {
+                if (clawPos == 0) clawPos = 2;
+                else clawPos = 0;
+                if (clawPos == 2)
+                    claw.setPosition(clawCloseAmount);
+                else
+                    claw.setPosition(clawOpenAmount);
+            }
 
-        if (buttonHelper_2.pressing(ButtonHelper.right_bumper)) {
-            long time = System.currentTimeMillis();
-            float sinceStart = (float)(time-start)/1000f;
-            float sinceLast  = (float)(time-lastPress)/1000f;
-            log.i("Lap cycle trigger @ %.3f sec (%.3f sec since last press)", sinceStart, sinceLast);
-            lastPress = time;
-        }
+            if (buttonHelper_2.pressing(ButtonHelper.right_bumper)) {
+                long time = System.currentTimeMillis();
+                float sinceStart = (float) (time - start) / 1000f;
+                float sinceLast = (float) (time - lastPress) / 1000f;
+                log.i("Lap cycle trigger @ %.3f sec (%.3f sec since last press)", sinceStart, sinceLast);
+                lastPress = time;
+            }
 
-        if (gamepad1.a) {
-            yaw.setPosition(conf.getDouble("yaw_mid", 0));
-        }
+            if (gamepad1.a) {
+                yaw.setPosition(conf.getDouble("yaw_mid", 0));
+            }
 
-        if (buttonHelper_1.pressing(ButtonHelper.y)) {
-            moveTo(new double[] {conf.getDouble("glyph_adj", 0), conf.getDouble("glyph_dist", 0), conf.getDouble("glyph_waist", 0)});
-        }
+            if (buttonHelper_1.pressing(ButtonHelper.y)) {
+                moveTo(new double[]{conf.getDouble("glyph_adj", 0), conf.getDouble("glyph_dist", 0), conf.getDouble("glyph_waist", 0)});
+            }
 
-        //We don't need this in PositionCollector
-        if (buttonHelper_1.pressing(ButtonHelper.b) && !(this instanceof PositionFinder)) {
-            moveTo(new double[] {conf.getDouble("cryptobox_adj", 0), conf.getDouble("cryptobox_dist", 0), conf.getDouble("cryptobox_waist", 0)});
-        }
+            //We don't need this in PositionCollector
+            if (buttonHelper_1.pressing(ButtonHelper.b) && !(this instanceof PositionFinder)) {
+                moveTo(new double[]{conf.getDouble("cryptobox_adj", 0), conf.getDouble("cryptobox_dist", 0), conf.getDouble("cryptobox_waist", 0)});
+            }
 
-        if (buttonHelper_1.pressing(ButtonHelper.right_bumper)) {
-            moveTo(new double[] {conf.getDouble("relic_adj", 0), conf.getDouble("relic_dist", 0), conf.getDouble("relic_waist", 0)});
-        }
+            if (buttonHelper_1.pressing(ButtonHelper.right_bumper)) {
+                moveTo(new double[]{conf.getDouble("relic_adj", 0), conf.getDouble("relic_dist", 0), conf.getDouble("relic_waist", 0)});
+            }
 
-        if (gamepad1.left_bumper) {
-            setInitialPositions();
-        }
+            if (gamepad1.left_bumper) {
+                setInitialPositions();
+            }
 
-        telemetry.addData("Elapsed Time", Utils.elapsedTime(System.currentTimeMillis() - start));
-        telemetry.addData("Claw", (clawPos == 0 ? "OPEN" : (clawPos == 1 ? "PART CLOSED" :
-                "CLOSED")));
-        if (!robot1) telemetry.addData("Limit Switch", (limit.getVoltage() < 0.8) ? "PRESSED" :
-                "RELEASED");
-        telemetry.addData("Arm Angle", Utils.shortFloat(driver.getArmAngle()));
-        telemetry.addData("Distance", Utils.shortFloat(driver.getClawDistance()));
-        telemetry.addData("Waist Position", Utils.shortFloat(driver.getWaistPos()));
-        telemetry.addData("Waist Angle", Utils.shortFloat(driver.getWaistAngle()));
-        telemetry.addData("Shoulder Position", Utils.shortFloat(driver.getShoulderPos()));
-        telemetry.addData("Shoulder Angle", Utils.shortFloat(driver.getShoulderAngle()));
-        telemetry.addData("Elbow Position", Utils.shortFloat(driver.getElbowPos()));
-        telemetry.addData("Elbow Angle", Utils.shortFloat(driver.getElbowAngle()));
-        telemetry.addData("Extend Position", extend.getCurrentPosition());
-        telemetry.addData("Extend Minimum", extMin);
-        telemetry.addData("Turntable Position", getTurntablePosition());
-        telemetry.addData("Wrist Position", wrist.getPosition());
-        telemetry.addData("Yaw Position", yaw.getPosition());
-        telemetry.addData("Running on", robot1 ? "Robot 1" : "Robot 2");
+            telemetry.addData("Elapsed Time", Utils.elapsedTime(System.currentTimeMillis() - start));
+            telemetry.addData("Claw", (clawPos == 0 ? "OPEN" : (clawPos == 1 ? "PART CLOSED" :
+                    "CLOSED")));
+            if (!robot1) telemetry.addData("Limit Switch", (limit.getVoltage() < 0.8) ? "PRESSED" :
+                    "RELEASED");
+            telemetry.addData("Arm Angle", Utils.shortFloat(driver.getArmAngle()));
+            telemetry.addData("Distance", Utils.shortFloat(driver.getClawDistance()));
+            telemetry.addData("Waist Position", Utils.shortFloat(driver.getWaistPos()));
+            telemetry.addData("Waist Angle", Utils.shortFloat(driver.getWaistAngle()));
+            telemetry.addData("Shoulder Position", Utils.shortFloat(driver.getShoulderPos()));
+            telemetry.addData("Shoulder Angle", Utils.shortFloat(driver.getShoulderAngle()));
+            telemetry.addData("Elbow Position", Utils.shortFloat(driver.getElbowPos()));
+            telemetry.addData("Elbow Angle", Utils.shortFloat(driver.getElbowAngle()));
+            telemetry.addData("Extend Position", extend.getCurrentPosition());
+            telemetry.addData("Extend Minimum", extMin);
+            telemetry.addData("Turntable Position", getTurntablePosition());
+            telemetry.addData("Wrist Position", wrist.getPosition());
+            telemetry.addData("Yaw Position", yaw.getPosition());
+            telemetry.addData("Running on", robot1 ? "Robot 1" : "Robot 2");
+        }
     }
 
     private void addToEndOfRotateWindow(double value) {

@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Persistent;
 import org.firstinspires.ftc.teamcode.util.Utils;
 import org.opencv.android.OpenCVLoader;
 
@@ -115,6 +116,9 @@ public abstract class BaseAutonomous extends LinearOpMode {
             //and the OpMode wasn't re-initialized.
             tasks.clear();
 
+            //Clear the persistent objects since this would be a new round in competition
+            Persistent.clear();
+
             TelemetryWrapper.init(telemetry, 0);
 
             //Set the current instance
@@ -159,8 +163,7 @@ public abstract class BaseAutonomous extends LinearOpMode {
     }
 
     /**
-     * Executed when the robot is initializing. Implementation is optional. May be needed for setup
-     * operations such as checking switch state.
+     * Executed when the robot is initializing. Implementation is optional; does nothing by default.
      * @throws InterruptedException if the OpMode is trying to stop
      */
     public void initialize() throws InterruptedException {}
@@ -173,7 +176,7 @@ public abstract class BaseAutonomous extends LinearOpMode {
     public abstract void run() throws InterruptedException;
 
     /**
-     * Executed after all tasks have completed.
+     * Executed after all tasks have completed. Does nothing by default.
      * @throws InterruptedException if the OpMode is trying to stop
      */
     public void finish() throws InterruptedException { }

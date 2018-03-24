@@ -14,21 +14,21 @@ import org.firstinspires.ftc.teamcode.autonomous.util.sensors.IMU;
  */
 @Autonomous(name="IMU Control Test")
 public class IMUMotorControllerTest extends BaseAutonomous {
+    private MotorController controller;
+    private IMU imu;
     @Override
     public void run() throws InterruptedException {
-        IMU imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+        imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
         imu.initialize(telemetry);
         imu.start();
-        MotorController controller = new IMUMotorController(hardwareMap.dcMotor.get("base"), imu);
+        controller = new IMUMotorController(hardwareMap.dcMotor.get("base"), imu);
         tasks.add(new TaskRotate(controller, 0));
         runTasks();
-        while (opModeIsActive()) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                break;
-            }
-        }
+    }
+
+    @Override
+    public void finish() {
         controller.close();
+        imu.stop();
     }
 }

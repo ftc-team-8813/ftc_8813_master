@@ -73,12 +73,16 @@ public class IMU {
         params.loggingEnabled      = false;
         params.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
         if (autoCalibrating) {
-            TelemetryWrapper.setLine(0, "Calibration required. Set the robot on a flat surface " +
-                    "before pressing play.");
+            TelemetryWrapper.setLine(0, "Calibration required. Please set the robot on a flat " +
+                    "surface");
         }
     }
 
     public void start() {
+        if (params == null) {
+            log.f("start() called before initialize()!");
+            throw new IllegalStateException("start() called before initialize()!");
+        }
         TelemetryWrapper.setLine(0, "Initializing IMU");
         imu.initialize(params);
         while (autoCalibrating && !Thread.interrupted()) {

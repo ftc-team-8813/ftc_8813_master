@@ -264,7 +264,7 @@ public class MotorController implements Closeable {
     public void runToPosition(int position, boolean keepHolding) throws InterruptedException {
         if (closed) throw new IllegalStateException("Motor controller closed");
         hold(position);
-        while (!controller.nearTarget(5)) {
+        while (!controller.nearTarget(controller.sse)) {
             Thread.sleep(10);
         }
         if (!keepHolding) stopHolding();
@@ -314,6 +314,15 @@ public class MotorController implements Closeable {
     public void setReverse(boolean reverse) {
         if (closed) throw new IllegalStateException("Motor controller closed");
         controller.setReverse(reverse);
+    }
+
+    /**
+     * Returns whether the motor is holding a position.
+     * @return true if the motor is trying to hold a position.
+     */
+    public boolean isHolding() {
+        if (closed) throw new IllegalStateException("Motor controller closed");
+        return controller.isHolding();
     }
 
     /**
