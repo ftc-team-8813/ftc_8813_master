@@ -96,6 +96,16 @@ public class Utils {
         return c * (1.0 - (x - a) / (b - a)) + d * ((x - a) / (b - a));
     }
 
+    public static String quadName(int quadrant) {
+        switch (quadrant) {
+            case 1: return "Blue Upper";
+            case 2: return "Blue Lower";
+            case 3: return "Red Lower";
+            case 4: return "Red Upper";
+            default: return "Unknown";
+        }
+    }
+
     //Useless function
 //    /**
 //     * GZips all non-GZipped old Robot Controller log files, renaming them to

@@ -18,10 +18,15 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
- * Created by aidan on 3/20/18.
+ * Wrapper class for the BNO055 IMU to automatically set up and calibrate the IMU.
  */
 
 public class IMU {
+
+    private static final int PRE_INIT = 0;
+    private static final int INITIALIZED = 1;
+    private static final int SETUP = 2;
+    private static final int STARTED = 3;
 
     private BNO055IMU imu;
     private BNO055IMU.Parameters params;
@@ -29,6 +34,7 @@ public class IMU {
     private boolean autoCalibrating;
     private Thread worker;
     private float heading, roll, pitch;
+    private int status = PRE_INIT;
 
     public IMU(BNO055IMU imu) {
         this.imu = imu;
@@ -76,43 +82,51 @@ public class IMU {
             TelemetryWrapper.setLine(0, "Calibration required. Please set the robot on a flat " +
                     "surface");
         }
+        status = INITIALIZED;
     }
 
     public void start() {
-        if (params == null) {
+        if (status < INITIALIZED) {
             log.f("start() called before initialize()!");
             throw new IllegalStateException("start() called before initialize()!");
         }
-        TelemetryWrapper.setLine(0, "Initializing IMU");
-        imu.initialize(params);
-        while (autoCalibrating && !Thread.interrupted()) {
-            if (autoCalibrating) {
-                TelemetryWrapper.setLine(0, "Calibrating... Please do not disturb the " +
-                        "robot!");
-                int progress = (imu.getCalibrationStatus().calibrationStatus >> 4) & 3;
-                TelemetryWrapper.setLine(1, "Progress: " + progress + "/3");
-                TelemetryWrapper.setLine(2, "Status: " + imu.getSystemStatus().toString());
-                if (progress == 3) {
-                    TelemetryWrapper.setLine(1, "Progress: Saving calibration");
-                    autoCalibrating = false;
-                    File f = new File(Config.storageDir + "imu_calibration.json");
-                    try {
-                        String data = imu.readCalibrationData().serialize();
-                        FileWriter w = new FileWriter(f);
-                        w.write(data);
-                        w.close();
-                    } catch (IOException e) {
-                        log.e("Unable to write calibration data");
+        if (status == STARTED) {
+            log.d("Trying to start IMU even though it is already running");
+            return;
+        }
+        if (status != SETUP) {
+            TelemetryWrapper.setLine(0, "Initializing IMU");
+            imu.initialize(params);
+            while (autoCalibrating && !Thread.interrupted()) {
+                if (autoCalibrating) {
+                    TelemetryWrapper.setLine(0, "Calibrating... Please do not disturb the " +
+                            "robot!");
+                    int progress = (imu.getCalibrationStatus().calibrationStatus >> 4) & 3;
+                    TelemetryWrapper.setLine(1, "Progress: " + progress + "/3");
+                    TelemetryWrapper.setLine(2, "Status: " + imu.getSystemStatus().toString());
+                    if (progress == 3) {
+                        TelemetryWrapper.setLine(1, "Progress: Saving calibration");
+                        autoCalibrating = false;
+                        File f = new File(Config.storageDir + "imu_calibration.json");
+                        try {
+                            String data = imu.readCalibrationData().serialize();
+                            FileWriter w = new FileWriter(f);
+                            w.write(data);
+                            w.close();
+                        } catch (IOException e) {
+                            log.e("Unable to write calibration data");
+                        }
                     }
                 }
+                try {
+                    Thread.sleep(20);
+                } catch (InterruptedException e) {
+                    break;
+                }
             }
-            try {
-                Thread.sleep(20);
-            } catch (InterruptedException e) {
-                break;
-            }
+            status = SETUP;
+            TelemetryWrapper.clear();
         }
-        TelemetryWrapper.clear();
         worker = new Thread(new Runnable() {
 
             private float lastAngle;
@@ -145,6 +159,7 @@ public class IMU {
         });
         worker.setDaemon(true);
         worker.start();
+        status = STARTED;
     }
 
     public float getHeading() {
@@ -160,6 +175,11 @@ public class IMU {
     }
 
     public void stop() {
+        if (status != STARTED) {
+            log.d("Trying to stop IMU even though it is not running");
+            return;
+        }
         worker.interrupt();
+        status = SETUP;
     }
 }

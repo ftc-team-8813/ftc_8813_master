@@ -17,10 +17,12 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * PositionFinder - Util for finding positions for autonomous features.
+ * TODO Position finder for TeleOp. Stores arm position as waist, adj, dist, wrist, yaw, base, ext
  */
-@TeleOp(name="Position Collector", group="util")
-public class PositionFinder extends MainTeleOp {
+// Extend PositionFinder because we want MainTeleOp to detect it as that and allow us to use B.
+// Otherwise, we will override all of the functions.
+@TeleOp(name="TeleOp Position Finder", group="util")
+public class TeleopPositionFinder extends PositionFinder {
     private List<double[]> positions = new ArrayList<>();
     private boolean bHeld = false;
     @Override
@@ -29,8 +31,8 @@ public class PositionFinder extends MainTeleOp {
             if (!bHeld) {
                 bHeld = true;
                 positions.add(new double[]{
-                       driver.getWaistPos(), driver.getShoulderPos(), driver.getElbowPos(), wrist
-                        .getPosition(), getTurntablePosition(), extend.getCurrentPosition(), yaw.getPosition()
+                        driver.getClawDistance(), driver.getArmAngle(), driver.getWaistAngle(), wrist
+                        .getPosition(), yaw.getPosition(), getTurntablePosition(), extend.getCurrentPosition()
                 });
             }
         } else {
@@ -41,7 +43,7 @@ public class PositionFinder extends MainTeleOp {
     @Override
     public void stop() {
         if (positions.size() == 0) return; //Forget it, we don't have anything to save
-        File outFile = new File(Config.storageDir + "pos_" + new SimpleDateFormat
+        File outFile = new File(Config.storageDir + "pos_teleop_" + new SimpleDateFormat
                 ("yyMMdd_HHmmss", Locale.US).format(new Date()) + ".txt");
         try (FileWriter w = new FileWriter(outFile)) {
             int i = 0;

@@ -9,8 +9,10 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.util.IMUMotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
+import org.firstinspires.ftc.teamcode.autonomous.util.QuadrantChooser;
 import org.firstinspires.ftc.teamcode.autonomous.util.sensors.IMU;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 import org.firstinspires.ftc.teamcode.util.Config;
@@ -22,6 +24,7 @@ import org.firstinspires.ftc.teamcode.util.Utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Main TeleOp control to control the {@link ArmDriver}. Most disorganized part of the code; can
@@ -86,6 +89,12 @@ public class MainTeleOp extends OpMode {
 
     private Logger log;
 
+    private volatile int quadrant;
+
+    private int[] glyphs;
+    private volatile Config glyphPlacement;
+
+
     protected class MotorDriver implements Runnable {
 
         public static final int ROTATE = 1;
@@ -102,6 +111,7 @@ public class MainTeleOp extends OpMode {
 
         @Override
         public void run() {
+            //FIXME spins in circles
             if (mode <= 0 || mode > 3) {
                 finished = true;
                 return;
@@ -147,6 +157,8 @@ public class MainTeleOp extends OpMode {
     private void startDriver(MotorDriver driver) {
         motorDriver = driver;
         motorDriverThread = new Thread(driver, "Motor driver");
+        motorDriverThread.setDaemon(true);
+        motorDriverThread.start();
     }
 
     private void stopDriver() {
@@ -211,7 +223,7 @@ public class MainTeleOp extends OpMode {
         base = hardwareMap.dcMotor.get("base");
         base.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         base.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        extend = hardwareMap.dcMotor.get("extension");
+        extend = hardwareMap.dcMotor.get("extend");
         //extension has an encoder now!
         extend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extend.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -233,11 +245,44 @@ public class MainTeleOp extends OpMode {
             yaw.scaleRange(yawRange[0], yawRange[1]);
         }
 
+        glyphs = new int[3]; //Number of glyphs in each column
+        TaskClassifyPictograph.Result findResult =
+                (TaskClassifyPictograph.Result)Persistent.get("findResult");
+        //Add our pre-placed glyph
+        if (findResult == null) {
+        } else if (findResult == TaskClassifyPictograph.Result.NONE
+                || findResult == TaskClassifyPictograph.Result.CENTER) {
+            glyphs[1] = 1;
+        } else if (findResult == TaskClassifyPictograph.Result.LEFT) {
+            glyphs[0] = 1;
+        } else if (findResult == TaskClassifyPictograph.Result.RIGHT) {
+            glyphs[2] = 1;
+        }
+
         //Initialize the IMU
-        imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
-        imu.initialize(telemetry);
+        imu = (IMU)Persistent.get("imu");
+        if (imu == null) {
+            imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+            imu.initialize(telemetry);
+        }
         imu.start();
         telemetry.clearAll();
+
+        if (Persistent.get("quadrant") == null) {
+            quadrant = -1;
+            Thread chooser = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    QuadrantChooser ch = new QuadrantChooser(telemetry);
+                    quadrant = ch.chooseQuadrant();
+                    glyphPlacement = new Config("glyph_quad_" + quadrant + ".txt");
+                }
+            });
+            chooser.setDaemon(true);
+            chooser.start();
+        } else {
+            quadrant = (int)Persistent.get("quadrant");
+        }
 
         //Set up
         setInitialPositions();
@@ -260,14 +305,81 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public void stop() {
+        imu.stop();
         Persistent.clear();
         Logger.close();
     }
 
+    //adj, dist
+    //adj, dist, waist
+    //adj, dist, waist, wrist
+    //adj, dist, waist, wrist, yaw
     private void moveTo(double[] armPos) {
         if (armPos == null) return;
         driver.moveTo(armPos[1], armPos[0]);
-        if (armPos.length > 2) driver.setWaistAngle(armPos[2]);
+        if (armPos.length > 4) yaw.setPosition(armPos[4]);
+        else if (armPos.length > 3) wrist.setPosition(armPos[3]);
+        else if (armPos.length > 2) driver.setWaistAngle(armPos[2]);
+    }
+
+    private void moveToGlyphbox() {
+        double[] coord = glyphPlacement.getDoubleArray("glyph_pit");
+        if (coord == null) {
+            log.e("Cannot find position '%s'", "glyph_pit");
+        }
+        moveTo(Arrays.copyOfRange(coord, 0, 5));
+        driveMotors((int)coord[5], (int)coord[6]);
+    }
+
+    private void setGlyph(int column) {
+        int full = 0;
+        int filling = column;
+        int i = 0;
+        for (int h : glyphs) {
+            if (h == 4) full++;
+            else if (h > 0) filling = i;
+            i++;
+        }
+        if (full == 3) {
+            //It's full; don't place anymore
+            return;
+        }
+        final int f = filling;
+        glyphs[f]++;
+        final Thread watching = Thread.currentThread();
+        Thread executor = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long start = System.currentTimeMillis();
+                boolean c = move("floating");
+                if (c)  c = move(f + "_" + glyphs[f]);
+                if (c)  c = move("floating_" + f);
+                if (c)  c = move("glyph_pit");
+            }
+
+            private boolean move(String name) {
+                double[] coord = glyphPlacement.getDoubleArray(name);
+                if (coord == null) {
+                    log.e("Cannot find position '%s'", name);
+                    return false;
+                }
+                moveTo(new double[] {coord[1], coord[0], coord[2], coord[3], coord[4]});
+                driveMotors((int)coord[5], (int)coord[6]);
+                while ((System.currentTimeMillis() < start + 1000 || !motorDriver.isFinished())
+                        && !watching.isInterrupted()) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        stopDriver();
+                        return false;
+                    }
+                }
+                stopDriver();
+                return true;
+            }
+        });
+        executor.setDaemon(true);
+        executor.start();
     }
 
     private void setExtendedPositions() {
@@ -287,7 +399,9 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public final void loop() {
-        if (motorDriver != null && !motorDriver.isFinished()) {
+        if (quadrant < 0) {
+            // Please choose a quadrant!
+        } else if (motorDriver != null && !motorDriver.isFinished()) {
             telemetry.clearAll();
             telemetry.addData("Autonomous move in progress", "Press RB to stop");
             if (gamepad1.right_bumper) stopDriver();
@@ -374,7 +488,7 @@ public class MainTeleOp extends OpMode {
             }
 
             if (buttonHelper_1.pressing(ButtonHelper.y)) {
-                moveTo(new double[]{conf.getDouble("glyph_adj", 0), conf.getDouble("glyph_dist", 0), conf.getDouble("glyph_waist", 0)});
+                moveToGlyphbox();
             }
 
             //We don't need this in PositionCollector

@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.qualcomm.hardware.ams.AMSColorSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -22,10 +23,12 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRotate;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskScoreJewel;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
+import org.firstinspires.ftc.teamcode.autonomous.util.QuadrantChooser;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Persistent;
 
 /**
  * Main autonomous program.
@@ -85,78 +88,12 @@ public class MainAutonomous extends BaseAutonomous {
         driver.setWaistAngle(config.getDouble("waist_init", 0));
         wrist.setPosition(config.getDouble("wrist_init", 0));
         yaw.setPosition(config.getDouble("yaw_init", 0));
-        chooseQuadrant();
+        quadrant = new QuadrantChooser(telemetry).chooseQuadrant();
         //quadrant = 2;
         finder = new TaskClassifyPictograph();
     }
 
-    private void chooseQuadrant() {
-        telemetry.addData("","Please choose a quadrant on the robot controller");
-        telemetry.update();
-        final FtcRobotControllerActivity activity = (FtcRobotControllerActivity) AppUtil.getInstance()
-                .getActivity();
-        final int center_x = 210;
-        final int center_y = 244;
-        final int w = 421, h = 559;
-        final Logger log = new Logger("Quadrant Chooser");
-        activity.runOnUiThread(new Runnable() {
-            @SuppressLint("ClickableViewAccessibility")
-            @Override
-            public void run() {
-                ImageView image = new ImageView(activity);
-                image.setImageBitmap(BitmapFactory.decodeResource(activity.getResources(), R
-                        .drawable.field));
-                activity.cameraMonitorLayout.addView(image);
-                image.setOnTouchListener(new View.OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                            int touch_x = (int)event.getX();
-                            int touch_y = (int)event.getY();
-                            log.d("Received touch event at (%d, %d)", touch_x, touch_y);
-                            int dx = (int)-v.getX();
-                            int dy = (int)-v.getY();
-                            int vw = (int)v.getWidth();
-                            int vh = (int)v.getHeight();
-                            int px = (touch_x + dx) * w / vw;
-                            int py = (touch_y + dy) * h / vh;
-                            log.d("Click event at (%d,%d); transformed to image pixel (%d, %d)",
-                                    touch_x, touch_y, px, py);
-                            if (px < center_x) {
-                                if (py < center_y) {
-                                    quadrant = 1;
-                                } else {
-                                    quadrant = 2;
-                                }
-                            } else {
-                                if (py < center_y) {
-                                    quadrant = 4;
-                                } else {
-                                    quadrant = 3;
-                                }
-                            }
-                            activity.cameraMonitorLayout.removeView(v);
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-                log.i("Listening for click events");
 
-            }
-        });
-        quadrant = 0;
-        while (quadrant == 0) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                return;
-            }
-        }
-        log.i("Quadrant chosen: " + quadName(quadrant));
-        telemetry.clear();
-        telemetry.addData("Quadrant chosen", quadName(quadrant));
-    }
 
     @Override
     public void run() throws InterruptedException {
@@ -174,6 +111,7 @@ public class MainAutonomous extends BaseAutonomous {
         TaskClassifyPictograph.Result result = finder == null ? null : finder.getResult();
         //Set result to NONE if result is null
         if (result == null) result = TaskClassifyPictograph.Result.NONE;
+        Persistent.put("findResult", result);
         //Place glyph
         log.i("Placing glyph");
         tasks.add(new TaskPlaceGlyphAutonomous(quadrant(), result, base, extend, arm));
@@ -187,15 +125,7 @@ public class MainAutonomous extends BaseAutonomous {
         extend.close();
     }
 
-    private String quadName(int quadrant) {
-        switch (quadrant) {
-            case 1: return "Blue Upper";
-            case 2: return "Blue Lower";
-            case 3: return "Red Lower";
-            case 4: return "Red Upper";
-            default: return "Unknown";
-        }
-    }
+
 }
 /*
 abstract class BasicAutonomous extends MainAutonomous {
