@@ -18,5 +18,5 @@ dependencies {
     compile project(path: ':openCVLibrary330')
 }
 android {
-    buildToolsVersion '26.0.2'
+    buildToolsVersion '27.0.3'
 }
