@@ -58,7 +58,7 @@ public class MotorController implements Closeable {
                     double speed = error*kP + integral*(kI) + derivative*kD;
                     speed = Utils.constrain(speed, -1, 1) * power;
                     if (Math.abs(error) < sse) {
-                        if (stopNearTarget) {
+                        if (stopNearTarget && derivative < 2) {
                             stopHolding();
                             stopNearTarget = false;
                         }

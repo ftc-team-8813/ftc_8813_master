@@ -25,7 +25,7 @@ public class TelemetryWrapper {
         t.update();
     }
 
-    public static void setLine(int l, String message) {
+    public static synchronized void setLine(int l, String message) {
         if (l < 0 || l >= lines.length) return;
         lines[l] = message;
         render();

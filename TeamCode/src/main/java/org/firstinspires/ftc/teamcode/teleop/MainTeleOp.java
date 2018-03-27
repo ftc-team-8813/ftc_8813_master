@@ -9,11 +9,13 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.util.IMUMotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.QuadrantChooser;
 import org.firstinspires.ftc.teamcode.autonomous.util.sensors.IMU;
+import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
@@ -123,6 +125,16 @@ public class MainTeleOp extends OpMode {
             if ((mode & EXTEND) != 0) chaindrive.startRunToPosition(extension);
 
             while ((turntable.isHolding() || chaindrive.isHolding()) && !Thread.interrupted()) {
+                if (motorDriverRunDetect) {
+                    String holding = turntable.isHolding() ? "Running" : "Finished";
+                    String position = "Position: " + turntable.getCurrentPosition() + ", Target: " +
+                            turntable.getTargetPosition();
+                    TelemetryWrapper.setLine(1, "Turntable: " + holding + "; " + position);
+                    holding = chaindrive.isHolding() ? "Running" : "Finished";
+                    position = "Position: " + chaindrive.getCurrentPosition() + ", Target: " +
+                            turntable.getTargetPosition();
+                    TelemetryWrapper.setLine(2, "Chain Drive: " + holding + "; " + position);
+                }
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
@@ -141,6 +153,7 @@ public class MainTeleOp extends OpMode {
 
     private MotorDriver motorDriver;
     private Thread motorDriverThread;
+    private volatile boolean motorDriverRunDetect;
 
     public void driveMotors(int base, int extend) {
         startDriver(new MotorDriver(base, extend, MotorDriver.ROTATE | MotorDriver.EXTEND));
@@ -305,6 +318,7 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public void stop() {
+        if (motorDriverThread != null) stopDriver();
         imu.stop();
         Persistent.clear();
         Logger.close();
@@ -326,12 +340,13 @@ public class MainTeleOp extends OpMode {
         double[] coord = glyphPlacement.getDoubleArray("glyph_pit");
         if (coord == null) {
             log.e("Cannot find position '%s'", "glyph_pit");
+            return;
         }
-        moveTo(Arrays.copyOfRange(coord, 0, 5));
+        moveTo(new double[] {coord[1], coord[0], coord[2], coord[3], coord[4]});
         driveMotors((int)coord[5], (int)coord[6]);
     }
 
-    private void setGlyph(int column) {
+    private void setGlyph(int column) { //TODO
         int full = 0;
         int filling = column;
         int i = 0;
@@ -402,10 +417,18 @@ public class MainTeleOp extends OpMode {
         if (quadrant < 0) {
             // Please choose a quadrant!
         } else if (motorDriver != null && !motorDriver.isFinished()) {
-            telemetry.clearAll();
-            telemetry.addData("Autonomous move in progress", "Press RB to stop");
+            if (!motorDriverRunDetect) {
+                telemetry.clearAll();
+                TelemetryWrapper.init(telemetry, 3);
+                motorDriverRunDetect = true;
+            }
+            TelemetryWrapper.setLine(0, "Autonomous move in progress; press RB to stop");
             if (gamepad1.right_bumper) stopDriver();
         } else {
+            if (motorDriverRunDetect) {
+                telemetry.clearAll();
+                motorDriverRunDetect = false;
+            }
             run();
             double newDist = -(gamepad1.right_stick_y * maxMove);
             double newAngle = (gamepad1.left_stick_y * maxMove);

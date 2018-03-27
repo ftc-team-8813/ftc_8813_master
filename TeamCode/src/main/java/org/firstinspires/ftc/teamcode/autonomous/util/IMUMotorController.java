@@ -24,7 +24,7 @@ public class IMUMotorController extends MotorController {
 
         @Override
         int getCurrentPosition() {
-            return (int) Utils.scaleRange(imu.getHeading(), 0, 360, 0, -12455);
+            return (int) Utils.scaleRange(imu.getHeading(), 0, 360, 0, 12455);
         }
     }
 
