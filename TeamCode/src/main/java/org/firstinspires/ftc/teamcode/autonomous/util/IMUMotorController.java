@@ -18,7 +18,7 @@ public class IMUMotorController extends MotorController {
         private IMU imu;
 
         IMUParallelController(DcMotor motor, Runnable atTarget, IMU imu, int sse) {
-            super(motor, atTarget, sse);
+            super(motor, atTarget, sse, false);
             this.imu = imu;
         }
 

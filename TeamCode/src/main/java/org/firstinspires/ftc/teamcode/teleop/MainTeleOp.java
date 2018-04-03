@@ -26,7 +26,10 @@ import org.firstinspires.ftc.teamcode.util.Utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Stack;
 
 /**
  * Main TeleOp control to control the {@link ArmDriver}. Most disorganized part of the code; can
@@ -94,6 +97,8 @@ public class MainTeleOp extends OpMode {
     private volatile int quadrant;
 
     private int[] glyphs;
+    private int activeColumn;
+    private int placementStep;
     private volatile Config glyphPlacement;
 
 
@@ -103,9 +108,10 @@ public class MainTeleOp extends OpMode {
         public static final int EXTEND = 2;
 
         private int rotate, extension, mode;
+        private Runnable onFinish;
         private volatile boolean finished = false;
 
-        public MotorDriver(int rotate, int extend, int mode) {
+        public MotorDriver(int rotate, int extend, int mode, Runnable onFinish) {
             this.rotate = rotate;
             this.extension = extend;
             this.mode = mode;
@@ -113,13 +119,12 @@ public class MainTeleOp extends OpMode {
 
         @Override
         public void run() {
-            //FIXME spins in circles
             if (mode <= 0 || mode > 3) {
                 finished = true;
                 return;
             }
             MotorController turntable = new IMUMotorController(base, imu, conf);
-            MotorController chaindrive = new MotorController(extend, conf);
+            MotorController chaindrive = new MotorController(extend, conf, null, true);
 
             if ((mode & ROTATE) != 0) turntable.startRunToPosition(rotate);
             if ((mode & EXTEND) != 0) chaindrive.startRunToPosition(extension);
@@ -144,6 +149,9 @@ public class MainTeleOp extends OpMode {
             turntable.close();
             chaindrive.close();
             finished = true;
+            if (onFinish != null) {
+                onFinish.run();
+            }
         }
 
         public boolean isFinished() {
@@ -155,16 +163,16 @@ public class MainTeleOp extends OpMode {
     private Thread motorDriverThread;
     private volatile boolean motorDriverRunDetect;
 
-    public void driveMotors(int base, int extend) {
-        startDriver(new MotorDriver(base, extend, MotorDriver.ROTATE | MotorDriver.EXTEND));
+    public void driveMotors(int base, int extend, Runnable onFinish) {
+        startDriver(new MotorDriver(base, extend, MotorDriver.ROTATE | MotorDriver.EXTEND, onFinish));
     }
 
-    public void driveTurntable(int base) {
-        startDriver(new MotorDriver(base, 0, MotorDriver.ROTATE));
+    public void driveTurntable(int base, Runnable onFinish) {
+        startDriver(new MotorDriver(base, 0, MotorDriver.ROTATE, onFinish));
     }
 
-    public void driveExtend(int extend) {
-        startDriver(new MotorDriver(0, extend, MotorDriver.EXTEND));
+    public void driveExtend(int extend, Runnable onFinish) {
+        startDriver(new MotorDriver(0, extend, MotorDriver.EXTEND, onFinish));
     }
 
     private void startDriver(MotorDriver driver) {
@@ -259,17 +267,23 @@ public class MainTeleOp extends OpMode {
         }
 
         glyphs = new int[3]; //Number of glyphs in each column
+        relic_move = 0;
+        placementStep = 0;
         TaskClassifyPictograph.Result findResult =
                 (TaskClassifyPictograph.Result)Persistent.get("findResult");
         //Add our pre-placed glyph
-        if (findResult == null) {
-        } else if (findResult == TaskClassifyPictograph.Result.NONE
-                || findResult == TaskClassifyPictograph.Result.CENTER) {
-            glyphs[1] = 1;
-        } else if (findResult == TaskClassifyPictograph.Result.LEFT) {
-            glyphs[0] = 1;
-        } else if (findResult == TaskClassifyPictograph.Result.RIGHT) {
-            glyphs[2] = 1;
+        if (findResult != null) {
+            if (findResult == TaskClassifyPictograph.Result.NONE
+                    || findResult == TaskClassifyPictograph.Result.CENTER) {
+                glyphs[1] = 1;
+                activeColumn = 1;
+            } else if (findResult == TaskClassifyPictograph.Result.LEFT) {
+                glyphs[0] = 1;
+                activeColumn = 0;
+            } else if (findResult == TaskClassifyPictograph.Result.RIGHT) {
+                glyphs[2] = 1;
+                activeColumn = 2;
+            }
         }
 
         //Initialize the IMU
@@ -332,69 +346,105 @@ public class MainTeleOp extends OpMode {
         if (armPos == null) return;
         driver.moveTo(armPos[1], armPos[0]);
         if (armPos.length > 4) yaw.setPosition(armPos[4]);
-        else if (armPos.length > 3) wrist.setPosition(armPos[3]);
-        else if (armPos.length > 2) driver.setWaistAngle(armPos[2]);
+        if (armPos.length > 3) wrist.setPosition(armPos[3]);
+        if (armPos.length > 2) driver.setWaistAngle(armPos[2]);
+    }
+
+    private static final int ARM      = 1;
+    private static final int WAIST    = 3;
+    private static final int WRIST    = 5;
+    private static final int YAW      = 9;
+    private static final int ARM_FULL = WAIST | WRIST | YAW;
+    private static final int ROTATE   = 16;
+    private static final int EXTEND   = 32;
+    private static final int BASE     = ROTATE | EXTEND;
+    private static final int FULL     = ARM_FULL | BASE;
+
+    private void moveToCoord(String property) {
+        moveToCoord(property, FULL);
+    }
+
+    private void moveToCoord(String property, int mode) {
+        moveToCoord(property, mode, null);
+    }
+
+    private void moveToCoord(String property, int mode, Runnable onFinish) {
+        double[] coord = glyphPlacement.getDoubleArray(property);
+        if (coord == null) {
+            log.e("Cannot find position '%s'", property);
+            return;
+        }
+        if ((mode & 1) != 0) {
+            List<Double> co = new ArrayList<>();
+            co.add(coord[1]);
+            co.add(coord[0]);
+            if ((mode & 2) != 0) co.add(coord[2]);
+            if ((mode & 4) != 0) co.add(coord[3]);
+            if ((mode & 8) != 0) co.add(coord[4]);
+            Double[] d = co.toArray(new Double[0]);
+            double[] o = new double[d.length];
+            for (int i = 0; i < d.length; i++) {
+                o[i] = d[i]; //Unboxing heck
+            }
+            moveTo(o);
+        }
+        if ((mode & 48) != 0) {
+            driveMotors((int)coord[5], (int)coord[6], onFinish);
+        } else if ((mode & 16) != 0) {
+            driveTurntable((int)coord[5], onFinish);
+        } else if ((mode & 32) != 0){
+            driveExtend((int)coord[6], onFinish);
+        }
+    }
+
+    private void moveToCoords(String[] properties, int[] modes) {
+        if (properties.length != modes.length) {
+            throw new IllegalArgumentException("Number of properties must equal number of modes!");
+        }
+        final List<String> props = new ArrayList<>(Arrays.asList(properties));
+        Integer[] boxed = new Integer[modes.length];
+        for (int i = 0; i < boxed.length; i++) {
+            boxed[i] = modes[i];
+        }
+        final List<Integer> modeStack = new ArrayList<>(Arrays.asList(boxed));
+        moveToCoord(props.remove(0), modeStack.remove(0), new Runnable() {
+            @Override
+            public void run() {
+                if (!props.isEmpty()) {
+                    moveToCoord(props.remove(0), modeStack.remove(0), this);
+                }
+            }
+        });
     }
 
     private void moveToGlyphbox() {
-        double[] coord = glyphPlacement.getDoubleArray("glyph_pit");
-        if (coord == null) {
-            log.e("Cannot find position '%s'", "glyph_pit");
-            return;
-        }
-        moveTo(new double[] {coord[1], coord[0], coord[2], coord[3], coord[4]});
-        driveMotors((int)coord[5], (int)coord[6]);
+        moveToCoord("glyph_pit");
     }
 
-    private void setGlyph(int column) { //TODO
-        int full = 0;
-        int filling = column;
-        int i = 0;
-        for (int h : glyphs) {
-            if (h == 4) full++;
-            else if (h > 0) filling = i;
-            i++;
-        }
-        if (full == 3) {
-            //It's full; don't place anymore
-            return;
-        }
-        final int f = filling;
-        glyphs[f]++;
-        final Thread watching = Thread.currentThread();
-        Thread executor = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                long start = System.currentTimeMillis();
-                boolean c = move("floating");
-                if (c)  c = move(f + "_" + glyphs[f]);
-                if (c)  c = move("floating_" + f);
-                if (c)  c = move("glyph_pit");
-            }
+    private int relic_move;
 
-            private boolean move(String name) {
-                double[] coord = glyphPlacement.getDoubleArray(name);
-                if (coord == null) {
-                    log.e("Cannot find position '%s'", name);
-                    return false;
-                }
-                moveTo(new double[] {coord[1], coord[0], coord[2], coord[3], coord[4]});
-                driveMotors((int)coord[5], (int)coord[6]);
-                while ((System.currentTimeMillis() < start + 1000 || !motorDriver.isFinished())
-                        && !watching.isInterrupted()) {
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                        stopDriver();
-                        return false;
-                    }
-                }
-                stopDriver();
-                return true;
-            }
-        });
-        executor.setDaemon(true);
-        executor.start();
+    private void moveToRelic() {
+        if (relic_move == 0) {
+            relic_move = 1;
+            moveToCoord("relic_0");
+        } else {
+            relic_move = 0;
+            moveToCoord("relic_1");
+        }
+    }
+
+    private void placeGlyph(int col, int lev) {
+        char[] cols = {'l', 'c', 'r'};
+        if (placementStep == 0) {
+            placementStep = 1;
+            moveToCoords(new String[] {"glyph_in", "glyph_rotated", "glyph_floating",
+                                       "glyph_place_" + cols[col] + "_" + lev, "glyph_safe"},
+                         new int[] {     EXTEND,     ROTATE,        ARM_FULL | EXTEND,
+                                                FULL,                             ARM_FULL});
+        } else {
+            placementStep = 0;
+            moveToGlyphbox();
+        }
     }
 
     private void setExtendedPositions() {
@@ -423,7 +473,7 @@ public class MainTeleOp extends OpMode {
                 motorDriverRunDetect = true;
             }
             TelemetryWrapper.setLine(0, "Autonomous move in progress; press RB to stop");
-            if (gamepad1.right_bumper) stopDriver();
+            if (buttonHelper_1.pressing(ButtonHelper.right_bumper)) stopDriver();
         } else {
             if (motorDriverRunDetect) {
                 telemetry.clearAll();
@@ -516,11 +566,18 @@ public class MainTeleOp extends OpMode {
 
             //We don't need this in PositionCollector
             if (buttonHelper_1.pressing(ButtonHelper.b) && !(this instanceof PositionFinder)) {
-                moveTo(new double[]{conf.getDouble("cryptobox_adj", 0), conf.getDouble("cryptobox_dist", 0), conf.getDouble("cryptobox_waist", 0)});
+                if (glyphs[activeColumn] == 4) {
+                    activeColumn++;
+                    activeColumn %= 3;
+                    if (glyphs[activeColumn] == 4) {
+                        
+                    }
+                }
+                placeGlyph()
             }
 
             if (buttonHelper_1.pressing(ButtonHelper.right_bumper)) {
-                moveTo(new double[]{conf.getDouble("relic_adj", 0), conf.getDouble("relic_dist", 0), conf.getDouble("relic_waist", 0)});
+                moveToRelic();
             }
 
             if (gamepad1.left_bumper) {

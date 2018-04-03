@@ -33,13 +33,16 @@ public class MotorController implements Closeable {
 
         public final int sse;
 
-        ParallelController(DcMotor motor, Runnable atTarget, int steady_state_error) {
+        ParallelController(DcMotor motor, Runnable atTarget, int steady_state_error, boolean
+                noReset) {
             this.sse = steady_state_error;
             log = new Logger("Motor " + motor.getPortNumber() + " Controller");
             log.d("Initializing!");
             this.motor = motor;
-            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            if (!noReset) {
+                motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
             target = 0;
             kP = 0;
             kI = 0;
@@ -148,11 +151,38 @@ public class MotorController implements Closeable {
         thread.start();
     }
 
-    public MotorController(DcMotor motor, Config conf, Runnable atTarget) {
-        this(new ParallelController(motor, atTarget, conf.getInt("steady_state_error", 0)),
+    /**
+     * Create a motor controller to control the specified motor. Runs atTarget when the motor
+     * reaches its target position (e.g. to stop the motor controller). Uses the specified Config to load
+     * PID constants.
+     * @param motor The motor to control
+     * @param conf The Config to get PID constants from
+     * @param atTarget The Runnable to run repeatedly when the motor is at its target position
+     * @param noReset If true, does not reset the motor encoder.
+     */
+    public MotorController(DcMotor motor, Config conf, Runnable atTarget, boolean noReset) {
+        this(new ParallelController(motor, atTarget, conf.getInt("steady_state_error", 0), noReset),
                 conf, "pid_constants");
     }
 
+    /**
+     * Create a motor controller to control the specified motor. Runs atTarget when the motor
+     * reaches its target position (e.g. to stop the motor controller). Uses the specified Config to load
+     * PID constants.
+     * @param motor The motor to control
+     * @param conf The Config to get PID constants from
+     * @param atTarget The Runnable to run repeatedly when the motor is at its target position
+     */
+    public MotorController(DcMotor motor, Config conf, Runnable atTarget) {
+        this(motor, conf, atTarget, false);
+    }
+
+    /**
+     * Create a motor controller to control the specified motor. Runs atTarget when the motor
+     * reaches its target position (e.g. to stop the motor controller).
+     * @param motor The motor to control
+     * @param atTarget The Runnable to run repeatedly when the motor is at its target position
+     */
     public MotorController(DcMotor motor, Runnable atTarget) {
         this(motor, null, atTarget);
     }
