@@ -566,14 +566,16 @@ public class MainTeleOp extends OpMode {
 
             //We don't need this in PositionCollector
             if (buttonHelper_1.pressing(ButtonHelper.b) && !(this instanceof PositionFinder)) {
+                //Simple test: fills columns starting at the one placed in auto
+                boolean full = false;
                 if (glyphs[activeColumn] == 4) {
                     activeColumn++;
                     activeColumn %= 3;
                     if (glyphs[activeColumn] == 4) {
-                        
+                        full = true;
                     }
                 }
-                placeGlyph()
+                if (!full) placeGlyph(activeColumn, glyphs[activeColumn]);
             }
 
             if (buttonHelper_1.pressing(ButtonHelper.right_bumper)) {
