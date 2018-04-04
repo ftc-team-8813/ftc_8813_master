@@ -98,6 +98,7 @@ public class MainTeleOp extends OpMode {
 
     private int[] glyphs;
     private int activeColumn;
+    private boolean rowStacking;
     private int placementStep;
     private volatile Config glyphPlacement;
 
@@ -285,6 +286,7 @@ public class MainTeleOp extends OpMode {
                 activeColumn = 2;
             }
         }
+        rowStacking = false;
 
         //Initialize the IMU
         imu = (IMU)Persistent.get("imu");
@@ -566,16 +568,31 @@ public class MainTeleOp extends OpMode {
 
             //We don't need this in PositionCollector
             if (buttonHelper_1.pressing(ButtonHelper.b) && !(this instanceof PositionFinder)) {
-                //Simple test: fills columns starting at the one placed in auto
-                boolean full = false;
-                if (glyphs[activeColumn] == 4) {
+                int filled = 0;
+                if (rowStacking) {
                     activeColumn++;
                     activeColumn %= 3;
+                    boolean found = false;
+                    while (!found && filled < 3) {
+                        if (glyphs[activeColumn] < 4) {
+                            found = true;
+                        } else {
+                            activeColumn++;
+                            activeColumn %= 3;
+                            filled++;
+                        }
+                    }
+                } else {
                     if (glyphs[activeColumn] == 4) {
-                        full = true;
+                        activeColumn++;
+                        activeColumn %= 3;
+                        rowStacking = true;
                     }
                 }
-                if (!full) placeGlyph(activeColumn, glyphs[activeColumn]);
+                if (filled < 3) {
+                    placeGlyph(activeColumn, glyphs[activeColumn]);
+                    glyphs[activeColumn]++;
+                }
             }
 
             if (buttonHelper_1.pressing(ButtonHelper.right_bumper)) {
