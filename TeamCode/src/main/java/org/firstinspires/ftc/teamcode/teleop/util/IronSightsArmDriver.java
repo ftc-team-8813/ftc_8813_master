@@ -272,13 +272,11 @@ public class IronSightsArmDriver {
         double det = dex1 * dey2 - dex2 * dey1; // determinant of matrix
         double dt1 = (-ex * dey2 - ey * -dex1) / det; // change in angle 1
         double dt2 = (-ex * -dey1 - ey * dex2) / det; // change in angle 2
-        if (dt1 == Double.NaN || dt2 == Double.NaN) {
-            log.e("Divide by 0; matrix: ");
-            log.e("[ %.2f %.2f ]", dex1, dex2);
-            log.e("[ %.2f %.2f ]", dey1, dey2);
-            log.e(" -> determinant = %.2f", det);
-            log.e("Result: dt1 = %.2f, dt2 = %.2f", dt1, dt2);
-        }
+        log.d("Divide by 0 test; matrix: ");
+        log.d("[ %.2f %.2f ]", dex1, dex2);
+        log.d("[ %.2f %.2f ]", dey1, dey2);
+        log.d(" -> determinant = %.2f", det);
+        log.d("Result: dt1 = %.2f, dt2 = %.2f", dt1, dt2);
         return new double[] { dt1, dt2 };
     }
 }
