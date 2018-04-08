@@ -9,6 +9,7 @@ import static java.lang.Math.*;
 
 /**
  * ArmDriver - Drive the arm servos based on controller input.
+ * @see IronSightsArmDriver
  */
 
 public class ArmDriver {
