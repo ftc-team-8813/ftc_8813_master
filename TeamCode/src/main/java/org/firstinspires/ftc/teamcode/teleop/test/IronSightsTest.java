@@ -39,6 +39,11 @@ public class IronSightsTest extends OpMode {
         Servo yaw = hardwareMap.servo.get("s5");
         driver = new IronSightsArmDriver(new Arm(conf, waist, shoulder, elbow, claw, wrist, yaw),
                 null, null, conf);
+        double[] init = conf.getDoubleArray("init");
+        //Initialize the servos and set an initial position so that the angles are not zero
+        // because that makes the Newton-Raphson equation return NaN since there are infinite
+        // solutions!!
+        driver.driveManual(0, 0, init[0], init[1], init[2], init[3]);
     }
 
     @Override

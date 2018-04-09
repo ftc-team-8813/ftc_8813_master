@@ -140,8 +140,8 @@ public class IronSightsArmDriver {
 
     /**
      * Manually move the individual axes
-     * @param base The rotating base angle, in radians (WIP)
-     * @param extend The translating base distance, in inches (WIP)
+     * @param base The rotating base angle, in radians (WIP, does nothing)
+     * @param extend The translating base distance, in inches (WIP, does nothing)
      * @param waist The waist angle, in radians
      * @param shoulder The shoulder angle, in radians
      * @param elbow The elbow angle, in radians
@@ -153,6 +153,10 @@ public class IronSightsArmDriver {
         x = r1 * cos(waist) * cos(shoulder) + r2 * cos(elbow) + r3 * cos(wrist);
         y = r1 * sin(shoulder) + r2 * sin(elbow) + r3 * sin(wrist);
         z = x * sin(waist);
+        setWaistAngle(waist);
+        setShoulderAngle(shoulder);
+        setElbowAngle(elbow);
+        setWristAngle(wrist);
     }
 
     /**
@@ -232,7 +236,7 @@ public class IronSightsArmDriver {
         wrist_angle = rads;
         double position = Utils.scaleRange(rads, PI, 5.0*PI/4.0, WRIST_180DEG,
                 WRIST_225DEG);
-        arm.moveWrist(wrist_angle);
+        arm.moveWrist(position);
     }
 
 
