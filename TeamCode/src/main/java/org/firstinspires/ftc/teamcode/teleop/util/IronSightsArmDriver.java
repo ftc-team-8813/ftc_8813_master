@@ -22,14 +22,19 @@ public class IronSightsArmDriver {
 
     // Servo coordinates for mapping
 
-    private static double WAIST_0DEG;     // 0 deg = 0 rad
-    private static double WAIST_90DEG;    // 90 deg = pi/2 rad
-    private static double SHOULDER_0DEG;
-    private static double SHOULDER_90DEG;
-    private static double ELBOW_0DEG;
-    private static double ELBOW_90DEG;
-    private static double WRIST_180DEG;   // 180 deg = pi rad
-    private static double WRIST_225DEG;   // 225 deg = 5*pi/4 rad
+    private static double WAIST_MIN;     // 0 deg = 0 rad
+    private static double WAIST_MAX;    // 90 deg = pi/2 rad
+    private static double SHOULDER_MIN;
+    private static double SHOULDER_MAX;
+    private static double ELBOW_MIN;
+    private static double ELBOW_MAX;
+    private static double WRIST_MIN;   // 180 deg = pi rad
+    private static double WRIST_MAX;   // 225 deg = 5*pi/4 rad
+
+    private static double WAIST_MIN_ANGLE, WAIST_MAX_ANGLE,
+                          SHOULDER_MIN_ANGLE, SHOULDER_MAX_ANGLE,
+                          ELBOW_MIN_ANGLE, ELBOW_MAX_ANGLE,
+                          WRIST_MIN_ANGLE, WRIST_MAX_ANGLE;
 
     // Arm holding the servos
     private Arm arm;
@@ -67,14 +72,23 @@ public class IronSightsArmDriver {
         r1 = conf.getDouble("r1", 1);
         r2 = conf.getDouble("r2", 1);
         r3 = conf.getDouble("r3", 1);
-        WAIST_0DEG = conf.getDouble("waist_0", 0);
-        WAIST_90DEG = conf.getDouble("waist_90", 0);
-        SHOULDER_0DEG = conf.getDouble("shoulder_0", 0);
-        SHOULDER_90DEG = conf.getDouble("shoulder_90", 0);
-        ELBOW_0DEG = conf.getDouble("elbow_0", 0);
-        ELBOW_90DEG = conf.getDouble("elbow_90", 0);
-        WRIST_180DEG = conf.getDouble("wrist_180", 0);
-        WRIST_225DEG = conf.getDouble("wrist_225", 0);
+        WAIST_MIN = conf.getDouble("waist_min", 0);
+        WAIST_MAX = conf.getDouble("waist_max", 0);
+        SHOULDER_MIN = conf.getDouble("shoulder_min", 0);
+        SHOULDER_MAX = conf.getDouble("shoulder_max", 0);
+        ELBOW_MIN = conf.getDouble("elbow_min", 0);
+        ELBOW_MAX = conf.getDouble("elbow_max", 0);
+        WRIST_MIN = conf.getDouble("wrist_min", 0);
+        WRIST_MAX = conf.getDouble("wrist_max", 0);
+
+        WAIST_MIN_ANGLE = Math.toRadians(conf.getDouble("waist_min_angle", 0));
+        WAIST_MAX_ANGLE = Math.toRadians(conf.getDouble("waist_max_angle", 0));
+        SHOULDER_MIN_ANGLE = Math.toRadians(conf.getDouble("shoulder_min_angle", 0));
+        SHOULDER_MAX_ANGLE = Math.toRadians(conf.getDouble("shoulder_max_angle", 0));
+        ELBOW_MIN_ANGLE = Math.toRadians(conf.getDouble("elbow_min_angle", 0));
+        ELBOW_MAX_ANGLE = Math.toRadians(conf.getDouble("elbow_max_angle", 0));
+        WRIST_MIN_ANGLE = Math.toRadians(conf.getDouble("wrist_min_angle", 0));
+        WRIST_MAX_ANGLE = Math.toRadians(conf.getDouble("wrist_max_angle", 0));
         this.conf = conf;
         log = new Logger("IronSights Arm Driver");
     }
@@ -153,7 +167,7 @@ public class IronSightsArmDriver {
         x = r1 * cos(waist) * cos(shoulder) + r2 * cos(elbow) + r3 * cos(wrist);
         y = r1 * sin(shoulder) + r2 * sin(elbow) + r3 * sin(wrist);
         z = x * sin(waist);
-        setWaistAngle(waist);
+        // setWaistAngle(waist);
         setShoulderAngle(shoulder);
         setElbowAngle(elbow);
         setWristAngle(wrist);
@@ -172,70 +186,75 @@ public class IronSightsArmDriver {
     Move the arm (shoulder, elbow, and wrist) to the specified coordinate in 2D space
      */
     public void moveArmTo(double i, double j, double wrist) {
+
+        //First we want to calculate the current t4 and r4 (commented just in case we still
+        // need them)
+//        double r4_old_x = r1 * cos(shoulder_angle) + r2 * cos(elbow_angle) + r3 * cos(wrist_angle);
+//        double r4_old_y = r1 * sin(shoulder_angle) + r2 * sin(elbow_angle) + r3 * sin(wrist_angle);
+//        double r4_old = sqrt(r4_old_x*r4_old_x + r4_old_y*r4_old_y);
+//        double t4_old = atan2(r4_old_y, r4_old_x);
+
+        log.d("Moving arm to (%.4f, %.4f), wrist=%.4f", i, j, wrist);
+        log.d("Current position: shoulder=%.4f,elbow=%.4f,wrist=%.4f", shoulder_angle,
+                elbow_angle, wrist_angle);
+        double tw = wrist_angle + shoulder_angle + elbow_angle - PI;
+        log.d("tw = %.4f", tw);
+
+
         //We have Cartesian coordinates (i,j) which we want to convert to polar coordinates
         //for our function
         //r4 is how far we want to go
         double r4 = sqrt(i * i + j * j);
         //t4 is the angle
         double t4 = atan2(j, i);
-        //t3 is not the angle of our wrist.
-        double t3 = wrist - t4 + PI;
-        double t2 = elbow_angle;
-        double t1 = shoulder_angle;
-        int c = 0;
-        double epsilon = conf.getDouble("nr_epsilon", 0.001);
-        int max_iters = conf.getInt("max_iters", 100);
+        log.d("r4 = %.4f, t4 = %.4f", r4, t4);
 
-        //Timer
-        long time = System.nanoTime();
+        //t3 is our wrist angle
+        double t3 = tw - t4 + PI;
+        log.d("t3 = %.4f", t3);
 
-        for (; c < max_iters; c++) {
-            double[] deltas = newtonRaphson(r1, r2, r3, r4, t1, t2, t3, t4);
-            t1 += deltas[0];
-            t2 += deltas[1];
-            if (t2 > PI) {
-                double t2_last = t2;
-                t2 = PI-0.1;
-                t1 += abs(t2_last - t2);
-            }
-            if (deltas[0] < epsilon && deltas[1] < epsilon) {
-                break;
-            }
-        }
+        //r5 is the distance from ground to the wrist joint
+        double r5 = sqrt(r4*r4 + r3*r3 - 2*r3*r4*cos(2*PI-t3));
+        log.d("r5 = %.4f", r5);
 
-        long elapsed = System.nanoTime() - time;
-        log.d("Completed Newton-Raphson in %d iterations (%d ns)", c, elapsed);
+        //By the law of cosines:
+        double t2 = acos((-r5*r5+r1*r1+r2*r2)/(2*r1*r2));
+        //Now we can solve our VLE and get t1
+        double t1 = acos((r3*cos(t3)+r4*cos(t4)-r2*cos(t2))/r1);
+        log.d("t1 = %.4f, t2 = %.4f", t1, t2);
 
-        // We can now convert t1 and t2 into servo positions and send them to
-        // shoulder and elbow respectively! :D
+        //Now we can calculate where to put the wrist angle to make it level to the ground, which
+        // happens to be pretty easy math
+        tw = t4 + t3 - PI;
+        log.d("tw now = %.4f", tw);
 
         setShoulderAngle(t1);
         setElbowAngle(t2);
-        setWristAngle(t3);
+        setWristAngle(tw);
     }
 
     private void setWaistAngle(double rads) {
         waist_angle = rads;
-        double position = Utils.scaleRange(rads, 0, PI/2, WAIST_0DEG, WAIST_90DEG);
+        double position = Utils.scaleRange(rads, WAIST_MIN_ANGLE, WAIST_MAX_ANGLE, WAIST_MIN, WAIST_MAX);
         arm.moveWaist(position);
     }
 
     private void setShoulderAngle(double rads) {
         shoulder_angle = rads;
-        double position = Utils.scaleRange(rads, 0, PI/2, SHOULDER_0DEG, SHOULDER_90DEG);
+        double position = Utils.scaleRange(rads, SHOULDER_MIN_ANGLE, SHOULDER_MAX_ANGLE,
+                SHOULDER_MIN, SHOULDER_MAX);
         arm.moveShoulder(position);
     }
 
     private void setElbowAngle(double rads) {
         elbow_angle = rads;
-        double position = Utils.scaleRange(rads, 0, PI/2, ELBOW_0DEG, ELBOW_90DEG);
+        double position = Utils.scaleRange(rads, ELBOW_MIN_ANGLE, ELBOW_MAX_ANGLE, ELBOW_MIN, ELBOW_MAX);
         arm.moveElbow(position);
     }
 
     private void setWristAngle(double rads) {
         wrist_angle = rads;
-        double position = Utils.scaleRange(rads, PI, 5.0*PI/4.0, WRIST_180DEG,
-                WRIST_225DEG);
+        double position = Utils.scaleRange(rads, WRIST_MIN_ANGLE, WRIST_MAX_ANGLE, WRIST_MIN, WRIST_MAX);
         arm.moveWrist(position);
     }
 
