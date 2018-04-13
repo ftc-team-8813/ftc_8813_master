@@ -15,13 +15,14 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import static java.lang.Math.*;
 
 @TeleOp(name="IronSights Test")
 public class IronSightsTest extends OpMode {
 
     private IronSightsArmDriver driver;
     private Logger log;
-    private double i = 5, j = 5, wrist = Math.PI;
+    private double i, j, k, wrist;
 
     @Override
     public void init() {
@@ -43,7 +44,18 @@ public class IronSightsTest extends OpMode {
         //Initialize the servos and set an initial position so that the angles are not zero
         // because that makes the Newton-Raphson equation return NaN since there are infinite
         // solutions!!
-        driver.driveManual(0, 0, 0,Math.PI/4, Math.PI/2, 5*Math.PI/4);
+        driver.driveManual(0, 0, 0,Math.PI/4, Math.PI/2, Math.PI/2);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            return;
+        }
+        driver.driveManual(0, 0, 0,Math.PI/4, Math.PI/2, 3*Math.PI/2);
+        i = driver.getX();
+        j = driver.getY();
+        k = driver.getZ();
+
+
     }
 
     @Override
@@ -59,27 +71,33 @@ public class IronSightsTest extends OpMode {
             return;
         }
 
-        double x_inc = gamepad1.left_stick_x;
-        double y_inc = -gamepad1.left_stick_y;
-        double wrist_inc = gamepad1.right_stick_y;
+        double x_inc = gamepad1.right_stick_x;
+        double y_inc = -gamepad1.right_stick_y;
+        double z_inc = -gamepad1.left_stick_y;
+        double wrist_inc = gamepad1.right_trigger - (gamepad1.right_bumper ? 1 : 0);
 
-        if (Math.abs(x_inc) > 0.001 || Math.abs(y_inc) > 0.001) {
+        if (Math.abs(x_inc) > 0.001 || Math.abs(y_inc) > 0.001 || Math.abs(z_inc) > 0.001) {
             i += x_inc;
             j += y_inc;
-            wrist += wrist_inc;
-            if (wrist > 3.0*Math.PI/2.0) {
-                wrist = 3.0*Math.PI/2.0;
-            } else if (wrist < Math.PI/2.0) {
-                wrist = Math.PI/2;
-            }
-            driver.moveArmTo(i, j, wrist);
+            k += z_inc;
         }
+        wrist += wrist_inc;
+        if (wrist > 3*PI/2) {
+            wrist = 3*PI/2;
+        } else if (wrist < PI/2) {
+            wrist = PI/2;
+        }
+        driver.moveArmTo(i, j, k, wrist);
 
         if (gamepad1.left_bumper) {
             i = 5;
             j = 5;
-            wrist = Math.PI;
+            wrist = PI;
         }
+        telemetry.addData("i", i);
+        telemetry.addData("j", j);
+        telemetry.addData("k", k);
+        telemetry.addData("wrist", wrist);
     }
 
     @Override

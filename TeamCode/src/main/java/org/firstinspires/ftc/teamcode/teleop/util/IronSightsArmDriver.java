@@ -125,6 +125,18 @@ public class IronSightsArmDriver {
         return wrist_angle;
     }
 
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public double getZ() {
+        return z;
+    }
+
     /**
      * Move the arm in Cartesian coordinate space
      * @param dx How far to move in the X direction (forward/backward)
@@ -164,9 +176,9 @@ public class IronSightsArmDriver {
     public void driveManual(double base, double extend, double waist, double shoulder, double
             elbow, double wrist) {
         // Right now, we'll just ignore base and extend
-        x = r1 * cos(waist) * cos(shoulder) + r2 * cos(elbow) + r3 * cos(wrist);
+        z = r1 * cos(waist) * cos(shoulder) + r2 * cos(elbow) + r3 * cos(wrist);
         y = r1 * sin(shoulder) + r2 * sin(elbow) + r3 * sin(wrist);
-        z = x * sin(waist);
+        x = z * sin(waist);
         // setWaistAngle(waist);
         setShoulderAngle(shoulder);
         setElbowAngle(elbow);
@@ -180,6 +192,16 @@ public class IronSightsArmDriver {
      */
     public int getCurrentMode() {
         return currentMode;
+    }
+
+    /*
+    Move the entire arm (including waist) to the specified coordinate in 3D space
+     */
+    public void moveArmTo(double i, double j, double k, double wrist) {
+        double tWaist = atan2(k, i);
+        double rWaist = sqrt(i * i + k * k);
+        setWaistAngle(tWaist);
+        moveArmTo(rWaist * cos(tWaist), j, wrist);
     }
 
     /*
@@ -197,7 +219,7 @@ public class IronSightsArmDriver {
         log.d("Moving arm to (%.4f, %.4f), wrist=%.4f", i, j, wrist);
         log.d("Current position: shoulder=%.4f,elbow=%.4f,wrist=%.4f", shoulder_angle,
                 elbow_angle, wrist_angle);
-        double tw = wrist_angle + shoulder_angle + elbow_angle - PI;
+        double tw = wrist;
         log.d("tw = %.4f", tw);
 
 
@@ -210,23 +232,21 @@ public class IronSightsArmDriver {
         log.d("r4 = %.4f, t4 = %.4f", r4, t4);
 
         //t3 is our wrist angle
-        double t3 = tw - t4 + PI;
+        double t3 = PI + t4 - wrist;
         log.d("t3 = %.4f", t3);
 
         //r5 is the distance from ground to the wrist joint
         double r5 = sqrt(r4*r4 + r3*r3 - 2*r3*r4*cos(2*PI-t3));
+        double t5 = asin((r3 * sin(t3))/r5) + t4;
         log.d("r5 = %.4f", r5);
 
         //By the law of cosines:
         double t2 = acos((-r5*r5+r1*r1+r2*r2)/(2*r1*r2));
         //Now we can solve our VLE and get t1
-        double t1 = acos((r3*cos(t3)+r4*cos(t4)-r2*cos(t2))/r1);
+        double t1 = asin((r2 * sin(t2)) / r5) + t5;
         log.d("t1 = %.4f, t2 = %.4f", t1, t2);
 
-        //Now we can calculate where to put the wrist angle to make it level to the ground, which
-        // happens to be pretty easy math
-        tw = t4 + t3 - PI;
-        log.d("tw now = %.4f", tw);
+        tw = t4 - t1 - t2 + t3;
 
         setShoulderAngle(t1);
         setElbowAngle(t2);
