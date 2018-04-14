@@ -94,8 +94,8 @@ public class Utils {
      */
     public static double scaleRange(double x, double a, double b, double c, double d) {
         double o = c * (1.0 - (x - a) / (b - a)) + d * ((x - a) / (b - a));
-        Logger log = new Logger("Utils.scaleRange()");
-        log.d("Scaled %.2f to %.2f", x, o);
+//        Logger log = new Logger("Utils.scaleRange()");
+//        log.d("Scaled %.2f to %.2f", x, o);
         return o;
     }
 

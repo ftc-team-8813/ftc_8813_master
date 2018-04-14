@@ -201,13 +201,22 @@ public class IronSightsArmDriver {
         double tWaist = atan2(k, i);
         double rWaist = sqrt(i * i + k * k);
         setWaistAngle(tWaist);
-        moveArmTo(rWaist * cos(tWaist), j, wrist);
+        moveArm(calculateArm(rWaist * cos(tWaist), j, shoulder_angle, elbow_angle, wrist, 0));
+    }
+
+    public void moveArmTo(double i, double j, double wrist) {
+        moveArm(calculateArm(i, j, shoulder_angle, elbow_angle, wrist, 0));
     }
 
     /*
     Move the arm (shoulder, elbow, and wrist) to the specified coordinate in 2D space
      */
-    public void moveArmTo(double i, double j, double wrist) {
+    public double[] calculateArm(double i, double j, double t1, double te, double wrist, double c) {
+        if (c == 100) log.w("100 stack frames");
+        if (c == 1000) {
+            log.e("1000 stack frames; exiting recursive loop");
+            return new double[] {t1, te, wrist};
+        }
 
         //First we want to calculate the current t4 and r4 (commented just in case we still
         // need them)
@@ -216,12 +225,7 @@ public class IronSightsArmDriver {
 //        double r4_old = sqrt(r4_old_x*r4_old_x + r4_old_y*r4_old_y);
 //        double t4_old = atan2(r4_old_y, r4_old_x);
 
-        log.d("Moving arm to (%.4f, %.4f), wrist=%.4f", i, j, wrist);
-        log.d("Current position: shoulder=%.4f,elbow=%.4f,wrist=%.4f", shoulder_angle,
-                elbow_angle, wrist_angle);
         double tw = wrist;
-        log.d("tw = %.4f", tw);
-
 
         //We have Cartesian coordinates (i,j) which we want to convert to polar coordinates
         //for our function
@@ -229,27 +233,47 @@ public class IronSightsArmDriver {
         double r4 = sqrt(i * i + j * j);
         //t4 is the angle
         double t4 = atan2(j, i);
-        log.d("r4 = %.4f, t4 = %.4f", r4, t4);
 
         //t3 is our wrist angle
-        double t3 = PI + t4 - wrist;
-        log.d("t3 = %.4f", t3);
+        double t3 = tw + te + t1 - PI;
+
+        double ttemp = PI + t4 - t3;
 
         //r5 is the distance from ground to the wrist joint
-        double r5 = sqrt(r4*r4 + r3*r3 - 2*r3*r4*cos(2*PI-t3));
+        double r5 = sqrt(r4*r4 + r3*r3 - 2*r3*r4*cos(ttemp));
         double t5 = asin((r3 * sin(t3))/r5) + t4;
-        log.d("r5 = %.4f", r5);
+        if (r5 >= r1 + r2) {
+            if (abs(tw - PI) > toRadians(1)) {
+                return calculateArm(i, j, t1, te, tw + PI/32, c+1);
+            } else {
+                return new double[] { t4, PI, PI };
+            }
+        }
 
         //By the law of cosines:
-        double t2 = acos((-r5*r5+r1*r1+r2*r2)/(2*r1*r2));
+        te = acos((-r5*r5+r1*r1+r2*r2)/(2*r1*r2));
         //Now we can solve our VLE and get t1
-        double t1 = asin((r2 * sin(t2)) / r5) + t5;
-        log.d("t1 = %.4f, t2 = %.4f", t1, t2);
+        t1 = asin((r2 * sin(te)) / r5) + t5;
 
-        tw = t4 - t1 - t2 + t3;
+        double t2 = te + t1 - PI;
+        tw = t3 - t2;
 
-        setShoulderAngle(t1);
-        setElbowAngle(t2);
+        if (tw < PI/2) {
+            return calculateArm(i, j, t1, te, tw + PI/16, c+1);
+        } else if (tw > 3*PI/2){
+            return calculateArm(i, j, t1, te, tw - PI/16, c+1);
+        }
+
+        return new double[] {t1, te, tw};
+    }
+
+    private void moveArm(double[] d) {
+        moveArm(d[0], d[1], d[2]);
+    }
+
+    private void moveArm(double ts, double te, double tw) {
+        setShoulderAngle(ts);
+        setElbowAngle(te);
         setWristAngle(tw);
     }
 
@@ -276,6 +300,10 @@ public class IronSightsArmDriver {
         wrist_angle = rads;
         double position = Utils.scaleRange(rads, WRIST_MIN_ANGLE, WRIST_MAX_ANGLE, WRIST_MIN, WRIST_MAX);
         arm.moveWrist(position);
+    }
+
+    public double getWristPosition() {
+        return arm.getWrist().getPosition();
     }
 
 
