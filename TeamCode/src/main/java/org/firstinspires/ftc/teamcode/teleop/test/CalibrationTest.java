@@ -42,12 +42,12 @@ public class CalibrationTest extends OpMode {
         //Initialize the servos and set an initial position so that the angles are not zero
         // because that makes the Newton-Raphson equation return NaN since there are infinite
         // solutions!!
-        driver.driveManual(0, 0, 0,Math.PI/4, Math.PI/2, Math.PI/2);
+        driver.driveManual(0, 0, 0,Math.PI/2, Math.PI/2, Math.PI/2);
     }
 
     @Override
     public void loop() {
-        driver.driveManual(0, 0, 0, Math.PI/4, Math.PI/2, Math.PI/2 + t);
+        driver.driveManual(0, 0, 0, Math.PI/2, Math.PI/2, Math.PI/2 + t);
         t -= gamepad1.left_stick_y / 10;
         telemetry.addData("Angle: ", Math.toDegrees(Math.PI/2 + t));
         telemetry.addData("Position: ", driver.getWristPosition());

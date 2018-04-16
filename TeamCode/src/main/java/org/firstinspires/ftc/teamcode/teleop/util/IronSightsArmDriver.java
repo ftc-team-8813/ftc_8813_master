@@ -198,24 +198,28 @@ public class IronSightsArmDriver {
     Move the entire arm (including waist) to the specified coordinate in 3D space
      */
     public void moveArmTo(double i, double j, double k, double wrist) {
-        double tWaist = atan2(k, i);
-        double rWaist = sqrt(i * i + k * k);
-        setWaistAngle(tWaist);
-        moveArm(calculateArm(rWaist * cos(tWaist), j, shoulder_angle, elbow_angle, wrist, 0));
+        double rArm = sqrt(i*i+k*k);
+        double tArm = atan2(i, k);
+        setWaistAngle(tArm);
+        moveArm(calculateArm(rArm, j, wrist, shoulder_angle, elbow_angle, wrist_angle, 0));
     }
 
     public void moveArmTo(double i, double j, double wrist) {
-        moveArm(calculateArm(i, j, shoulder_angle, elbow_angle, wrist, 0));
+        moveArm(calculateArm(i, j, wrist, shoulder_angle, elbow_angle, wrist_angle, 0));
     }
 
     /*
     Move the arm (shoulder, elbow, and wrist) to the specified coordinate in 2D space
      */
-    public double[] calculateArm(double i, double j, double t1, double te, double wrist, double c) {
+    public double[] calculateArm(double i, double j, double t3, double t1, double te, double tw,
+                                 int c) {
+        log.v("Stack counter = %d", c);
+        log.v("Moving to (%.4f, %.4f); wrist = %.4f", i, j, tw);
+        log.v("Current angles: shoulder=%.4f, elbow=%.4f", t1, te);
         if (c == 100) log.w("100 stack frames");
         if (c == 1000) {
             log.e("1000 stack frames; exiting recursive loop");
-            return new double[] {t1, te, wrist};
+            return new double[] {t1, te, tw};
         }
 
         //First we want to calculate the current t4 and r4 (commented just in case we still
@@ -225,8 +229,6 @@ public class IronSightsArmDriver {
 //        double r4_old = sqrt(r4_old_x*r4_old_x + r4_old_y*r4_old_y);
 //        double t4_old = atan2(r4_old_y, r4_old_x);
 
-        double tw = wrist;
-
         //We have Cartesian coordinates (i,j) which we want to convert to polar coordinates
         //for our function
         //r4 is how far we want to go
@@ -235,7 +237,7 @@ public class IronSightsArmDriver {
         double t4 = atan2(j, i);
 
         //t3 is our wrist angle
-        double t3 = tw + te + t1 - PI;
+        //double t3 = tw + te + t1 - PI;
 
         double ttemp = PI + t4 - t3;
 
@@ -244,8 +246,10 @@ public class IronSightsArmDriver {
         double t5 = asin((r3 * sin(t3))/r5) + t4;
         if (r5 >= r1 + r2) {
             if (abs(tw - PI) > toRadians(1)) {
-                return calculateArm(i, j, t1, te, tw + PI/32, c+1);
+                log.v("Adjusting wrist to %.4f", t3 + PI/32);
+                return calculateArm(i, j, t3 + PI/32, t1, te, tw, c+1);
             } else {
+                log.v("Unable to reach far enough; moving to straight out");
                 return new double[] { t4, PI, PI };
             }
         }
@@ -259,11 +263,14 @@ public class IronSightsArmDriver {
         tw = t3 - t2;
 
         if (tw < PI/2) {
-            return calculateArm(i, j, t1, te, tw + PI/16, c+1);
-        } else if (tw > 3*PI/2){
-            return calculateArm(i, j, t1, te, tw - PI/16, c+1);
+            log.v("Adjusting wrist so it is within physical limits (to %.4f)", t3 + PI/16);
+            return calculateArm(i, j, t3 + PI/16, t1, te, tw, c+1);
+        } else if (tw > 3*PI/2) {
+            log.v("Adjusting wrist so it is within physical limits (to %.4f)", t3 - PI/16);
+            return calculateArm(i, j, t3 - PI/16, t1, te, tw, c+1);
         }
-
+        log.v("Successfully reached position");
+        log.v("New angles: shoulder=%.4f, elbow=%.4f, wrist=%.4f", t1, te, tw);
         return new double[] {t1, te, tw};
     }
 

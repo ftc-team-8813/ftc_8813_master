@@ -22,7 +22,7 @@ public class IronSightsTest extends OpMode {
 
     private IronSightsArmDriver driver;
     private Logger log;
-    private double i, j, /*k,*/ wrist;
+    private double i, j, k, wrist;
 
     @Override
     public void init() {
@@ -76,31 +76,38 @@ public class IronSightsTest extends OpMode {
 
         double x_inc = gamepad1.right_stick_x;
         double y_inc = -gamepad1.right_stick_y;
-        //double z_inc = -gamepad1.left_stick_y;
+        double z_inc = -gamepad1.left_stick_y;
         double wrist_inc = (gamepad1.right_trigger - (gamepad1.right_bumper ? 1 : 0)) / 10;
 
-        if (Math.abs(x_inc) > 0.001 || Math.abs(y_inc) > 0.001 /*|| Math.abs(z_inc) > 0.001*/) {
+        if (Math.abs(x_inc) > 0.001 || Math.abs(y_inc) > 0.001 || Math.abs(wrist_inc) > 0.001 ||
+        Math.abs(z_inc) > 0.001) {
             i += x_inc;
             j += y_inc;
-            //k += z_inc;
-        }
-        wrist += wrist_inc;
-        if (wrist > 3*PI/2) {
-            wrist = 3*PI/2;
-        } else if (wrist < PI/2) {
-            wrist = PI/2;
-        }
-        driver.moveArmTo(i, j, wrist);
+            k += z_inc;
+            wrist += wrist_inc;
+            if (wrist > 3*PI/2) {
+                wrist = 3*PI/2;
+            } else if (wrist < PI/2) {
+                wrist = PI/2;
+            }
+            driver.moveArmTo(i, j, k, wrist);
 
-        if (gamepad1.left_bumper) {
-            i = 5;
-            j = 5;
-            wrist = PI;
+            if (gamepad1.left_bumper) {
+                i = 5;
+                j = 5;
+                wrist = PI;
+            }
         }
+
         telemetry.addData("i", i);
         telemetry.addData("j", j);
-        //telemetry.addData("k", k);
-        telemetry.addData("wrist", wrist);
+        telemetry.addData("k", k);
+        telemetry.addData("tw", wrist);
+        telemetry.addData("Waist", driver.getWaistAngle());
+        telemetry.addData("Shoulder", driver.getShoulderAngle());
+        telemetry.addData("Elbow", driver.getElbowAngle());
+        telemetry.addData("Wrist", driver.getWristAngle());
+
     }
 
     @Override
