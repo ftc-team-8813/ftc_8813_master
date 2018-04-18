@@ -39,7 +39,7 @@ public class IronSightsArmDriver {
     // Arm holding the servos
     private Arm arm;
     // Motor controllers
-    private MotorController base, extend;
+    //private MotorController base, extend;
 
     // Arm lengths
     private double r1, r2, r3;
@@ -50,6 +50,7 @@ public class IronSightsArmDriver {
 
     // Current angles
     private double waist_angle, shoulder_angle, elbow_angle, wrist_angle;
+    private double waist_delta, shoulder_delta;
 
     // Configuration for reading constants
     private Config conf;
@@ -59,14 +60,12 @@ public class IronSightsArmDriver {
     /**
      * Initialize the arm driver
      * @param arm The arm to drive
-     * @param base A motor controller to drive the base's rotation
-     * @param extend A motor controller to drive the base's translation
      * @param conf A configuration file to read constants from
      */
-    public IronSightsArmDriver(Arm arm, MotorController base, MotorController extend, Config conf) {
+    public IronSightsArmDriver(Arm arm/*, MotorController base, MotorController extend*/, Config conf) {
         this.arm = arm;
-        this.base = base;
-        this.extend = extend;
+//        this.base = base;
+//        this.extend = extend;
         //base.stopHolding();
         //extend.stopHolding();
         r1 = conf.getDouble("r1", 1);
@@ -201,11 +200,17 @@ public class IronSightsArmDriver {
         double rArm = sqrt(i*i+k*k);
         double tArm = atan2(i, k);
         setWaistAngle(tArm);
-        moveArm(calculateArm(rArm, j, wrist, shoulder_angle, elbow_angle, wrist_angle, 0));
+        moveArmTo(rArm, j, wrist);
     }
 
     public void moveArmTo(double i, double j, double wrist) {
         moveArm(calculateArm(i, j, wrist, shoulder_angle, elbow_angle, wrist_angle, 0));
+    }
+
+    public void setAdjustAngles(double shoulder) {
+        shoulder_delta = shoulder;
+        setWaistAngle(waist_angle);
+        moveArm(shoulder_angle, elbow_angle, wrist_angle);
     }
 
     /*
@@ -271,6 +276,9 @@ public class IronSightsArmDriver {
         }
         log.v("Successfully reached position");
         log.v("New angles: shoulder=%.4f, elbow=%.4f, wrist=%.4f", t1, te, tw);
+        if (Double.isNaN(t1) || Double.isNaN(te) || Double.isNaN(tw)) {
+            return new double[] {shoulder_angle, elbow_angle, wrist_angle};
+        }
         return new double[] {t1, te, tw};
     }
 
@@ -291,7 +299,7 @@ public class IronSightsArmDriver {
     }
 
     private void setShoulderAngle(double rads) {
-        shoulder_angle = rads;
+        shoulder_angle = rads + shoulder_delta;
         double position = Utils.scaleRange(rads, SHOULDER_MIN_ANGLE, SHOULDER_MAX_ANGLE,
                 SHOULDER_MIN, SHOULDER_MAX);
         arm.moveShoulder(position);

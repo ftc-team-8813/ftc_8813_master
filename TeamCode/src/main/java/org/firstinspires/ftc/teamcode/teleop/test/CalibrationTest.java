@@ -36,8 +36,7 @@ public class CalibrationTest extends OpMode {
         Servo claw = hardwareMap.servo.get("s3");
         Servo wrist = hardwareMap.servo.get("s4");
         Servo yaw = hardwareMap.servo.get("s5");
-        driver = new IronSightsArmDriver(new Arm(conf, waist, shoulder, elbow, claw, wrist, yaw),
-                null, null, conf);
+        driver = new IronSightsArmDriver(new Arm(conf, waist, shoulder, elbow, claw, wrist, yaw), conf);
         //double[] init = conf.getDoubleArray("init");
         //Initialize the servos and set an initial position so that the angles are not zero
         // because that makes the Newton-Raphson equation return NaN since there are infinite

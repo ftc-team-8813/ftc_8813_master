@@ -1,14 +1,20 @@
 package org.firstinspires.ftc.teamcode.teleop.test;
 
+import com.qualcomm.hardware.ams.AMSColorSensor;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
+import org.firstinspires.ftc.teamcode.autonomous.util.sensors.IMU;
 import org.firstinspires.ftc.teamcode.teleop.MainTeleOp;
 import org.firstinspires.ftc.teamcode.teleop.util.IronSightsArmDriver;
+import org.firstinspires.ftc.teamcode.teleop.util.IronSightsJoystickControl;
 import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.util.Logger;
+import org.firstinspires.ftc.teamcode.util.Persistent;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,9 +26,8 @@ import static java.lang.Math.*;
 @TeleOp(name="IronSights Test")
 public class IronSightsTest extends OpMode {
 
-    private IronSightsArmDriver driver;
+    private IronSightsJoystickControl controller;
     private Logger log;
-    private double i, j, k, wrist;
 
     @Override
     public void init() {
@@ -38,32 +43,28 @@ public class IronSightsTest extends OpMode {
         Servo claw = hardwareMap.servo.get("s3");
         Servo wrist = hardwareMap.servo.get("s4");
         Servo yaw = hardwareMap.servo.get("s5");
-        driver = new IronSightsArmDriver(new Arm(conf, waist, shoulder, elbow, claw, wrist, yaw),
-                null, null, conf);
-        //double[] init = conf.getDoubleArray("init");
-        //Initialize the servos and set an initial position so that the angles are not zero
-        // because that makes the Newton-Raphson equation return NaN since there are infinite
-        // solutions!!
-        driver.driveManual(0, 0, 0,Math.PI/4, Math.PI/2, Math.PI/2);
-        for (int i = 0; i < 6; i++) {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                return;
-            }
-            driver.driveManual(0, 0, 0, Math.PI / 4, Math.PI / 2, PI/2 + i*toDegrees(15));
-            telemetry.addData("Driving to ", i*15 + 90);
-            telemetry.update();
+        DcMotor base = hardwareMap.dcMotor.get("base");
+        DcMotor extend = hardwareMap.dcMotor.get("extend");
+        IMU imu = (IMU)Persistent.get("imu");
+        if (imu == null) {
+            imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+            imu.initialize(telemetry);
         }
-        i = driver.getX();
-        j = driver.getY();
-
-
+        int quadrant;
+        if (Persistent.get("quadrant") == null) {
+            quadrant = 4; //hehe
+        } else {
+            quadrant = (int)Persistent.get("quadrant");
+        }
+        imu.start();
+        telemetry.clear();
+        controller = new IronSightsJoystickControl(gamepad1, gamepad2,
+                new Arm(conf, waist, shoulder, elbow, claw, wrist, yaw), conf, telemetry, base, extend, imu, quadrant);
     }
 
     @Override
     public void start() {
-
+        controller.start();
     }
 
     @Override
@@ -74,44 +75,13 @@ public class IronSightsTest extends OpMode {
             return;
         }
 
-        double x_inc = gamepad1.right_stick_x;
-        double y_inc = -gamepad1.right_stick_y;
-        double z_inc = -gamepad1.left_stick_y;
-        double wrist_inc = (gamepad1.right_trigger - (gamepad1.right_bumper ? 1 : 0)) / 10;
-
-        if (Math.abs(x_inc) > 0.001 || Math.abs(y_inc) > 0.001 || Math.abs(wrist_inc) > 0.001 ||
-        Math.abs(z_inc) > 0.001) {
-            i += x_inc;
-            j += y_inc;
-            k += z_inc;
-            wrist += wrist_inc;
-            if (wrist > 3*PI/2) {
-                wrist = 3*PI/2;
-            } else if (wrist < PI/2) {
-                wrist = PI/2;
-            }
-            driver.moveArmTo(i, j, k, wrist);
-
-            if (gamepad1.left_bumper) {
-                i = 5;
-                j = 5;
-                wrist = PI;
-            }
-        }
-
-        telemetry.addData("i", i);
-        telemetry.addData("j", j);
-        telemetry.addData("k", k);
-        telemetry.addData("tw", wrist);
-        telemetry.addData("Waist", driver.getWaistAngle());
-        telemetry.addData("Shoulder", driver.getShoulderAngle());
-        telemetry.addData("Elbow", driver.getElbowAngle());
-        telemetry.addData("Wrist", driver.getWristAngle());
-
+        controller.loop();
     }
 
     @Override
     public void stop() {
+        controller.stop();
+        Persistent.clear();
         Logger.close();
     }
 }
