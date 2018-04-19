@@ -13,23 +13,16 @@ import static java.lang.Math.*;
  */
 public class IronSightsArmDriver {
 
-    /** Fine mode -- same as MODE_FAST, but more control */
-    public static final int MODE_FINE  = 1;
-    /** Fast mode -- controls the arm position from the waist up */
-    public static final int MODE_FAST  = 2;
-    /** Gross mode -- controls the arm position and the base */
-    public static final int MODE_GROSS = 3;
-
     // Servo coordinates for mapping
 
-    private static double WAIST_MIN;     // 0 deg = 0 rad
-    private static double WAIST_MAX;    // 90 deg = pi/2 rad
+    private static double WAIST_MIN;
+    private static double WAIST_MAX;
     private static double SHOULDER_MIN;
     private static double SHOULDER_MAX;
     private static double ELBOW_MIN;
     private static double ELBOW_MAX;
-    private static double WRIST_MIN;   // 180 deg = pi rad
-    private static double WRIST_MAX;   // 225 deg = 5*pi/4 rad
+    private static double WRIST_MIN;
+    private static double WRIST_MAX;
 
     private static double WAIST_MIN_ANGLE, WAIST_MAX_ANGLE,
                           SHOULDER_MIN_ANGLE, SHOULDER_MAX_ANGLE,
@@ -50,7 +43,8 @@ public class IronSightsArmDriver {
 
     // Current angles
     private double waist_angle, shoulder_angle, elbow_angle, wrist_angle;
-    private double waist_delta, shoulder_delta;
+    // Shoulder 'delta angle' for balance stone tilt correction
+    private double shoulder_delta;
 
     // Configuration for reading constants
     private Config conf;
@@ -62,7 +56,7 @@ public class IronSightsArmDriver {
      * @param arm The arm to drive
      * @param conf A configuration file to read constants from
      */
-    public IronSightsArmDriver(Arm arm/*, MotorController base, MotorController extend*/, Config conf) {
+    public IronSightsArmDriver(Arm arm, Config conf) {
         this.arm = arm;
 //        this.base = base;
 //        this.extend = extend;
@@ -124,75 +118,6 @@ public class IronSightsArmDriver {
         return wrist_angle;
     }
 
-    public double getX() {
-        return x;
-    }
-
-    public double getY() {
-        return y;
-    }
-
-    public double getZ() {
-        return z;
-    }
-
-    /**
-     * Move the arm in Cartesian coordinate space
-     * @param dx How far to move in the X direction (forward/backward)
-     * @param dy How far to move in the Y direction (up/down)
-     * @param dz How far to move in the Z direction (left/right)
-     * @param mode How to move (any of {@link #MODE_FINE}, {@link #MODE_FAST},
-     *             or {@link #MODE_GROSS})
-     */
-    public void drive(double dx, double dy, double dz, int mode) {
-        driveAbsolute(x+dx, y+dy, z+dz, mode);
-    }
-
-    /**
-     * Move the arm to an absolute position in Cartesian coordinate space
-     * @param x The position in the X direction (forward/backward)
-     * @param y The position in the Y direction (up/down)
-     * @param z The position in the Z direction (left/right)
-     * @param mode How to move (any of {@link #MODE_FINE}, {@link #MODE_FAST},
-     *             or {@link #MODE_GROSS})
-     */
-    public void driveAbsolute(double x, double y, double z, int mode) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.currentMode = mode;
-    }
-
-    /**
-     * Manually move the individual axes
-     * @param base The rotating base angle, in radians (WIP, does nothing)
-     * @param extend The translating base distance, in inches (WIP, does nothing)
-     * @param waist The waist angle, in radians
-     * @param shoulder The shoulder angle, in radians
-     * @param elbow The elbow angle, in radians
-     * @param wrist The wrist angle, in radians
-     */
-    public void driveManual(double base, double extend, double waist, double shoulder, double
-            elbow, double wrist) {
-        // Right now, we'll just ignore base and extend
-        z = r1 * cos(waist) * cos(shoulder) + r2 * cos(elbow) + r3 * cos(wrist);
-        y = r1 * sin(shoulder) + r2 * sin(elbow) + r3 * sin(wrist);
-        x = z * sin(waist);
-        // setWaistAngle(waist);
-        setShoulderAngle(shoulder);
-        setElbowAngle(elbow);
-        setWristAngle(wrist);
-    }
-
-    /**
-     * Get the current mode
-     * @return the current mode (one of {@link #MODE_FINE}, {@link #MODE_FAST}, or
-     *         {@link #MODE_GROSS})
-     */
-    public int getCurrentMode() {
-        return currentMode;
-    }
-
     /*
     Move the entire arm (including waist) to the specified coordinate in 3D space
      */
@@ -204,7 +129,7 @@ public class IronSightsArmDriver {
     }
 
     public void moveArmTo(double i, double j, double wrist) {
-        moveArm(calculateArm(i, j, wrist, shoulder_angle, elbow_angle, wrist_angle, 0));
+        moveArm(calculateArm(i, j, wrist, shoulder_angle, elbow_angle, wrist_angle));
     }
 
     public void setAdjustAngles(double shoulder) {
@@ -213,18 +138,37 @@ public class IronSightsArmDriver {
         moveArm(shoulder_angle, elbow_angle, wrist_angle);
     }
 
-    /*
-    Move the arm (shoulder, elbow, and wrist) to the specified coordinate in 2D space
+    /**
+     * Calculate the arm position from Cartesian inputs. Coordinates are two-dimensional relative
+     * to the shoulder
+     * @param i The position on the i-coordinate (in/out)
+     * @param j The position on the j-coordinate (up/down)
+     * @param t3 The requested wrist angle, counterclockwise from the i-axis
+     * @param t1 The current shoulder angle
+     * @param te The current elbow angle
+     * @param tw The current wrist angle
+     * @return The angles and exit code as follows: <code>{ shoulder, elbow, wrist, exitCode }</code>.
+     *         Exit codes:
+     *         <ol start=-1>
+     *             <li>Stack overflow error</li>
+     *             <li>The arm can reach that position</li>
+     *             <li>The arm can reach that position, but the math returned a NaN</li>
+     *             <li>The arm cannot reach that position, and the move should be canceled</li>
+     *         </ol>
      */
-    public double[] calculateArm(double i, double j, double t3, double t1, double te, double tw,
+    public double[] calculateArm(double i, double j, double t3, double t1, double te, double tw) {
+        return calculateArm(i, j, t3, t1, te, tw, 0);
+    }
+
+    private double[] calculateArm(double i, double j, double t3, double t1, double te, double tw,
                                  int c) {
-        log.v("Stack counter = %d", c);
-        log.v("Moving to (%.4f, %.4f); wrist = %.4f", i, j, tw);
-        log.v("Current angles: shoulder=%.4f, elbow=%.4f", t1, te);
-        if (c == 100) log.w("100 stack frames");
+//        log.v("Stack counter = %d", c);
+//        log.v("Moving to (%.4f, %.4f); wrist = %.4f", i, j, tw);
+//        log.v("Current angles: shoulder=%.4f, elbow=%.4f", t1, te);
+        if (c == 100) log.w("100 stack frames; is there a bug in the program?!");
         if (c == 1000) {
             log.e("1000 stack frames; exiting recursive loop");
-            return new double[] {t1, te, tw};
+            return new double[] {t1, te, tw, -1};
         }
 
         //First we want to calculate the current t4 and r4 (commented just in case we still
@@ -251,11 +195,11 @@ public class IronSightsArmDriver {
         double t5 = asin((r3 * sin(t3))/r5) + t4;
         if (r5 >= r1 + r2) {
             if (abs(tw - PI) > toRadians(1)) {
-                log.v("Adjusting wrist to %.4f", t3 + PI/32);
+//                log.v("Adjusting wrist to %.4f", t3 + PI/32);
                 return calculateArm(i, j, t3 + PI/32, t1, te, tw, c+1);
             } else {
-                log.v("Unable to reach far enough; moving to straight out");
-                return new double[] { t4, PI, PI };
+//                log.v("Unable to reach far enough; moving to straight out");
+                return new double[] { t4, PI, PI, 2 };
             }
         }
 
@@ -268,18 +212,18 @@ public class IronSightsArmDriver {
         tw = t3 - t2;
 
         if (tw < PI/2) {
-            log.v("Adjusting wrist so it is within physical limits (to %.4f)", t3 + PI/16);
+//            log.v("Adjusting wrist so it is within physical limits (to %.4f)", t3 + PI/16);
             return calculateArm(i, j, t3 + PI/16, t1, te, tw, c+1);
         } else if (tw > 3*PI/2) {
-            log.v("Adjusting wrist so it is within physical limits (to %.4f)", t3 - PI/16);
+//            log.v("Adjusting wrist so it is within physical limits (to %.4f)", t3 - PI/16);
             return calculateArm(i, j, t3 - PI/16, t1, te, tw, c+1);
         }
-        log.v("Successfully reached position");
-        log.v("New angles: shoulder=%.4f, elbow=%.4f, wrist=%.4f", t1, te, tw);
+//        log.v("Successfully reached position");
+//        log.v("New angles: shoulder=%.4f, elbow=%.4f, wrist=%.4f", t1, te, tw);
         if (Double.isNaN(t1) || Double.isNaN(te) || Double.isNaN(tw)) {
-            return new double[] {shoulder_angle, elbow_angle, wrist_angle};
+            return new double[] {shoulder_angle, elbow_angle, wrist_angle, 1};
         }
-        return new double[] {t1, te, tw};
+        return new double[] {t1, te, tw, 0};
     }
 
     private void moveArm(double[] d) {
@@ -319,50 +263,5 @@ public class IronSightsArmDriver {
 
     public double getWristPosition() {
         return arm.getWrist().getPosition();
-    }
-
-
-    /*
-    Returns [ dt1, dt2 ]
-     */
-    private double[] newtonRaphson(double r1, double r2, double r3, double r4, double t1, double t2,
-                               double t3, double t4) {
-        //ex = error in x direction
-        //ey = error in y direction
-        double ex = r1 * cos(t1) + r2 * cos(t2) - r3 * cos(t3) - r4 * cos(t4);
-        double ey = r1 * sin(t1) + r2 * sin(t2) - r3 * sin(t3) - r4 * sin(t4);
-        double dex1 = -r1 * sin(t1); // partial derivative of x error with respect to t1
-        double dey1 =  r1 * cos(t1); // partial derivative of y error with respect to t1
-        double dex2 = -r2 * sin(t2); // partial derivative of x error with respect to t2
-        double dey2 =  r2 * cos(t2); // partial derivative of y error with respect to t2
-
-        // We are solving the matrix
-        //
-        // [ dex1   dex2 ]   [ dt1 ]   [ -ex ]
-        // [             ] * [     ] = [     ]
-        // [ dey1   dey2 ]   [ dt2 ]   [ -ey ]
-        //
-        // for dt1 and dt2. This requires finding the inverse of the 2x2 matrix so that we
-        // can rearrange the equation into
-        //
-        //     / [ dex1   dex2 ] \   [ -ex ]   [ dt1 ]
-        // inv | [             ] | * [     ] = [     ]
-        //     \ [ dey1   dey2 ] /   [ -ey ]   [ dt2 ]
-        //
-        //
-        //   [ dey2   -dex1 ]                1                [ -ex ]   [ dt1 ]
-        //   [              ] * --------------------------- * [     ] = [     ]
-        //   [ -dey1   dex2 ]    dex1 * dey2 - dex2 * dey1    [ -ey ]   [ dt2 ]
-        //
-        // Which turns into these two formulae below
-        double det = dex1 * dey2 - dex2 * dey1; // determinant of matrix
-        double dt1 = (-ex * dey2 - ey * -dex1) / det; // change in angle 1
-        double dt2 = (-ex * -dey1 - ey * dex2) / det; // change in angle 2
-        log.d("Divide by 0 test; matrix: ");
-        log.d("[ %.2f %.2f ]", dex1, dex2);
-        log.d("[ %.2f %.2f ]", dey1, dey2);
-        log.d(" -> determinant = %.2f", det);
-        log.d("Result: dt1 = %.2f, dt2 = %.2f", dt1, dt2);
-        return new double[] { dt1, dt2 };
     }
 }

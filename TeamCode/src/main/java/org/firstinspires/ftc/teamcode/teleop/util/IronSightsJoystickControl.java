@@ -64,7 +64,7 @@ public class IronSightsJoystickControl {
         this.conf = conf;
         finesse_gain = conf.getDouble("finesse_gain", 0.5);
         home = conf.getDoubleArray("ironSights_home");
-        if (home == null) home = new double[] {0, -2, 5, PI};
+        if (home == null) home = new double[] {0, -2, -1, PI};
         out = conf.getDoubleArray("ironSights_out");
         if (out == null) out = new double[] {0, 9, 20, PI};
         i = home[0];
@@ -101,14 +101,17 @@ public class IronSightsJoystickControl {
         //which balance stone we're on
         double start_angle = (quadrant % 2 == 0) ? 45 : 135;
         double base_angle = toRadians(start_angle - imu.getHeading());
+        //Uncomment these lines and comment the ones following it to turn off parallel-to-walls joystick control:
+        //double di = dx;
+        //double dk = dz;
         double di = dx * cos(base_angle) + dz * sin(base_angle);
-        double dj = dy;
         double dk = dx * sin(base_angle) + dz * cos(base_angle);
+        double dj = dy;
         i += di;
         j += dj;
         k += dk;
         w += dw;
-        yaw += dyw / 50;
+        yaw += dyw / 50; //possibly make this constant configurable?
 
         if (w > 3*PI/2) {
             w = 3*PI/2;
@@ -131,9 +134,17 @@ public class IronSightsJoystickControl {
         }
 
         if (gamepad2.dpad_left) {
-            base.setPower(0.8);
+            base.setPower(0.8); //TODO make configurable
         } else if (gamepad2.dpad_right){
             base.setPower(-0.8);
+        } else {
+            base.setPower(0);
+        }
+
+        if (gamepad2.dpad_up) {
+            extend.setPower(1); //TODO make configurable
+        } else if (gamepad2.dpad_down){
+            extend.setPower(-1);
         } else {
             base.setPower(0);
         }

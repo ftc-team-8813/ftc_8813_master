@@ -5,6 +5,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
@@ -45,13 +46,22 @@ public class IronSightsTest extends OpMode {
         Servo yaw = hardwareMap.servo.get("s5");
         DcMotor base = hardwareMap.dcMotor.get("base");
         DcMotor extend = hardwareMap.dcMotor.get("extend");
+        //Reverse motors if necessary
+        if (conf.getBoolean("base_reverse", false))
+            base.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (conf.getBoolean("ext_reverse", false))
+            extend.setDirection(DcMotorSimple.Direction.REVERSE);
+        //Load the IMU from autonomous data
         IMU imu = (IMU)Persistent.get("imu");
         if (imu == null) {
+            //Create it if it isn't there
             imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
             imu.initialize(telemetry);
         }
         int quadrant;
+        //Load the quadrant from autonomous data
         if (Persistent.get("quadrant") == null) {
+            //Default to red upper for now
             quadrant = 4; //hehe
         } else {
             quadrant = (int)Persistent.get("quadrant");
