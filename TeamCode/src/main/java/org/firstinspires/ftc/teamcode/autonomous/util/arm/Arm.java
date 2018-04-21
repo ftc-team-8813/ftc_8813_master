@@ -97,4 +97,10 @@ public class Arm {
     public Servo getElbow() {
         return elbow;
     }
+
+    public Servo getClaw() { return claw; }
+
+    public Servo getWrist() { return wrist; }
+
+    public Servo getYaw() { return yaw; }
 }

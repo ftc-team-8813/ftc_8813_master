@@ -153,6 +153,7 @@ public abstract class BaseAutonomous extends LinearOpMode {
                 //We can't just throw any Throwables; we need to throw either unchecked exceptions
                 //(RuntimeException and Error) or InterruptedException, which it is declared to be
                 //able to throw.
+                log.e(exc);
                 if (exc instanceof Error) throw (Error)exc;
                 else if (exc instanceof RuntimeException) throw (RuntimeException)exc;
                 else if (exc instanceof IOException) log.e(exc);

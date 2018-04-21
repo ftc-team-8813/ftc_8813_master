@@ -40,6 +40,7 @@ public class Logger {
     public static void init(File file) throws IOException {
         started = false;
         close();
+        file.getParentFile().mkdirs();
         writer = new PrintStream(file);
     }
 

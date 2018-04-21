@@ -93,7 +93,10 @@ public class Utils {
      * @return
      */
     public static double scaleRange(double x, double a, double b, double c, double d) {
-        return c * (1.0 - (x - a) / (b - a)) + d * ((x - a) / (b - a));
+        double o = c * (1.0 - (x - a) / (b - a)) + d * ((x - a) / (b - a));
+//        Logger log = new Logger("Utils.scaleRange()");
+//        log.d("Scaled %.2f to %.2f", x, o);
+        return o;
     }
 
     public static String quadName(int quadrant) {
