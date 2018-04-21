@@ -121,15 +121,17 @@ public class IronSightsArmDriver {
     /*
     Move the entire arm (including waist) to the specified coordinate in 3D space
      */
-    public void moveArmTo(double i, double j, double k, double wrist) {
+    public int moveArmTo(double i, double j, double k, double wrist) {
         double rArm = sqrt(i*i+k*k);
         double tArm = atan2(i, k);
         setWaistAngle(tArm);
-        moveArmTo(rArm, j, wrist);
+        return moveArmTo(rArm, j, wrist);
     }
 
-    public void moveArmTo(double i, double j, double wrist) {
-        moveArm(calculateArm(i, j, wrist, shoulder_angle, elbow_angle, wrist_angle));
+    public int moveArmTo(double i, double j, double wrist) {
+        double[] move = calculateArm(i, j, wrist, shoulder_angle, elbow_angle, wrist_angle);
+        moveArm(move);
+        return (int)move[3];
     }
 
     public void setAdjustAngles(double shoulder) {

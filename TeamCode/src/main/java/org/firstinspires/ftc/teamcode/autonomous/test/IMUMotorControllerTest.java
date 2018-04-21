@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRotate;
 import org.firstinspires.ftc.teamcode.autonomous.util.IMUMotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
-import org.firstinspires.ftc.teamcode.autonomous.util.sensors.IMU;
+import org.firstinspires.ftc.teamcode.util.sensors.IMU;
 
 /**
  * Created by aidan on 3/20/18.

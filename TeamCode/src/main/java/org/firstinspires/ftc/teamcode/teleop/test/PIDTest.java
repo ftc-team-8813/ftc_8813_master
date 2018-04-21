@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.IMUMotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
-import org.firstinspires.ftc.teamcode.autonomous.util.sensors.IMU;
+import org.firstinspires.ftc.teamcode.util.sensors.IMU;
 import org.firstinspires.ftc.teamcode.util.Config;
 
 /**

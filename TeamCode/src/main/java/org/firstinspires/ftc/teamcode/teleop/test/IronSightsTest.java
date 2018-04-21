@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.teleop.test;
 
-import com.qualcomm.hardware.ams.AMSColorSensor;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,9 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
-import org.firstinspires.ftc.teamcode.autonomous.util.sensors.IMU;
-import org.firstinspires.ftc.teamcode.teleop.MainTeleOp;
-import org.firstinspires.ftc.teamcode.teleop.util.IronSightsArmDriver;
+import org.firstinspires.ftc.teamcode.util.sensors.IMU;
 import org.firstinspires.ftc.teamcode.teleop.util.IronSightsJoystickControl;
 import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.util.Logger;
@@ -22,7 +19,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import static java.lang.Math.*;
 
 @TeleOp(name="IronSights Test")
 public class IronSightsTest extends OpMode {

@@ -1,12 +1,10 @@
-package org.firstinspires.ftc.teamcode.autonomous.util.sensors;
+package org.firstinspires.ftc.teamcode.util.sensors;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.util.Logger;
@@ -23,13 +21,17 @@ import java.util.Arrays;
 
 public class IMU {
 
+    //Modes
     private static final int PRE_INIT = 0;
     private static final int INITIALIZED = 1;
     private static final int SETUP = 2;
     private static final int STARTED = 3;
 
+    //The IMU
     private BNO055IMU imu;
+    //Its parameters
     private BNO055IMU.Parameters params;
+    //The logger
     private Logger log;
     private boolean autoCalibrating;
     private Thread worker;

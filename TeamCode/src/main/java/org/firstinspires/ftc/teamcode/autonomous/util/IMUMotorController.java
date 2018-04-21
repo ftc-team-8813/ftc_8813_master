@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.autonomous.util;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
-import org.firstinspires.ftc.teamcode.autonomous.util.sensors.IMU;
+import org.firstinspires.ftc.teamcode.util.sensors.IMU;
 import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
