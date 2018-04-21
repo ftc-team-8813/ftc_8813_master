@@ -46,7 +46,7 @@ public class MoveRecorder extends MainTeleOp {
         //every other frame, giving us 25fps
         if (frame % 2 == 0) {
             float[] data = {
-                    (float)driver.getWaistAngle(), (float)driver.getShoulderAngle(), (float)driver.getElbowAngle(), base.getCurrentPosition(), (float)wrist.getPosition()
+                    (float)controller.i(), (float)controller.j(), (float)controller.k(), controller.base(), (float)controller.w()
             };
             moves.add(data);
         }

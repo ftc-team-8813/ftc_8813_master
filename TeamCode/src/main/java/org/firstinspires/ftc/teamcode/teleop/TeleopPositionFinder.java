@@ -31,8 +31,7 @@ public class TeleopPositionFinder extends PositionFinder {
             if (!bHeld) {
                 bHeld = true;
                 positions.add(new double[]{
-                        driver.getClawDistance(), driver.getArmAngle(), driver.getWaistAngle(), wrist
-                        .getPosition(), yaw.getPosition(), getTurntablePosition(), extend.getCurrentPosition()
+                        controller.i(), controller.j(), controller.k(), controller.w(), controller.claw(), controller.yaw(), controller.base(), controller.extend()
                 });
             }
         } else {

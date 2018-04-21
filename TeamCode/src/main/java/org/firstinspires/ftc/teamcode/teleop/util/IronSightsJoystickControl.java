@@ -4,9 +4,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.util.IMUMotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
+import org.firstinspires.ftc.teamcode.util.Utils;
 import org.firstinspires.ftc.teamcode.util.sensors.CurrentSensor;
 import org.firstinspires.ftc.teamcode.util.sensors.IMU;
 import org.firstinspires.ftc.teamcode.util.Config;
@@ -60,13 +62,18 @@ public class IronSightsJoystickControl {
     private int[] glyphs;
     private int activeColumn;
 
+
+    private long start = 0;
+    private long lastPress = 0;
+
     private CurrentSensor currentSensor;
     private double floatDistance;
     private boolean floorTest;
     private long floorTestTime;
 
     public IronSightsJoystickControl(Gamepad gamepad1, Gamepad gamepad2, Arm arm, Config conf,
-                                     Telemetry t, DcMotor base, DcMotor extend, IMU imu, int quadrant) {
+                                     Telemetry t, DcMotor base, DcMotor extend, IMU imu, int quadrant,
+                                     TaskClassifyPictograph.Result findResult) {
         telemetry = t;
         this.base = base;
         this.extend = extend;
@@ -80,6 +87,21 @@ public class IronSightsJoystickControl {
         driver = new IronSightsArmDriver(arm, conf);
         this.arm = arm;
         this.conf = conf;
+        this.quadrant = quadrant;
+        moves = new Config("ironSightsPresets_" + quadrant);
+        if (findResult != null) {
+            if (findResult == TaskClassifyPictograph.Result.NONE
+                    || findResult == TaskClassifyPictograph.Result.CENTER) {
+                glyphs[1] = 1;
+                activeColumn = 1;
+            } else if (findResult == TaskClassifyPictograph.Result.LEFT) {
+                glyphs[0] = 1;
+                activeColumn = 0;
+            } else if (findResult == TaskClassifyPictograph.Result.RIGHT) {
+                glyphs[2] = 1;
+                activeColumn = 2;
+            }
+        }
 
         //Read configuration values
         finesse_gain = conf.getDouble("finesse_gain", 0.5);
@@ -108,11 +130,52 @@ public class IronSightsJoystickControl {
     }
 
     public void start() {
+        start = System.currentTimeMillis();
         i = out[0];
         j = out[1];
         k = out[2];
         w = out[3];
         driver.moveArmTo(i, j, k, w);
+    }
+
+    public double i() {
+        return i;
+    }
+
+    public double j() {
+        return j;
+    }
+
+    public double k() {
+        return k;
+    }
+
+    public double w() {
+        return w;
+    }
+
+    public int claw() {
+        return clawPos;
+    }
+
+    public double clawPosition() {
+        return arm.getClaw().getPosition();
+    }
+
+    public double yaw() {
+        return yaw;
+    }
+
+    public int base() {
+        return bc.getCurrentPosition();
+    }
+
+    public int extend() {
+        return ec.getCurrentPosition();
+    }
+
+    public Arm arm() {
+        return arm;
     }
 
     public void loop() {
@@ -260,6 +323,7 @@ public class IronSightsJoystickControl {
                 yaw = conf.getDouble("yaw_mid", 0.5);
             }
 
+            telemetry.addData("Elapsed Time", Utils.elapsedTime(System.currentTimeMillis() - start));
             telemetry.addData("i", i);
             telemetry.addData("j", j);
             telemetry.addData("k", k);

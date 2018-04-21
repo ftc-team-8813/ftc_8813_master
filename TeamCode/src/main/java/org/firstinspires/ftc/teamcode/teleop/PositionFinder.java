@@ -29,8 +29,8 @@ public class PositionFinder extends MainTeleOp {
             if (!bHeld) {
                 bHeld = true;
                 positions.add(new double[]{
-                       driver.getWaistPos(), driver.getShoulderPos(), driver.getElbowPos(), wrist
-                        .getPosition(), getTurntablePosition(), extend.getCurrentPosition(), yaw.getPosition()
+                       controller.arm().getWaist().getPosition(), controller.arm().getShoulder().getPosition(), controller.arm().getElbow().getPosition(),
+                        controller.arm().getWrist().getPosition(), controller.base(), controller.extend(), controller.yaw()
                 });
             }
         } else {
