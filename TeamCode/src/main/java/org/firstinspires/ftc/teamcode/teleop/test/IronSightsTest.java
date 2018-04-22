@@ -65,7 +65,7 @@ public class IronSightsTest extends OpMode {
         imu.start();
         telemetry.clear();
         controller = new IronSightsJoystickControl(gamepad1, gamepad2,
-                new Arm(conf, waist, shoulder, elbow, claw, wrist, yaw), conf, telemetry, base, extend, imu, quadrant, null);
+                new Arm(conf, waist, shoulder, elbow, claw, wrist, yaw), conf, telemetry, base, extend, imu, quadrant, null, false);
     }
 
     @Override

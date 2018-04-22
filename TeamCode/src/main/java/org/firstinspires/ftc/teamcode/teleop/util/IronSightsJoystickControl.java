@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop.util;
 
+import android.widget.Button;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
@@ -71,9 +73,15 @@ public class IronSightsJoystickControl {
     private boolean floorTest;
     private long floorTestTime;
 
+    private boolean isPositionFinder;
+
+    private long lbPress;
+
+    private double bbRadius;
+
     public IronSightsJoystickControl(Gamepad gamepad1, Gamepad gamepad2, Arm arm, Config conf,
                                      Telemetry t, DcMotor base, DcMotor extend, IMU imu, int quadrant,
-                                     TaskClassifyPictograph.Result findResult) {
+                                     TaskClassifyPictograph.Result findResult, boolean isPositionFinder) {
         telemetry = t;
         this.base = base;
         this.extend = extend;
@@ -88,7 +96,11 @@ public class IronSightsJoystickControl {
         this.arm = arm;
         this.conf = conf;
         this.quadrant = quadrant;
+        this.isPositionFinder = isPositionFinder;
         moves = new Config("ironSightsPresets_" + quadrant);
+
+        glyphs = new int[3];
+        rowStacking = false;
         if (findResult != null) {
             if (findResult == TaskClassifyPictograph.Result.NONE
                     || findResult == TaskClassifyPictograph.Result.CENTER) {
@@ -112,6 +124,7 @@ public class IronSightsJoystickControl {
         clawCloseAmount = conf.getDouble("claw_closed", 0);
         clawGlyphAmount = conf.getDouble("claw_part", 0);
         clawOpenAmount = conf.getDouble("claw_open", 0);
+        home = out; //For now; need to fix init position
 
         i = home[0];
         j = home[1];
@@ -119,9 +132,7 @@ public class IronSightsJoystickControl {
         w = home[3];
         yaw = conf.getDouble("yaw_mid", 0.5);
 
-        glyphs = new int[3];
-        rowStacking = false;
-        activeColumn = 0; //TODO include autonomous glyph and stack from there
+        bbRadius = (conf.getDouble("r1", 18) + conf.getDouble("r2", 18)) / Math.sqrt(2) - 0.125;
 
         //Move to home
         driver.moveArmTo(i, j, k, w);
@@ -195,10 +206,10 @@ public class IronSightsJoystickControl {
                 telemetry.clear();
             }
             double dx = -gamepad1.right_stick_x;
-            double dy = (gamepad1.left_trigger - gamepad1.right_trigger) / 10;
+            double dy = -gamepad1.left_stick_y / 2.5;
             double dz = -gamepad1.right_stick_y;
-            double dw = -gamepad1.left_stick_y / 10;
-            double dyw = (gamepad1.dpad_right ? 1 : 0) - (gamepad1.dpad_left ? 1 : 0);
+            double dw = -gamepad2.right_stick_y / 10;
+            double dyw = -gamepad2.left_stick_x;
             if (gamepad1.right_bumper) {
                 dx *= finesse_gain;
                 dy *= finesse_gain;
@@ -215,9 +226,12 @@ public class IronSightsJoystickControl {
             //double di = dx * cos(base_angle) + dz * sin(base_angle);
             //double dk = dx * sin(base_angle) + dz * cos(base_angle);
             double dj = dy;
-            i += di;
-            j += dj;
-            k += dk;
+            if (Math.abs(i + di) < bbRadius) i += di;
+            else i = bbRadius * Math.signum(i);
+            if (Math.abs(j + dj) < bbRadius) j += dj;
+            else j = bbRadius * Math.signum(j);
+            if (Math.abs(k + dk) < bbRadius) k += dk;
+            else k = bbRadius * Math.signum(k);
             w += dw;
             yaw += dyw / 50; //possibly make this constant configurable?
 
@@ -233,7 +247,7 @@ public class IronSightsJoystickControl {
             }
             driver.setAdjustAngles(-Math.toRadians(imu.getPitch()));
             int code = driver.moveArmTo(i, j, k, w);
-            if (code < 2) {
+            if (code >= 2) {
                 i -= di;
                 j -= dj;
                 k -= dk;
@@ -249,7 +263,7 @@ public class IronSightsJoystickControl {
                     arm.moveClaw(clawOpenAmount);
             }
 
-            if (buttons1.pressing(ButtonHelper.y)) {
+            if (buttons2.pressing(ButtonHelper.y)) {
                 if (clawPos == 0) clawPos = 2;
                 else clawPos = 0;
                 if (clawPos == 2)
@@ -274,6 +288,20 @@ public class IronSightsJoystickControl {
                 extend.setPower(0);
             }
 
+            if (buttons1.pressing(ButtonHelper.left_bumper)) {
+                if (System.currentTimeMillis() - lbPress < 500) {
+                    i = home[0];
+                    j = home[1];
+                    k = home[2];
+                    w = home[3];
+                } else {
+                    i = out[0];
+                    j = out[1];
+                    k = out[2];
+                    w = out[3];
+                }
+            }
+
 //            if (floorTest && System.currentTimeMillis() > floorTestTime + 1000) {
 //                floorTest = false;
 //                if (currentSensor.getCurrent() > 1.5) {
@@ -282,7 +310,7 @@ public class IronSightsJoystickControl {
 //                }
 //            }
 
-            if (gamepad1.b) {
+            if (gamepad1.b && !isPositionFinder) {
                 int filled = 0;
                 if (moveStep == 1) {
                     if (rowStacking) {
