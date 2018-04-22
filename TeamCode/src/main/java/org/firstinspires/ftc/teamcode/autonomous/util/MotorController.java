@@ -30,6 +30,7 @@ public class MotorController implements Closeable {
         protected double integral;
         protected double prev_error;
         protected Runnable atTarget;
+        private boolean stopping;
 
         public final int sse;
 
@@ -54,6 +55,7 @@ public class MotorController implements Closeable {
             log.i("Starting!");
             while (true) {
                 if (holding) {
+                    stopping = false;
                     double error = target - getCurrentPosition(); //target > pos : error positive
                     integral += error;
                     double derivative = error - prev_error;
@@ -71,8 +73,11 @@ public class MotorController implements Closeable {
                     }
                     motor.setPower(speed);
                 } else {
-                    motor.setPower(0);
-                    integral = 0;
+                    if (!stopping) {
+                        stopping = true;
+                        motor.setPower(0);
+                        integral = 0;
+                    }
                 }
                 if (Thread.interrupted()) {
                     motor.setPower(0);

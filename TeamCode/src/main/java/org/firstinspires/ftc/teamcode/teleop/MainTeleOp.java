@@ -112,7 +112,7 @@ public class MainTeleOp extends OpMode {
                     if (quadrant[0] < 0) return;
                     controller = new IronSightsJoystickControl(gamepad1, gamepad2,
                             new Arm(conf, waist, shoulder, elbow, claw, wrist, yaw), conf,
-                            telemetry, base, extend, imu, quadrant[0], findResult);
+                            telemetry, base, extend, imu, quadrant[0], findResult, MainTeleOp.this instanceof PositionFinder);
                 }
             });
             chooser.setDaemon(true);
@@ -121,7 +121,7 @@ public class MainTeleOp extends OpMode {
             quadrant[0] = (int)Persistent.get("quadrant");
             controller = new IronSightsJoystickControl(gamepad1, gamepad2,
                     new Arm(conf, waist, shoulder, elbow, claw, wrist, yaw), conf,
-                    telemetry, base, extend, imu, quadrant[0], findResult);
+                    telemetry, base, extend, imu, quadrant[0], findResult, this instanceof  PositionFinder);
         }
 
         //Set up

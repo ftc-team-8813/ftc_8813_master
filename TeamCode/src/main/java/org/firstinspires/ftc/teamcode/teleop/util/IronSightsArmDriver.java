@@ -124,6 +124,10 @@ public class IronSightsArmDriver {
     public int moveArmTo(double i, double j, double k, double wrist) {
         double rArm = sqrt(i*i+k*k);
         double tArm = atan2(i, k);
+        if (abs(tArm) > PI) {
+            tArm = tArm - PI * signum(tArm);
+            rArm = -rArm;
+        }
         setWaistAngle(tArm);
         return moveArmTo(rArm, j, wrist);
     }
@@ -201,7 +205,8 @@ public class IronSightsArmDriver {
                 return calculateArm(i, j, t3 + PI/32, t1, te, tw, c+1);
             } else {
 //                log.v("Unable to reach far enough; moving to straight out");
-                return new double[] { t4, PI, PI, 2 };
+                //return new double[] { t4, PI, PI, 2 };
+                return new double[] {shoulder_angle, elbow_angle, wrist_angle, 2};
             }
         }
 
@@ -245,8 +250,8 @@ public class IronSightsArmDriver {
     }
 
     private void setShoulderAngle(double rads) {
-        shoulder_angle = rads + shoulder_delta;
-        double position = Utils.scaleRange(rads, SHOULDER_MIN_ANGLE, SHOULDER_MAX_ANGLE,
+        shoulder_angle = rads;
+        double position = Utils.scaleRange(rads + shoulder_delta, SHOULDER_MIN_ANGLE, SHOULDER_MAX_ANGLE,
                 SHOULDER_MIN, SHOULDER_MAX);
         arm.moveShoulder(position);
     }
