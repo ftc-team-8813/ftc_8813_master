@@ -47,6 +47,8 @@ public class MainTeleOp extends OpMode {
     private IMU imu;
     private Thread chooser;
     private boolean waiting;
+    private Config conf;
+    private Servo colorArm;
 
     @Override
     public void init() {
@@ -68,6 +70,7 @@ public class MainTeleOp extends OpMode {
         } else {
             conf = new Config("config.properties");
         }
+        this.conf = conf;
 
         log = new Logger("IronSights Test");
         final Servo waist = hardwareMap.servo.get("s0");
@@ -76,6 +79,7 @@ public class MainTeleOp extends OpMode {
         final Servo claw = hardwareMap.servo.get("s3");
         final Servo wrist = hardwareMap.servo.get("s4");
         final Servo yaw = hardwareMap.servo.get("s5");
+        colorArm = hardwareMap.servo.get("s6");
         final DcMotor base = hardwareMap.dcMotor.get("base");
         final DcMotor extend = hardwareMap.dcMotor.get("extend");
         //Reverse motors if necessary
@@ -140,6 +144,8 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public void start() {
+        if (conf.getDoubleArray("color_arm_positions") != null) colorArm.setPosition(conf
+                .getDoubleArray("color_arm_positions")[1]);
         if (controller != null) controller.start();
     }
 
@@ -163,6 +169,7 @@ public class MainTeleOp extends OpMode {
             } catch (InterruptedException e) {
                 return;
             }
+            run();
             controller.loop();
         }
     }

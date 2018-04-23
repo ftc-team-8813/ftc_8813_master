@@ -1,23 +1,21 @@
 package org.firstinspires.ftc.teamcode.teleop.util;
 
-import android.widget.Button;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.util.IMUMotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Utils;
 import org.firstinspires.ftc.teamcode.util.sensors.CurrentSensor;
 import org.firstinspires.ftc.teamcode.util.sensors.IMU;
 import org.firstinspires.ftc.teamcode.util.Config;
 
 import static java.lang.Math.PI;
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
 
 /**
@@ -35,7 +33,7 @@ public class IronSightsJoystickControl {
     //Claw positions
     private double clawOpenAmount, clawGlyphAmount, clawCloseAmount;
     //Current arm position
-    private double i, j, k, w;
+    private double t, j, k, w;
     //Preset positions
     private double[] home, out;
     //Yaw servo position
@@ -79,10 +77,13 @@ public class IronSightsJoystickControl {
 
     private double bbRadius;
 
+    private Logger log;
+
     public IronSightsJoystickControl(Gamepad gamepad1, Gamepad gamepad2, Arm arm, Config conf,
-                                     Telemetry t, DcMotor base, DcMotor extend, IMU imu, int quadrant,
+                                     Telemetry telemetry, DcMotor base, DcMotor extend, IMU imu, int quadrant,
                                      TaskClassifyPictograph.Result findResult, boolean isPositionFinder) {
-        telemetry = t;
+        log = new Logger("IronSights Joystick Driver");
+        this.telemetry = telemetry;
         this.base = base;
         this.extend = extend;
         this.imu = imu;
@@ -97,7 +98,7 @@ public class IronSightsJoystickControl {
         this.conf = conf;
         this.quadrant = quadrant;
         this.isPositionFinder = isPositionFinder;
-        moves = new Config("ironSightsPresets_" + quadrant);
+        moves = new Config("ironSightsPresets_" + quadrant + ".txt");
 
         glyphs = new int[3];
         rowStacking = false;
@@ -118,39 +119,40 @@ public class IronSightsJoystickControl {
         //Read configuration values
         finesse_gain = conf.getDouble("finesse_gain", 0.5);
         home = conf.getDoubleArray("ironSights_home");
-        if (home == null) home = new double[] {0, 8, -8, PI};
+        if (home == null) home = new double[] {0, 3, -5, PI, 0, conf.getDouble("yaw_mid", 0.5), 0, 0};
         out = conf.getDoubleArray("ironSights_out");
-        if (out == null) out = new double[] {0, 9, 20, PI};
+        if (out == null) out = new double[] {0, 9, 20, PI, 0, conf.getDouble("yaw_mid", 0.5), 0, 0};
         clawCloseAmount = conf.getDouble("claw_closed", 0);
         clawGlyphAmount = conf.getDouble("claw_part", 0);
         clawOpenAmount = conf.getDouble("claw_open", 0);
-        home = out; //For now; need to fix init position
 
-        i = home[0];
+        t = home[0];
         j = home[1];
         k = home[2];
         w = home[3];
         yaw = conf.getDouble("yaw_mid", 0.5);
 
-        bbRadius = (conf.getDouble("r1", 18) + conf.getDouble("r2", 18)) / Math.sqrt(2) - 0.125;
+        bbRadius = (conf.getDouble("r1", 18) + conf.getDouble("r2", 18)) / Math.sqrt(2) + 3;
 
         //Move to home
-        driver.moveArmTo(i, j, k, w);
+        currentMove = new Move(home, Move.FULL);
+        moveStart = true;
+        currentMove.moveTo(this, driver, bc, ec);
         arm.moveYaw(yaw);
         arm.openClaw();
     }
 
     public void start() {
         start = System.currentTimeMillis();
-        i = out[0];
+        t = out[0];
         j = out[1];
         k = out[2];
         w = out[3];
-        driver.moveArmTo(i, j, k, w);
+        driver.moveArmTo(t, j, k, w);
     }
 
     public double i() {
-        return i;
+        return t;
     }
 
     public double j() {
@@ -197,6 +199,9 @@ public class IronSightsJoystickControl {
                 telemetry.addData("", "Press RB to stop");
                 currentMove.moveTo(this, driver, bc, ec);
             }
+            if (gamepad1.right_bumper) {
+                currentMove.stop();
+            }
             if (!currentMove.driving()) {
                 currentMove = null;
             }
@@ -205,8 +210,8 @@ public class IronSightsJoystickControl {
                 moveStart = false;
                 telemetry.clear();
             }
-            double dx = -gamepad1.right_stick_x;
-            double dy = -gamepad1.left_stick_y / 2.5;
+            double dx = -gamepad1.right_stick_x * PI/64;
+            double dy = gamepad1.left_stick_y / 1.5;
             double dz = -gamepad1.right_stick_y;
             double dw = -gamepad2.right_stick_y / 10;
             double dyw = -gamepad2.left_stick_x;
@@ -221,13 +226,13 @@ public class IronSightsJoystickControl {
             double start_angle = (quadrant % 2 == 0) ? 45 : 135;
             double base_angle = toRadians(start_angle - imu.getHeading());
             //Uncomment these lines and comment the ones following it to turn off parallel-to-walls joystick control:
-            double di = dx;
+            double dt = dx;
             double dk = dz;
-            //double di = dx * cos(base_angle) + dz * sin(base_angle);
+            //double dt = dx * cos(base_angle) + dz * sin(base_angle);
             //double dk = dx * sin(base_angle) + dz * cos(base_angle);
             double dj = dy;
-            if (Math.abs(i + di) < bbRadius) i += di;
-            else i = bbRadius * Math.signum(i);
+            if (Math.abs(t + dt) < PI/2) t += dt;
+            else t = PI/2 * Math.signum(t);
             if (Math.abs(j + dj) < bbRadius) j += dj;
             else j = bbRadius * Math.signum(j);
             if (Math.abs(k + dk) < bbRadius) k += dk;
@@ -246,9 +251,9 @@ public class IronSightsJoystickControl {
                 yaw = 0;
             }
             driver.setAdjustAngles(-Math.toRadians(imu.getPitch()));
-            int code = driver.moveArmTo(i, j, k, w);
+            int code = driver.moveArmCyl(t, j, k, w);
             if (code >= 2) {
-                i -= di;
+                t -= dt;
                 j -= dj;
                 k -= dk;
                 w -= dw;
@@ -290,15 +295,10 @@ public class IronSightsJoystickControl {
 
             if (buttons1.pressing(ButtonHelper.left_bumper)) {
                 if (System.currentTimeMillis() - lbPress < 500) {
-                    i = home[0];
-                    j = home[1];
-                    k = home[2];
-                    w = home[3];
+                    currentMove = new Move(home, Move.FULL);
                 } else {
-                    i = out[0];
-                    j = out[1];
-                    k = out[2];
-                    w = out[3];
+                    lbPress = System.currentTimeMillis();
+                    currentMove = new Move(out, Move.FULL);
                 }
             }
 
@@ -311,48 +311,56 @@ public class IronSightsJoystickControl {
 //            }
 
             if (gamepad1.b && !isPositionFinder) {
-                int filled = 0;
-                if (moveStep == 1) {
-                    if (rowStacking) {
-                        activeColumn++;
-                        activeColumn %= 3;
-                        boolean found = false;
-                        while (!found && filled < 3) {
-                            if (glyphs[activeColumn] < 4) {
-                                found = true;
-                            } else {
-                                activeColumn++;
-                                activeColumn %= 3;
-                                filled++;
-                            }
-                        }
-                    } else {
-                        if (glyphs[activeColumn] == 4) {
+                try {
+                    int filled = 0;
+                    if (moveStep == 1) {
+                        if (rowStacking) {
                             activeColumn++;
                             activeColumn %= 3;
-                            rowStacking = true;
+                            boolean found = false;
+                            while (!found && filled < 3) {
+                                if (glyphs[activeColumn] < 4) {
+                                    found = true;
+                                } else {
+                                    activeColumn++;
+                                    activeColumn %= 3;
+                                    filled++;
+                                }
+                            }
+                        } else {
+                            if (glyphs[activeColumn] == 4) {
+                                activeColumn++;
+                                activeColumn %= 3;
+                                rowStacking = true;
+                            }
                         }
+                        if (filled < 3) {
+                            placeGlyph(activeColumn, glyphs[activeColumn]);
+                            glyphs[activeColumn]++;
+                        }
+                    } else {
+                        placeGlyph(0, 0); // we don't need x,y
                     }
-                    if (filled < 3) {
-                        placeGlyph(activeColumn, glyphs[activeColumn]);
-                        glyphs[activeColumn]++;
-                    }
-                } else {
-                    placeGlyph(0, 0); // we don't need x,y
+                } catch (IllegalArgumentException e) {
+                    log.e(e);
                 }
                 //Place da glyph
             }
 
             if (gamepad1.y) {
-                currentMove = new Move(moves.getDoubleArray("relic_pickup"), Move.FULL);
+                try {
+                    currentMove = new Move(moves.getDoubleArray("relic_pickup"), Move.FULL);
+                } catch (IllegalArgumentException e) {
+                    log.e(e);
+                }
             }
 
-            if (gamepad1.a) {
+            if (gamepad2.a) {
                 yaw = conf.getDouble("yaw_mid", 0.5);
             }
 
             telemetry.addData("Elapsed Time", Utils.elapsedTime(System.currentTimeMillis() - start));
-            telemetry.addData("i", i);
+            telemetry.addData("t", t);
             telemetry.addData("j", j);
             telemetry.addData("k", k);
             telemetry.addData("w", w);
@@ -367,13 +375,13 @@ public class IronSightsJoystickControl {
     public void placeGlyph(int x, int y) {
         if (moveStep == 0) {
             moveStep = 1;
-            currentMove = new Move(moves.getDoubleArray("y_float"), Move.J).setWaitTime(800);
+            currentMove = new Move(moves.getDoubleArray("return_to_pit"), Move.FULL_MOVE).setWaitTime(100);
             currentMove.setNextMove(new Move(moves.getDoubleArray("to_cryptobox"), Move.FULL_MOVE)).setWaitTime(0)
                     .setNextMove(new Move(moves.getDoubleArray("glyph_" + x + "_" + y), Move.FULL)).setWaitTime(800);
         } else {
             moveStep = 0;
             currentMove = new Move(moves.getDoubleArray("drop_glyph"), Move.CLAW).setWaitTime(100);
-            currentMove.setNextMove(new Move(moves.getDoubleArray("glyph_float"), Move.J | Move.K)).setWaitTime(800)
+            currentMove.setNextMove(new Move(moves.getDoubleArray("float_" + x), Move.J | Move.K)).setWaitTime(800)
                     .setNextMove(new Move(moves.getDoubleArray("return_to_pit"), Move.FULL_MOVE)).setWaitTime(0);
         }
     }
@@ -404,7 +412,7 @@ public class IronSightsJoystickControl {
 
         private int mode;
         //Order:
-        //[ i j k wrist claw yaw base extend ]
+        //[ t j k wrist claw yaw base extend ]
         //NOTE: claw is an int (0, 1, 2) -> (open, part closed, closed)
         private double[] data;
         private Thread driver;
@@ -446,7 +454,7 @@ public class IronSightsJoystickControl {
         public void moveTo(final IronSightsJoystickControl ctrl, final IronSightsArmDriver driver,
                            final MotorController base, final MotorController extend) {
             if ((mode & I) != 0) {
-                ctrl.i = data[0];
+                ctrl.t = data[0];
             }
             if ((mode & J) != 0) {
                 ctrl.j = data[1];
@@ -473,7 +481,7 @@ public class IronSightsJoystickControl {
                 dMode |= MotorDriver.EXT;
                 driverData[1] = data[7];
             }
-            driver.moveArmTo(ctrl.i, ctrl.j, ctrl.k, ctrl.w);
+            driver.moveArmTo(ctrl.t, ctrl.j, ctrl.k, ctrl.w);
             double[] clawPos = {ctrl.clawOpenAmount, ctrl.clawGlyphAmount, ctrl.clawCloseAmount};
             ctrl.arm.moveClaw(clawPos[ctrl.clawPos]);
             ctrl.arm.moveYaw(ctrl.yaw);

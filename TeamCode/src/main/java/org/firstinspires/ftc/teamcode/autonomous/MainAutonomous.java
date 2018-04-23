@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.qualcomm.hardware.ams.AMSColorSensor;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -22,6 +23,7 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskClassifyPictograph;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskPlaceGlyphAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskRotate;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskScoreJewel;
+import org.firstinspires.ftc.teamcode.autonomous.util.IMUMotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.QuadrantChooser;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
@@ -29,6 +31,7 @@ import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper
 import org.firstinspires.ftc.teamcode.teleop.util.ArmDriver;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Persistent;
+import org.firstinspires.ftc.teamcode.util.sensors.IMU;
 
 /**
  * Main autonomous program.
@@ -75,7 +78,11 @@ public class MainAutonomous extends BaseAutonomous {
         if (config.getBoolean("ext_reverse", false))
             motor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        base = new MotorController(motor);
+        IMU imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+        imu.initialize(telemetry);
+        imu.start();
+        telemetry.clear();
+        base = new IMUMotorController(motor, imu);
         extend = new MotorController(motor2);
         //moveArm(.4134, .1303, .05);
         //Same as TeleOp

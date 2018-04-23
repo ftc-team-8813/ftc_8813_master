@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.teleop.util;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.arm.Arm;
+import org.firstinspires.ftc.teamcode.teleop.PositionFinder;
 import org.firstinspires.ftc.teamcode.util.Config;
 import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.teamcode.util.Utils;
@@ -124,12 +125,21 @@ public class IronSightsArmDriver {
     public int moveArmTo(double i, double j, double k, double wrist) {
         double rArm = sqrt(i*i+k*k);
         double tArm = atan2(i, k);
-        if (abs(tArm) > PI/2) {
-            tArm = tArm - PI * signum(tArm);
+        if (tArm < -PI/2) {
             rArm = -rArm;
+            tArm += PI;
+        }
+        if (tArm > PI/2) {
+            rArm = -rArm;
+            tArm -= PI;
         }
         setWaistAngle(tArm);
         return moveArmTo(rArm, j, wrist);
+    }
+
+    public int moveArmCyl(double theta, double j, double k, double wrist) {
+        setWaistAngle(theta);
+        return moveArmTo(k, j, wrist);
     }
 
     public int moveArmTo(double i, double j, double wrist) {
@@ -245,6 +255,11 @@ public class IronSightsArmDriver {
 
     private void setWaistAngle(double rads) {
         waist_angle = rads;
+        if (waist_angle > PI/2) {
+            waist_angle = PI/2;
+        } else if (waist_angle < -PI/2) {
+            waist_angle = -PI/2;
+        }
         double position = Utils.scaleRange(rads, WAIST_MIN_ANGLE, WAIST_MAX_ANGLE, WAIST_MIN, WAIST_MAX);
         arm.moveWaist(position);
     }
