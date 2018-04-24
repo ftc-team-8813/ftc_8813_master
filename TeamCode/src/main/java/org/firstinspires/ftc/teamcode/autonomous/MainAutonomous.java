@@ -81,6 +81,7 @@ public class MainAutonomous extends BaseAutonomous {
         IMU imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
         imu.initialize(telemetry);
         imu.start();
+        Persistent.put("imu", imu);
         telemetry.clear();
         base = new IMUMotorController(motor, imu);
         extend = new MotorController(motor2);
@@ -96,6 +97,7 @@ public class MainAutonomous extends BaseAutonomous {
         wrist.setPosition(config.getDouble("wrist_init", 0));
         yaw.setPosition(config.getDouble("yaw_init", 0));
         quadrant = new QuadrantChooser(telemetry).chooseQuadrant();
+        Persistent.put("quadrant", quadrant);
         //quadrant = 2;
         finder = new TaskClassifyPictograph();
     }

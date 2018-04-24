@@ -101,6 +101,7 @@ public class IronSightsJoystickControl {
         moves = new Config("ironSightsPresets_" + quadrant + ".txt");
 
         glyphs = new int[3];
+        moveStep = 0;
         rowStacking = false;
         if (findResult != null) {
             if (findResult == TaskClassifyPictograph.Result.NONE
@@ -313,7 +314,7 @@ public class IronSightsJoystickControl {
             if (gamepad1.b && !isPositionFinder) {
                 try {
                     int filled = 0;
-                    if (moveStep == 1) {
+                    if (moveStep == 0) {
                         if (rowStacking) {
                             activeColumn++;
                             activeColumn %= 3;
@@ -336,7 +337,6 @@ public class IronSightsJoystickControl {
                         }
                         if (filled < 3) {
                             placeGlyph(activeColumn, glyphs[activeColumn]);
-                            glyphs[activeColumn]++;
                         }
                     } else {
                         placeGlyph(0, 0); // we don't need x,y
@@ -374,16 +374,26 @@ public class IronSightsJoystickControl {
 
     public void placeGlyph(int x, int y) {
         if (moveStep == 0) {
-            moveStep = 1;
-            currentMove = new Move(moves.getDoubleArray("return_to_pit"), Move.FULL_MOVE).setWaitTime(100);
-            currentMove.setNextMove(new Move(moves.getDoubleArray("to_cryptobox"), Move.FULL_MOVE)).setWaitTime(0)
-                    .setNextMove(new Move(moves.getDoubleArray("glyph_" + x + "_" + y), Move.FULL)).setWaitTime(800);
-        } else {
-            moveStep = 0;
-            currentMove = new Move(moves.getDoubleArray("drop_glyph"), Move.CLAW).setWaitTime(100);
-            currentMove.setNextMove(new Move(moves.getDoubleArray("float_" + x), Move.J | Move.K)).setWaitTime(800)
-                    .setNextMove(new Move(moves.getDoubleArray("return_to_pit"), Move.FULL_MOVE)).setWaitTime(0);
+            //moveStep = 1;
+            currentMove =        new Move(moves.getDoubleArray("return_to_pit"       ), Move.FULL_MOVE         ).setWaitTime(500);
+            currentMove
+                    .setNextMove(new Move(moves.getDoubleArray("to_cryptobox_pre"    ), Move.FULL_MOVE        )).setWaitTime(200)
+                    .setNextMove(new Move(moves.getDoubleArray("to_cryptobox"        ), Move.FULL_MOVE        )).setWaitTime(0)
+                    .setNextMove(new Move(moves.getDoubleArray("glyph_" + x + "_" + y), Move.FULL             )).setWaitTime(800)
+                    .onFinish(new Runnable() {
+                        @Override
+                        public void run() {
+                            glyphs[activeColumn]++;
+                        }
+                    });
         }
+        /* else {
+            moveStep = 0;
+            currentMove =        new Move(moves.getDoubleArray("drop_glyph"          ), Move.CLAW              ).setWaitTime(100);
+            currentMove
+                    .setNextMove(new Move(moves.getDoubleArray("float_" + x          ), Move.J | Move.K)).setWaitTime(800)
+                    .setNextMove(new Move(moves.getDoubleArray("return_to_pit"       ), Move.FULL_MOVE        )).setWaitTime(0);
+        }*/
     }
 
     public void stop() {
@@ -417,6 +427,7 @@ public class IronSightsJoystickControl {
         private double[] data;
         private Thread driver;
         private Move next;
+        private Runnable onFinish;
         private long nextTime;
 
         public static Move arm(double i, double j, double k, double wrist) {
@@ -444,6 +455,11 @@ public class IronSightsJoystickControl {
         public Move setNextMove(Move next) {
             this.next = next;
             return next;
+        }
+
+        public Move onFinish(Runnable onFinish) {
+            this.onFinish = onFinish;
+            return this;
         }
 
         public Move setWaitTime(long millis) {
@@ -495,6 +511,7 @@ public class IronSightsJoystickControl {
                         return;
                     }
                     if (next != null) next.moveTo(ctrl, driver, base, extend);
+                    if (onFinish != null) onFinish.run();
                 }
             }));
             this.driver.start();
