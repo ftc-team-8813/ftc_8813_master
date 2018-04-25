@@ -52,16 +52,16 @@ public class TaskPlaceGlyphAutonomous implements Task {
         TelemetryWrapper.setLine(0, "Result: " + result.name());
 
         move("floating");
-        sleep(2500);
+        sleep(1500);
         move("floating_extended");
-        sleep(2500);
+        sleep(1500);
         move("move_" + result.name());
-        sleep(4000);
+        sleep(3800);
         arm.openClaw();
         move("safe_" + result.name());
-        sleep(4000);
+        sleep(2500);
         move("parking");
-        sleep(4000);
+        sleep(3000);
     }
 
 

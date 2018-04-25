@@ -319,6 +319,12 @@ public class IronSightsJoystickControl {
             if (!currentMove.driving()) {
                 currentMove = null;
             }
+            if (buttons1.pressing(ButtonHelper.left_bumper)) {
+                if (System.currentTimeMillis() - lbPress < 500) {
+                    currentMove.stop();
+                    currentMove = new Move(home, Move.FULL);
+                }
+            }
         } else {
             if (moveStart) {
                 moveStart = false;
@@ -408,9 +414,6 @@ public class IronSightsJoystickControl {
             }
 
             if (buttons1.pressing(ButtonHelper.left_bumper)) {
-                if (lbPress == 0) {
-
-                }
                 if (System.currentTimeMillis() - lbPress < 500) {
                     currentMove = new Move(home, Move.FULL);
                 } else {
@@ -502,6 +505,7 @@ public class IronSightsJoystickControl {
             telemetry.addData("Elbow", driver.getElbowAngle());
             telemetry.addData("Wrist", driver.getWristAngle());
             telemetry.addData("IMU Heading", imu.getHeading());
+            telemetry.addData("Turntable Position", base.getCurrentPosition());
         }
     }
 
