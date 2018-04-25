@@ -88,6 +88,10 @@ public class IMU {
     }
 
     public void start() {
+        start(false);
+    }
+
+    public void start(final boolean inRadians) {
         if (status < INITIALIZED) {
             log.f("start() called before initialize()!");
             throw new IllegalStateException("start() called before initialize()!");
@@ -141,6 +145,11 @@ public class IMU {
                     float h = o.firstAngle;
                     roll    = o.secondAngle;
                     pitch   = o.thirdAngle;
+                    if (inRadians) {
+                        h = (float)Math.toDegrees(h);
+                        roll = (float)Math.toDegrees(roll);
+                        pitch = (float)Math.toDegrees(pitch);
+                    }
                     float delta = h - lastAngle;
                     if (delta < -300) {
                         //Looped past 180 to -179

@@ -20,7 +20,7 @@ public class TaskRotate implements Task {
 
     @Override
     public void runTask() throws InterruptedException {
-        motor.runToPosition(angle);
+        motor.runToPosition(angle, false);
     }
 
 }

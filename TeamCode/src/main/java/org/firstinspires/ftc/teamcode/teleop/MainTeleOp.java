@@ -89,10 +89,14 @@ public class MainTeleOp extends OpMode {
             extend.setDirection(DcMotorSimple.Direction.REVERSE);
         //Load the IMU from autonomous data
         imu = (IMU)Persistent.get("imu");
+        //Second time the IMU initializes, it returns the value in radians
+        boolean inRadians = true;
         if (imu == null) {
+            log.i("Re-initializing IMU");
             //Create it if it isn't there
             imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
             imu.initialize(telemetry);
+            inRadians = false;
         }
         final int[] quadrant = new int[1];
         //Load the quadrant from autonomous data
@@ -104,7 +108,7 @@ public class MainTeleOp extends OpMode {
         }
         final TaskClassifyPictograph.Result findResult =
                 (TaskClassifyPictograph.Result)Persistent.get("findResult");
-        imu.start();
+        imu.start(inRadians);
         telemetry.clear();
         if (Persistent.get("quadrant") == null) {
             quadrant[0] = -1;

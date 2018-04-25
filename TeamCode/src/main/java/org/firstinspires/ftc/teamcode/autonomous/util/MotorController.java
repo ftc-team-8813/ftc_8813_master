@@ -32,6 +32,8 @@ public class MotorController implements Closeable {
         protected Runnable atTarget;
         private boolean stopping;
 
+        private long stall_begin;
+
         public final int sse;
 
         ParallelController(DcMotor motor, Runnable atTarget, int steady_state_error, boolean
@@ -59,6 +61,16 @@ public class MotorController implements Closeable {
                     double error = target - getCurrentPosition(); //target > pos : error positive
                     integral += error;
                     double derivative = error - prev_error;
+                    if (derivative == 0) {
+                        if (stall_begin == 0) {
+                            stall_begin = System.currentTimeMillis();
+                        } else if (System.currentTimeMillis() > stall_begin + 2000) {
+                            stopHolding();
+                            stopNearTarget = false;
+                        }
+                    } else {
+                        stall_begin = 0;
+                    }
                     prev_error = error;
                     double speed = error*kP + integral*(kI) + derivative*kD;
                     speed = Utils.constrain(speed, -1, 1) * power;

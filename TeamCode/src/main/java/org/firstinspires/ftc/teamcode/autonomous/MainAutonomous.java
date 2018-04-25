@@ -54,6 +54,7 @@ public class MainAutonomous extends BaseAutonomous {
     private Servo colorArm;
     private ColorSensor colorSensor;
     private Logger log;
+    private IMU imu;
 
     @Override
     public void initialize() {
@@ -78,10 +79,10 @@ public class MainAutonomous extends BaseAutonomous {
         if (config.getBoolean("ext_reverse", false))
             motor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        IMU imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+        imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
         imu.initialize(telemetry);
         imu.start();
-        Persistent.put("imu", imu);
+        Persistent.put("imu", imu); // Causes app crash in teleop
         telemetry.clear();
         base = new IMUMotorController(motor, imu);
         extend = new MotorController(motor2);
@@ -132,6 +133,7 @@ public class MainAutonomous extends BaseAutonomous {
         //All motor controllers need to be closed or strange bugs will crop up
         base.close();
         extend.close();
+        imu.stop();
     }
 
 

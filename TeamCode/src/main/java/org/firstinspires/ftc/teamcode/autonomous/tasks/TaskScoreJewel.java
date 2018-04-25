@@ -49,7 +49,7 @@ public class TaskScoreJewel implements Task{
     @Override
     public void runTask() throws InterruptedException {
         log.i("Started");
-        base.runToPosition(move + over);
+        base.runToPosition(move + over, false);
         int isRed = 0;
         // up, mid, down
 
@@ -67,7 +67,7 @@ public class TaskScoreJewel implements Task{
         TelemetryWrapper.setLine(3, String.valueOf(isRed));
         colorArm.setPosition(armPos[1]);
         sleep(800);
-        base.runToPosition(move);
+        base.runToPosition(move, false);
         colorArm.setPosition(armPos[3]);
         sleep(800);
         /*
@@ -75,9 +75,9 @@ public class TaskScoreJewel implements Task{
             isRed:  Variable for color of the jewel. 1 is true, 2 is false
          */
         if(isRed == 1){
-            base.hold(move - add); //Turn right
+            base.startRunToPosition(move - add); //Turn right
         }else if(isRed == 2){
-            base.hold(move + add); //Turn left
+            base.startRunToPosition(move + add); //Turn left
         }
         sleep(500); //Not sure if needed
         colorSensor.enableLed(false);

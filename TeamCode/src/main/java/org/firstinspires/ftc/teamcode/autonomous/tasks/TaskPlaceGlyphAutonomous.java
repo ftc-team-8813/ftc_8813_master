@@ -76,8 +76,8 @@ public class TaskPlaceGlyphAutonomous implements Task {
         arm.moveTo(waist, shoulder, elbow);
         arm.moveWrist(wrist);
         arm.moveYaw(yaw);
-        base.hold((int)rotate);
-        extend.hold((int)extension);
+        base.startRunToPosition((int)rotate);
+        extend.startRunToPosition((int)extension);
     }
 
     private void moveArm(double... pos) {

@@ -79,6 +79,11 @@ public class IronSightsJoystickControl {
 
     private Logger log;
 
+    private boolean relicMode;
+    private int relicStep;
+    private boolean stepTrigger;
+    private long relicWaitTime;
+
     public IronSightsJoystickControl(Gamepad gamepad1, Gamepad gamepad2, Arm arm, Config conf,
                                      Telemetry telemetry, DcMotor base, DcMotor extend, IMU imu, int quadrant,
                                      TaskClassifyPictograph.Result findResult, boolean isPositionFinder) {
@@ -127,6 +132,10 @@ public class IronSightsJoystickControl {
         clawGlyphAmount = conf.getDouble("claw_part", 0);
         clawOpenAmount = conf.getDouble("claw_open", 0);
 
+        relicMode = false;
+        relicStep = 0;
+        stepTrigger = true;
+
         t = home[0];
         j = home[1];
         k = home[2];
@@ -139,6 +148,7 @@ public class IronSightsJoystickControl {
         currentMove = new Move(home, Move.FULL);
         moveStart = true;
         currentMove.moveTo(this, driver, bc, ec);
+        relicWaitTime = 0;
         arm.moveYaw(yaw);
         arm.openClaw();
     }
@@ -192,8 +202,111 @@ public class IronSightsJoystickControl {
         return arm;
     }
 
+    private void moveToManual(double[] move) {
+        arm.moveWaist(move[0]);
+        arm.moveShoulder(move[1]);
+        arm.moveElbow(move[2]);
+        double[] clawPos = {clawOpenAmount, clawGlyphAmount, clawCloseAmount};
+        arm.moveClaw(clawPos[(int)move[3]]);
+        arm.moveWrist(move[4]);
+        arm.moveYaw(move[5]);
+        bc.startRunToPosition((int)move[6]);
+        ec.startRunToPosition((int)move[7]);
+    }
+
     public void loop() {
-        if (currentMove != null) {
+        if (relicMode) { //Relic placement -- our very VERY special case
+            switch (relicStep) {
+                case 0:
+                    if (stepTrigger) {
+                        stepTrigger = false;
+                        double[] move = moves.getDoubleArray("relic_out");
+                        moveToManual(move);
+                    }
+                    if (!bc.isHolding() && !ec.isHolding()) {
+                        if (relicWaitTime == 0) {
+                            relicWaitTime = System.currentTimeMillis();
+                        } else if (System.currentTimeMillis() > relicWaitTime + 1000) {
+                            stepTrigger = true;
+                            relicStep++;
+                        }
+                    }
+                    break;
+                case 1:
+                    if (stepTrigger) {
+                        stepTrigger = false;
+                        double[] move = moves.getDoubleArray("relic_extend");
+                        moveToManual(move);
+                    }
+                    if (!bc.isHolding() && !ec.isHolding() && !gamepad1.right_bumper) {
+                        stepTrigger = true;
+                        relicStep++;
+                    }
+                    break;
+                case 2:
+                    if (stepTrigger) {
+                        stepTrigger = false;
+                        double[] move = moves.getDoubleArray("relic_place");
+                        moveToManual(move);
+                    }
+                    if (!bc.isHolding() && !ec.isHolding()) {
+                        if (relicWaitTime == 0) {
+                            relicWaitTime = System.currentTimeMillis();
+                        } else if (System.currentTimeMillis() > relicWaitTime + 200) {
+                            stepTrigger = true;
+                            relicStep++;
+                        }
+                    }
+                    break;
+                case 3:
+                    telemetry.addData("CONTROLLER 2", "Press RB when finished");
+                    double wrist_inc = -gamepad2.right_stick_y / 75;
+                    double yaw_inc = -gamepad2.left_stick_x / 75;
+                    double w = arm.getWrist().getPosition();
+                    double y = arm.getYaw().getPosition();
+                    w += wrist_inc;
+                    y += yaw_inc;
+                    if (w > 1) w = 1;
+                    if (w < 0) w = 0;
+                    if (y > 1) y = 1;
+                    if (y < 0) y = 0;
+                    arm.moveWrist(w);
+                    arm.moveYaw(y);
+                    if (buttons2.pressing(ButtonHelper.y)) {
+                        if (clawPos == 0) clawPos = 2;
+                        else clawPos = 0;
+                        if (clawPos == 2)
+                            arm.moveClaw(clawCloseAmount);
+                        else
+                            arm.moveClaw(clawOpenAmount);
+                    }
+                    if (gamepad1.right_bumper) {
+                        stepTrigger = true;
+                        relicStep++;
+                    }
+                    if (gamepad2.dpad_left) {
+                        base.setPower(0.8); //TODO make configurable
+                    } else if (gamepad2.dpad_right) {
+                        base.setPower(-0.8);
+                    } else {
+                        base.setPower(0);
+                    }
+                    if (gamepad2.dpad_up) {
+                        extend.setPower(1); //TODO make configurable
+                    } else if (gamepad2.dpad_down) {
+                        extend.setPower(-1);
+                    } else {
+                        extend.setPower(0);
+                    }
+                    break;
+                case 4:
+                    currentMove =        new Move(moves.getDoubleArray("relic_up"), Move.ARM ).setWaitTime(500);
+                    currentMove
+                            .setNextMove(new Move(moves.getDoubleArray("home"    ), Move.FULL_MOVE)).setWaitTime(0);
+                    relicMode = false;
+                    break;
+            }
+        } else if (currentMove != null) {
             if (!moveStart) {
                 moveStart = true;
                 telemetry.clear();
@@ -295,6 +408,9 @@ public class IronSightsJoystickControl {
             }
 
             if (buttons1.pressing(ButtonHelper.left_bumper)) {
+                if (lbPress == 0) {
+
+                }
                 if (System.currentTimeMillis() - lbPress < 500) {
                     currentMove = new Move(home, Move.FULL);
                 } else {
@@ -348,10 +464,27 @@ public class IronSightsJoystickControl {
             }
 
             if (gamepad1.y) {
-                try {
-                    currentMove = new Move(moves.getDoubleArray("relic_pickup"), Move.FULL);
-                } catch (IllegalArgumentException e) {
-                    log.e(e);
+                if (relicStep == 0) {
+                    relicStep = 1;
+                    currentMove = new Move(moves.getDoubleArray("relic_spin"), Move.FULL_MOVE).setWaitTime(500);
+                    currentMove.setNextMove(new Move(moves.getDoubleArray("relic_grab"), Move.FULL_MOVE)).setWaitTime(500);
+                } else {
+                    relicStep = 0;
+                    currentMove = new Move(moves.getDoubleArray("relic_lift"), Move.FULL_MOVE).setWaitTime(500);
+                    currentMove
+                            .setNextMove(new Move(moves.getDoubleArray("relic_turn"), Move.FULL_MOVE)).setWaitTime(500)
+                            .onFinish(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        Thread.sleep(500);
+                                    } catch (InterruptedException e) {
+                                        return;
+                                    }
+                                    relicMode = true;
+                                    arm.moveClaw(clawCloseAmount);
+                                }
+                            });
                 }
             }
 
@@ -368,7 +501,7 @@ public class IronSightsJoystickControl {
             telemetry.addData("Shoulder", driver.getShoulderAngle());
             telemetry.addData("Elbow", driver.getElbowAngle());
             telemetry.addData("Wrist", driver.getWristAngle());
-            telemetry.addData("Turntable Heading", base_angle);
+            telemetry.addData("IMU Heading", imu.getHeading());
         }
     }
 
