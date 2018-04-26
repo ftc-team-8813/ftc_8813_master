@@ -90,6 +90,7 @@ public class MainTeleOp extends OpMode {
         //Load the IMU from autonomous data
         imu = (IMU)Persistent.get("imu");
         //Second time the IMU initializes, it returns the value in radians
+        boolean noReset = false;
         boolean inRadians = true;
         if (imu == null) {
             log.i("Re-initializing IMU");
@@ -97,6 +98,8 @@ public class MainTeleOp extends OpMode {
             imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
             imu.initialize(telemetry);
             inRadians = false;
+        } else {
+            noReset = true;
         }
         final int[] quadrant = new int[1];
         //Load the quadrant from autonomous data
@@ -112,6 +115,7 @@ public class MainTeleOp extends OpMode {
         telemetry.clear();
         if (Persistent.get("quadrant") == null) {
             quadrant[0] = -1;
+            final boolean finalNoReset = noReset;
             chooser = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -120,7 +124,7 @@ public class MainTeleOp extends OpMode {
                     if (quadrant[0] < 0) return;
                     controller = new IronSightsJoystickControl(gamepad1, gamepad2,
                             new Arm(conf, waist, shoulder, elbow, claw, wrist, yaw), conf,
-                            telemetry, base, extend, imu, quadrant[0], findResult, MainTeleOp.this instanceof PositionFinder);
+                            telemetry, base, extend, imu, quadrant[0], findResult, MainTeleOp.this instanceof PositionFinder, finalNoReset);
                 }
             });
             chooser.setDaemon(true);
@@ -129,7 +133,7 @@ public class MainTeleOp extends OpMode {
             quadrant[0] = (int)Persistent.get("quadrant");
             controller = new IronSightsJoystickControl(gamepad1, gamepad2,
                     new Arm(conf, waist, shoulder, elbow, claw, wrist, yaw), conf,
-                    telemetry, base, extend, imu, quadrant[0], findResult, this instanceof  PositionFinder);
+                    telemetry, base, extend, imu, quadrant[0], findResult, this instanceof  PositionFinder, noReset);
         }
 
         //Set up

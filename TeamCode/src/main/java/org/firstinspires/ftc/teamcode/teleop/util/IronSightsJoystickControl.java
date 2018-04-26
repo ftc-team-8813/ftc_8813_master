@@ -86,14 +86,14 @@ public class IronSightsJoystickControl {
 
     public IronSightsJoystickControl(Gamepad gamepad1, Gamepad gamepad2, Arm arm, Config conf,
                                      Telemetry telemetry, DcMotor base, DcMotor extend, IMU imu, int quadrant,
-                                     TaskClassifyPictograph.Result findResult, boolean isPositionFinder) {
+                                     TaskClassifyPictograph.Result findResult, boolean isPositionFinder, boolean noResetEncoder) {
         log = new Logger("IronSights Joystick Driver");
         this.telemetry = telemetry;
         this.base = base;
         this.extend = extend;
         this.imu = imu;
-        bc = new IMUMotorController(base, imu, conf);
-        ec = new MotorController(extend, conf);
+        bc = new IMUMotorController(base, imu, conf, null, noResetEncoder);
+        ec = new MotorController(extend, conf, null, noResetEncoder);
         this.gamepad1 = gamepad1;
         this.gamepad2 = gamepad2;
         buttons1 = new ButtonHelper(gamepad1);
@@ -506,6 +506,7 @@ public class IronSightsJoystickControl {
             telemetry.addData("Wrist", driver.getWristAngle());
             telemetry.addData("IMU Heading", imu.getHeading());
             telemetry.addData("Turntable Position", base.getCurrentPosition());
+            telemetry.addData("Extend Position", extend.getCurrentPosition());
         }
     }
 
