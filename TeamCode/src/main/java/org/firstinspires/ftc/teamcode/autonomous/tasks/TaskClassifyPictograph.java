@@ -45,11 +45,16 @@ public class TaskClassifyPictograph implements Task {
     public void runTask() throws InterruptedException {
         PictographFinder finder = new PictographFinder();
         stream.addListener(finder);
+        long start = System.currentTimeMillis();
         while (!taskList.isEmpty()) {
             taskList.remove(0).runTask();
         }
         log.i("All parallel tasks finished");
         while (!finder.finished() && !Thread.interrupted()) {
+            if (System.currentTimeMillis() > start + 15000) {
+                log.w("Pictograph finder taking too long (>15s); stopping");
+                return;
+            }
             try {
                 Thread.sleep(20);
             } catch (InterruptedException e) {
@@ -60,7 +65,6 @@ public class TaskClassifyPictograph implements Task {
         if (Thread.interrupted()) return;
         //Otherwise, we may have gotten a result!
         PictographFinder.ClassificationType classification = finder.getPrevClassification();
-
         switch (classification.name) {
             case "Left":
                 prevResult = Result.LEFT;

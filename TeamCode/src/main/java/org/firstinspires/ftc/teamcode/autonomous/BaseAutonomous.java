@@ -14,8 +14,11 @@ import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Base autonomous OpMode. Sub-OpModes that are going to be used for the games must extend this.
@@ -107,7 +110,8 @@ public abstract class BaseAutonomous extends LinearOpMode {
         try {
             //Run initialization operations here
             //Create our latest.log file
-            Logger.init(new File(Config.storageDir + "latest.log"));
+            Logger.init(new File(Config.storageDir + "logs/" + new SimpleDateFormat
+                    ("yy_MM_dd_HH_mm_ss", Locale.US).format(new Date()) + ".log"));
             log = new Logger("BaseAutonomous");
             //Initialize the configuration file
             config = new Config(Config.configFile);

@@ -277,17 +277,22 @@ public class PictographFinder implements CameraListener {
         //We should be able to find ~20-70 matches for good detections, but 10 is enough
         final int MIN_MATCHES = 10;
 
+        log.v("Copying objects [%d millis]", System.currentTimeMillis()-start);
         Mat object = new Mat();
         find.copyTo(object);
         Mat scene = mat;
 
+        log.v("Converting colors [%d millis]", System.currentTimeMillis()-start);
         Imgproc.cvtColor(object, object, Imgproc.COLOR_BGR2GRAY);
         Imgproc.cvtColor(scene, scene, Imgproc.COLOR_BGR2GRAY);
 
-        if (mat.width() == 0 || mat.height() == 0) return false;
+        if (mat.width() == 0 || mat.height() == 0) {
+            log.v("0-size image");
+            return false;
+        }
 
         status = "Detecting Features";
-
+        log.d("Detecting features [%d millis]", System.currentTimeMillis()-start);
         //Make a FeatureDetector to find key points
         //We're using the Brisk feature detector/descriptor extractor algorithms
         FeatureDetector fd = FeatureDetector.create(FeatureDetector.BRISK);
@@ -297,16 +302,19 @@ public class PictographFinder implements CameraListener {
         MatOfKeyPoint kp_scene = new MatOfKeyPoint();
 
         //Detect key points
+        log.v("Detecting scene key points [%d millis]", System.currentTimeMillis()-start);
         fd.detect(scene, kp_scene, temp); //Find scene key points
         //We only need to find object key points once
         if (kp_obj == null) {
             kp_obj = new MatOfKeyPoint();
+            log.v("Detecting object key points [%d millis]", System.currentTimeMillis()-start);
             fd.detect(object, kp_obj, temp); //Find object key points
         }
         temp.release();
 
         pb.setProgress(1);
         status = "Computing Descriptors";
+        log.d("Computing descriptors [%d millis]", System.currentTimeMillis()-start);
 
         //Descriptors
         Mat desc_scene = new Mat();
@@ -315,9 +323,11 @@ public class PictographFinder implements CameraListener {
         DescriptorExtractor de = DescriptorExtractor.create(DescriptorExtractor.BRISK);
         if (desc_obj == null) {
             desc_obj = new Mat();
+            log.v("Computing object descriptors [%d millis]", System.currentTimeMillis()-start);
             de.compute(object, kp_obj, desc_obj);
             desc_obj.convertTo(desc_obj, CvType.CV_32F);
         }
+        log.v("Computing scene descriptors [%d millis]", System.currentTimeMillis()-start);
         de.compute(scene, kp_scene, desc_scene); //Find scene descriptors
 
         //Convert descriptors to CV_32F
@@ -325,6 +335,7 @@ public class PictographFinder implements CameraListener {
 
         pb.setProgress(2);
         status = "Finding matches";
+        log.d("Finding matches [%d millis]", System.currentTimeMillis()-start);
 
         //Match features on the object to features in the scene
         FlannBasedMatcher matcher = FlannBasedMatcher.create();
@@ -332,6 +343,7 @@ public class PictographFinder implements CameraListener {
         //Use K nearest neighbor matching
         matcher.knnMatch(desc_obj, desc_scene, matches, 2);
 
+        log.v("Finding good matches");
         //Sort out matches that make sense
         List<DMatch> goodMatches = new ArrayList<>();
         KeyPoint[] ko = kp_obj.toArray(), ks = kp_scene.toArray();
@@ -343,25 +355,30 @@ public class PictographFinder implements CameraListener {
             if (ms[0].distance <= 0.7 * ms[1].distance)
                 goodMatches.add(ms[0]);
         }
+        log.v("Found %d good matches [%d millis]", goodMatches.size(), System.currentTimeMillis()-start);
         //If we have at least MIN_MATCHES matches, we have found the object!
         if (goodMatches.size() >= MIN_MATCHES) {
 
             pb.setProgress(3);
+            log.v("Calculating object position [%d millis]", System.currentTimeMillis()-start);
             status = "Calculating object position";
 
             List<Point> objPts = new ArrayList<>();
             List<Point> scenePts = new ArrayList<>();
 
+            log.v("Obtaining object points [%d millis]", System.currentTimeMillis()-start);
             for (int i = 0; i < goodMatches.size(); i++) {
                 objPts.add(ko[goodMatches.get(i).queryIdx].pt);
                 scenePts.add(ks[goodMatches.get(i).trainIdx].pt);
             }
 
+            log.v("Finding homography [%d millis]", System.currentTimeMillis()-start);
             Mat h = Calib3d.findHomography(new MatOfPoint2f(objPts.toArray(new Point[0])),
                     new MatOfPoint2f(scenePts.toArray(new Point[0])), Calib3d.RANSAC, 3);
 
             Point[] pts = getCorners(object, h);
 
+            log.v("Applying inverse perspective transform [%d millis]", System.currentTimeMillis()-start);
             Mat inverse = h.inv();
             Mat inv = new Mat();
             Imgproc.warpPerspective(scene, inv, inverse, object.size(), Imgproc.INTER_LINEAR, Core.BORDER_CONSTANT, new Scalar(0));
@@ -369,8 +386,10 @@ public class PictographFinder implements CameraListener {
             if (flattened != null) flattened.release();
             flattened = inv;
         } else {
+            log.v("No image found [%d millis]", System.currentTimeMillis()-start);
             prevQuad = new Point[4];
         }
+        log.v("Deleting temporary images [%d millis]", System.currentTimeMillis()-start);
         //Release objects to save our tiny bit of memory
         desc_scene.release();
         object.release();

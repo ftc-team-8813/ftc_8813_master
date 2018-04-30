@@ -418,7 +418,7 @@ public class IronSightsJoystickControl {
                     currentMove = new Move(home, Move.FULL);
                 } else {
                     lbPress = System.currentTimeMillis();
-                    currentMove = new Move(out, Move.FULL);
+                    currentMove = new Move(out, Move.FULL & ~Move.WRIST);
                 }
             }
 
