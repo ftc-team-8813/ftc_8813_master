@@ -9,18 +9,22 @@ import java.util.Map;
  * autonomous.
  */
 
-public class Persistent {
+public class Persistent
+{
     private static Map<String, Object> objects = new HashMap<>();
-
-    public static void clear() {
+    
+    public static void clear()
+    {
         objects.clear();
     }
-
-    public static Object get(String name) {
+    
+    public static Object get(String name)
+    {
         return objects.get(name);
     }
-
-    public static void put(String name, Object o) {
+    
+    public static void put(String name, Object o)
+    {
         objects.put(name, o);
     }
 }

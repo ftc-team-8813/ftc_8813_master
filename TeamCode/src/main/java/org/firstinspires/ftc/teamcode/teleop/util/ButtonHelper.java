@@ -2,14 +2,13 @@ package org.firstinspires.ftc.teamcode.teleop.util;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-import java.util.Arrays;
-
 /**
  * ButtonHelper - Utility to detect 'pressing' events (change of state) for user-interface
  * applications
  */
 
-public class ButtonHelper {
+public class ButtonHelper
+{
     private Gamepad gamepad;
     /*
     Buttons:
@@ -20,27 +19,29 @@ public class ButtonHelper {
     /**
      * A button for use in the pressed(), released(), and pressing() methods
      */
-    public static final int dpad_up            =  0,
-                            dpad_down          =  1,
-                            dpad_left          =  2,
-                            dpad_right         =  3,
-                            a                  =  4,
-                            b                  =  5,
-                            x                  =  6,
-                            y                  =  7,
-                            guide              =  8,
-                            start              =  9,
-                            back               = 10,
-                            left_bumper        = 11,
-                            right_bumper       = 12,
-                            left_stick_button  = 13,
-                            right_stick_button = 14;
-
-    public ButtonHelper(final Gamepad gamepad) {
+    public static final int dpad_up = 0,
+            dpad_down = 1,
+            dpad_left = 2,
+            dpad_right = 3,
+            a = 4,
+            b = 5,
+            x = 6,
+            y = 7,
+            guide = 8,
+            start = 9,
+            back = 10,
+            left_bumper = 11,
+            right_bumper = 12,
+            left_stick_button = 13,
+            right_stick_button = 14;
+    
+    public ButtonHelper(final Gamepad gamepad)
+    {
         this.gamepad = gamepad;
     }
-
-    private boolean getButton(int button) {
+    
+    private boolean getButton(int button)
+    {
         if (button == dpad_up) return gamepad.dpad_up;
         else if (button == dpad_down) return gamepad.dpad_down;
         else if (button == dpad_left) return gamepad.dpad_left;
@@ -58,16 +59,19 @@ public class ButtonHelper {
         else if (button == right_stick_button) return gamepad.right_stick_button;
         else return false;
     }
-
-    public boolean pressed(int idx) {
+    
+    public boolean pressed(int idx)
+    {
         return getButton(idx);
     }
-
-    public boolean released(int idx) {
+    
+    public boolean released(int idx)
+    {
         return !pressed(idx);
     }
-
-    public boolean pressing(int idx) {
+    
+    public boolean pressing(int idx)
+    {
         boolean held = buttons[idx];
         buttons[idx] = pressed(idx);
         return !held && pressed(idx);

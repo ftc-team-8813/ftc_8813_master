@@ -7,9 +7,11 @@ package org.firstinspires.ftc.teamcode.autonomous.tasks;
  * in the 'autonomous.tasks' package.
  */
 
-public interface Task {
+public interface Task
+{
     /**
      * Run the task.
+     *
      * @throws InterruptedException if the OpMode is trying to stop
      */
     public void runTask() throws InterruptedException;
