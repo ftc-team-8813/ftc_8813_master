@@ -6,6 +6,7 @@ import android.widget.LinearLayout;
 
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.core.Core;
@@ -138,6 +139,9 @@ public class CameraStream
     
     public CameraStream()
     {
+        Logger log = new Logger("Camera Stream Initializer");
+        log.v("Adding camera view to screen");
+        long begin = System.currentTimeMillis();
         activity = AppUtil.getInstance().getActivity();
         FtcRobotControllerActivity rc = (FtcRobotControllerActivity) activity;
         final LinearLayout cameraLayout = rc.cameraMonitorLayout;
@@ -154,7 +158,15 @@ public class CameraStream
                 uiRunning = false;
             }
         });
-        while (uiRunning) ;
+        while (uiRunning)
+        {
+            try
+            {
+                Thread.sleep(0, 100);
+            } catch (InterruptedException e) {
+                log.w("Ignoring interrupt");
+            }
+        }
         startProcessing();
         cameraView.enableView();
     }
