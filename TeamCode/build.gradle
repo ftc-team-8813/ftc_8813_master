@@ -11,12 +11,12 @@
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 android {
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.2'
     defaultConfig {
         externalNativeBuild {
             cmake {
                 cppFlags "-std=c++11 -frtti -fexceptions"
-                arguments "-DANDROID_STL=gnustl_shared"
+                arguments "-DANDROID_STL=c++_shared"
             }
         }
     }
@@ -26,6 +26,20 @@ android {
         }
     }
 }
+
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
 dependencies {
     implementation project(':opencv-sdk')
 }

@@ -11,7 +11,7 @@ android {
     }
 
     compileSdkVersion 23
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.2'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -22,6 +22,19 @@ android {
 repositories {
     flatDir {
         dirs '../libs'
+    }
+}
+
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+allprojects {
+    repositories {
+        google()
+        jcenter()
     }
 }
 

@@ -24,7 +24,7 @@ ANDROID_NDK:UNINITIALIZED=/home/aidan/Android/Sdk/ndk-bundle
 ANDROID_PLATFORM:UNINITIALIZED=android-19
 
 //No help, variable specified on the command line.
-ANDROID_STL:UNINITIALIZED=gnustl_shared
+ANDROID_STL:UNINITIALIZED=c++_shared
 
 //Archiver
 CMAKE_AR:FILEPATH=/home/aidan/Android/Sdk/ndk-bundle/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-ar
@@ -59,7 +59,7 @@ CMAKE_CXX_FLAGS_RELEASE:STRING=
 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 
 //Libraries linked by default with all C++ applications.
-CMAKE_CXX_STANDARD_LIBRARIES:STRING=-latomic -lm "/home/aidan/Android/Sdk/ndk-bundle/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi-v7a/libsupc++.a" "/home/aidan/Android/Sdk/ndk-bundle/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi-v7a/libgnustl_shared.so"
+CMAKE_CXX_STANDARD_LIBRARIES:STRING=-latomic -lm "/home/aidan/Android/Sdk/ndk-bundle/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libandroid_support.a" "/home/aidan/Android/Sdk/ndk-bundle/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libunwind.a" "/home/aidan/Android/Sdk/ndk-bundle/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_shared.so"
 
 //Flags used by the compiler during all build types.
 CMAKE_C_FLAGS:STRING=
