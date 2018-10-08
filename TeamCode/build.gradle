@@ -13,18 +13,18 @@ apply from: '../build.common.gradle'
 android {
     buildToolsVersion '28.0.2'
     defaultConfig {
-        externalNativeBuild {
-            cmake {
-                cppFlags "-std=c++11 -frtti -fexceptions"
-                arguments "-DANDROID_STL=c++_shared"
-            }
-        }
+//        externalNativeBuild {
+//            cmake {
+//                cppFlags "-std=c++11 -frtti -fexceptions"
+//                arguments "-DANDROID_STL=gnustl_shared"
+//            }
+//        }
     }
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
-        }
-    }
+//    externalNativeBuild {
+//        cmake {
+//            path "CMakeLists.txt"
+//        }
+//    }
 }
 
 buildscript {
