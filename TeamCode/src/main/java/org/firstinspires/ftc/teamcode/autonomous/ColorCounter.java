@@ -24,7 +24,6 @@ public class ColorCounter extends BaseAutonomous
     private ColorSensor sensor;
     private volatile boolean uiRunning;
     private Logger log = new Logger("Color Sense");
-    private View colorView;
     private Activity a;
     
     @Override
@@ -50,9 +49,9 @@ public class ColorCounter extends BaseAutonomous
         {
             float[] hsv = new float[3];
             NormalizedRGBA rgba = ((AMSColorSensor)sensor).getNormalizedColors();
-            final int r = (int)(Math.min(255, Math.log(rgba.red+1)*5000));
-            final int g = (int)(Math.min(255, Math.log(rgba.green+1)*6000));
-            final int b = (int)(Math.min(255, Math.log(rgba.blue+1)*6000));
+            final int r = (int)(Math.min(255, Math.log(rgba.red+1)*2000));
+            final int g = (int)(Math.min(255, Math.log(rgba.green+1)*2500));
+            final int b = (int)(Math.min(255, Math.log(rgba.blue+1)*2500));
             Color.colorToHSV(Color.rgb(r, g, b), hsv);
             telemetry.addData("Hue", hsv[0]);
             telemetry.addData("Saturation", hsv[1]);

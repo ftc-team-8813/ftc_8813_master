@@ -24,7 +24,7 @@ public class ColorRange
         float h = hsv[0];
         float s = hsv[1];
         float v = hsv[2];
-        if (s < .4 || v < .3)
+        if (s < .3 || v < .3)
         {
             if      (v > .8) return WHITE;
             else if (v > .3) return GRAY;
