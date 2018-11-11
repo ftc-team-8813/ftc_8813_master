@@ -180,6 +180,7 @@ public abstract class BaseAutonomous extends LinearOpMode
                 else throw (InterruptedException) exc;
             }
             Logger.close();
+            System.gc();
         }
     }
     

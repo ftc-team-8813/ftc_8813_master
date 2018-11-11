@@ -29,20 +29,10 @@ public class CameraStream
     private Activity activity;
     private volatile boolean uiRunning;
     //Smurf mode -- swap red and blue color channels in the output image for EPIC results :)
-    private static final boolean SMURF_MODE = true;
+    private static final boolean SMURF_MODE = false;
     
     private volatile List<CameraListener> listeners = new ArrayList<>();
-    
-    //Default modifier: do nothing to the image
-    public static final OutputModifier defaultModifier =
-            new OutputModifier()
-            {
-                public Mat process(Mat rgba)
-                {
-                    return rgba;
-                }
-            };
-    private OutputModifier modifier = defaultModifier;
+    private volatile List<OutputModifier> modifiers = new ArrayList<>();
     
     public void addListener(CameraListener l)
     {
@@ -54,13 +44,25 @@ public class CameraStream
         listeners.remove(l);
     }
     
-    public void setModifier(OutputModifier m)
+    public void addModifier(OutputModifier m)
     {
-        modifier = m;
+        modifiers.add(m);
+    }
+
+    public void removeModifier(OutputModifier m)
+    {
+        modifiers.remove(m);
     }
     
     public void stop()
     {
+        for (CameraListener l : listeners)
+        {
+            l.stop();
+        }
+        listeners.clear();
+        modifiers.clear();
+
         FtcRobotControllerActivity rc = (FtcRobotControllerActivity) activity;
         final LinearLayout cameraLayout = rc.cameraMonitorLayout;
         uiRunning = true;
@@ -80,11 +82,12 @@ public class CameraStream
     public static interface CameraListener
     {
         public void processFrame(Mat rgba);
+        public void stop();
     }
     
     public static interface OutputModifier
     {
-        public Mat process(Mat rgba);
+        public Mat draw(Mat rgba);
     }
     
     private void startProcessing()
@@ -117,10 +120,13 @@ public class CameraStream
                     //Make a copy of the frame so that processors cannot modify the image
                     Mat copyFrame = new Mat();
                     frame.copyTo(copyFrame);
-                    l.processFrame(frame);
-                    copyFrame.release();
+                    l.processFrame(copyFrame);
                 }
-                Mat out = modifier.process(frame);
+                Mat out = frame;
+                for (OutputModifier m : modifiers)
+                {
+                    out = m.draw(out);
+                }
                 
                 if (!SMURF_MODE)
                     Imgproc.cvtColor(out, out, Imgproc.COLOR_BGR2RGBA);

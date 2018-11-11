@@ -1,9 +1,13 @@
 package org.firstinspires.ftc.teamcode.autonomous.test.opencv;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
+import org.firstinspires.ftc.teamcode.util.sensors.vision.GoldDetector;
 import org.opencv.core.Mat;
 
+@Autonomous(name="OpenCV test")
 public class OpenCVTest extends BaseAutonomous
 {
     
@@ -11,14 +15,18 @@ public class OpenCVTest extends BaseAutonomous
     public void run() throws InterruptedException
     {
         CameraStream stream = getCameraStream();
-        stream.setModifier(new CameraStream.OutputModifier()
+        GoldDetector detector = new GoldDetector();
+        stream.addModifier(detector);
+        stream.addListener(detector);
+
+        while (opModeIsActive())
         {
-            @Override
-            public Mat process(Mat rgba)
+            telemetry.addData("Gold on-screen: ", detector.goldSeen());
+            if (detector.getLocation() != null)
             {
-                return null;
+                telemetry.addData("Location", detector.getLocation());
             }
-        });
+            telemetry.update();
+        }
     }
-    
 }
