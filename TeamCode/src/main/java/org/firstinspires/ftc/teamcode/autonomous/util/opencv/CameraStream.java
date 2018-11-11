@@ -130,11 +130,6 @@ public class CameraStream
                 
                 if (!SMURF_MODE)
                     Imgproc.cvtColor(out, out, Imgproc.COLOR_BGR2RGBA);
-                Mat t = new Mat(out.height(), out.width(), CvType.CV_8UC4);
-                Core.transpose(out, t);
-                Imgproc.resize(t, out, out.size(), 0, 0, 0);
-                Core.flip(out, out, 1);
-                t.release();
                 //Run the garbage collector as fast as possible to delete old images and keep enough
                 //memory for our program to function, avoid blowing up the phone :)
                 System.gc();
