@@ -65,14 +65,14 @@ public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputMod
                 double l = -0.1;
                 double r =  0.1;
 
-                if (e < 0) r -= e * 0.3;
-                else       l -= e * 0.3;
+                if (e < 0) r -= e * 0.4;
+                else       l -= e * 0.4;
 
                 telemetry.addData("Left", l);
                 telemetry.addData("Right", r);
 
-                left.setPower(l);
-                right.setPower(r);
+                left.setPower(l*2);
+                right.setPower(r*2);
             }
             telemetry.update();
 
