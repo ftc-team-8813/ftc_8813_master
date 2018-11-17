@@ -34,10 +34,10 @@ public class MainTeleOp extends OpMode
     @Override
     public void loop()
     {
-        left.setPower(gamepad1.left_stick_y);
-        right.setPower(-gamepad1.right_stick_y);
+        left.setPower(gamepad1.left_stick_y * 0.75);
+        right.setPower(-gamepad1.right_stick_y * 0.75);
         lifter.setPower(gamepad1.right_trigger - gamepad1.left_trigger);
-        intake.setPower(intake_mode);
+        intake.setPower(intake_mode * 0.5);
         if (buttonHelper_2.pressing(ButtonHelper.right_bumper))
         {
             if (intake_mode == 1) intake_mode = 0;
