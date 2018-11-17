@@ -17,8 +17,6 @@ public class MainTeleOp extends OpMode
     
     private DcMotor left, right;
     private DcMotor lifter, intake;
-    private MotorController mc;
-    private double offset;
     private ButtonHelper buttonHelper_2;
     private int intake_mode = 0;
     
@@ -30,7 +28,6 @@ public class MainTeleOp extends OpMode
         right = hardwareMap.dcMotor.get("right");
         lifter = hardwareMap.dcMotor.get("lifter");
         intake = hardwareMap.dcMotor.get("intake");
-        mc = new MotorController(lifter, new Config("config.properties"));
         buttonHelper_2 = new ButtonHelper(gamepad2);
     }
     
@@ -39,10 +36,8 @@ public class MainTeleOp extends OpMode
     {
         left.setPower(gamepad1.left_stick_y);
         right.setPower(-gamepad1.right_stick_y);
-        mc.hold(50 + (int)offset);
         lifter.setPower(gamepad1.right_trigger - gamepad1.left_trigger);
         intake.setPower(intake_mode);
-        offset += (gamepad2.right_trigger - gamepad2.left_trigger) * 10;
         if (buttonHelper_2.pressing(ButtonHelper.right_bumper))
         {
             if (intake_mode == 1) intake_mode = 0;
@@ -53,8 +48,6 @@ public class MainTeleOp extends OpMode
             if (intake_mode == -1) intake_mode = 0;
             else intake_mode = -1;
         }
-        telemetry.addData("Flipper position", lifter.getCurrentPosition());
-        telemetry.addData("Flipper target", mc.getTargetPosition());
         telemetry.addData("Intake Mode", intake_mode);
     }
 }
