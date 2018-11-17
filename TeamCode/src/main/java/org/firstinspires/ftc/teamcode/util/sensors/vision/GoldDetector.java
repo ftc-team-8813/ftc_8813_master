@@ -32,9 +32,9 @@ public class GoldDetector implements CameraStream.CameraListener, CameraStream.O
     }
 
     @Override
-    public void processFrame(Mat rgba)
+    public void processFrame(Mat bgr)
     {
-        worker.setFrame(rgba);
+        worker.setFrame(bgr);
     }
 
     public Point getLocation()
@@ -48,21 +48,21 @@ public class GoldDetector implements CameraStream.CameraListener, CameraStream.O
     }
 
     @Override
-    public Mat draw(Mat rgba)
+    public Mat draw(Mat bgr)
     {
         OverlayData data = worker.overlayData.clone();
         if (data.contours != null && data.goldRect != null)
         {
-            Imgproc.drawContours(rgba, data.contours, -1, new Scalar(0, 255, 0), 2);
-            if (data.contours.size() > 0) Imgproc.drawContours(rgba, data.contours, data.contours.size()-1, new Scalar(255, 0, 0), 2);
+            Imgproc.drawContours(bgr, data.contours, -1, new Scalar(0, 255, 0), 2);
+            if (data.contours.size() > 0) Imgproc.drawContours(bgr, data.contours, data.contours.size()-1, new Scalar(255, 0, 0), 2);
             Rect r = data.goldRect;
-            Imgproc.rectangle(rgba, new Point(r.x, r.y), new Point(r.x + r.width, r.y + r.height), new Scalar(255, 255, 0), 2);
+            Imgproc.rectangle(bgr, new Point(r.x, r.y), new Point(r.x + r.width, r.y + r.height), new Scalar(255, 255, 0), 2);
         }
         if (data.goldCenters != null)
         {
             for (int i = 0; i < data.goldCenters.size(); i++)
             {
-                Imgproc.circle(rgba, data.goldCenters.get(i), 5, new Scalar(0, 0, 255));
+                Imgproc.circle(bgr, data.goldCenters.get(i), 5, new Scalar(0, 0, 255));
             }
             if (data.goldCenters.size() > 0)
             {
@@ -74,7 +74,7 @@ public class GoldDetector implements CameraStream.CameraListener, CameraStream.O
                 seen = false;
             }
         }
-        return rgba;
+        return bgr;
     }
 
     @Override

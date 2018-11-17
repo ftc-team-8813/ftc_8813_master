@@ -81,13 +81,13 @@ public class CameraStream
     
     public static interface CameraListener
     {
-        public void processFrame(Mat rgba);
+        public void processFrame(Mat bgr);
         public void stop();
     }
     
     public static interface OutputModifier
     {
-        public Mat draw(Mat rgba);
+        public Mat draw(Mat bgr);
     }
     
     private void startProcessing()

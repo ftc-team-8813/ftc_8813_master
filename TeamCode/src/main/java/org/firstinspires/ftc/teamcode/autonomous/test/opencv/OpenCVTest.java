@@ -81,18 +81,18 @@ public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputMod
 
 
     @Override
-    public Mat draw(Mat rgba)
+    public Mat draw(Mat bgr)
     {
         Point location = detector.getLocation();
         if (location != null)
         {
-            w = rgba.cols(); // we could make these final, but I don't actually know what the size is!
-            h = rgba.rows();
+            w = bgr.cols(); // we could make these final, but I don't actually know what the size is!
+            h = bgr.rows();
             // Vertical line (blue)
-            Imgproc.arrowedLine(rgba, new Point(location.x, 0), new Point(location.x, h-1), new Scalar(0, 0, 255), 1, 8, 0, 0.01);
+            Imgproc.arrowedLine(bgr, new Point(location.x, 0), new Point(location.x, h-1), new Scalar(0, 0, 255), 1, 8, 0, 0.01);
             // Horizontal line (red)
-            Imgproc.arrowedLine(rgba, new Point(0, location.y), new Point(w-1, location.y), new Scalar(255, 0, 0), 1, 8, 0, 0.01);
+            Imgproc.arrowedLine(bgr, new Point(0, location.y), new Point(w-1, location.y), new Scalar(255, 0, 0), 1, 8, 0, 0.01);
         }
-        return rgba;
+        return bgr;
     }
 }
