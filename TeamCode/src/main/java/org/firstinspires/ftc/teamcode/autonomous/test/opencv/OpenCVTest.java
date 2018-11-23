@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
-import org.firstinspires.ftc.teamcode.util.sensors.vision.GoldDetector;
+import org.firstinspires.ftc.teamcode.util.sensors.vision.ShapeGoldDetector;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -14,7 +14,7 @@ import org.opencv.imgproc.Imgproc;
 @Autonomous(name="OpenCV test")
 public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputModifier
 {
-    private GoldDetector detector;
+    private ShapeGoldDetector detector;
     private volatile int w, h;
 
     /*
@@ -33,7 +33,7 @@ public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputMod
     public void run() throws InterruptedException
     {
         CameraStream stream = getCameraStream();
-        detector = new GoldDetector();
+        detector = new ShapeGoldDetector();
         stream.addModifier(detector);
         stream.addListener(detector);
         stream.addModifier(this);
@@ -46,12 +46,14 @@ public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputMod
         while (opModeIsActive())
         {
             telemetry.addData("Gold on-screen: ", detector.goldSeen());
+            telemetry.addData("Width", w);
+            telemetry.addData("Height", h);
             if (detector.getLocation() != null)
             {
                 telemetry.addData("Location", detector.getLocation());
 
 
-                // Since our phone is mounted upside down, horizontal = +Y
+                // If our phone is mounted upside down, horizontal = +Y
                 if (!detector.goldSeen())
                 {
                     left.setPower(0);
@@ -59,14 +61,14 @@ public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputMod
                     continue;
                 }
                 // Horizontal error, normalized
-                double e = (detector.getLocation().y / h - 0.5) * 2;
+                double e = (-detector.getLocation().y / h - 0.5) * 2;
                 telemetry.addData("Error", e);
 
-                double l = -0.1;
-                double r =  0.1;
+                double l = -0.2;
+                double r =  0.2;
 
-                if (e < 0) r -= e * 0.4;
-                else       l -= e * 0.4;
+                if (e < 0) r -= e * 0.2;
+                else       l -= e * 0.2;
 
                 telemetry.addData("Left", l);
                 telemetry.addData("Right", r);
