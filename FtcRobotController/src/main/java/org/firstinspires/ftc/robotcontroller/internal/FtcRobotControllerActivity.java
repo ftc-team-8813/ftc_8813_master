@@ -57,6 +57,7 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
@@ -289,7 +290,9 @@ public class FtcRobotControllerActivity extends Activity {
       }
     });
 
-        BlocksOpMode.setActivityAndWebView(this, (WebView) findViewById(R.id.webViewBlocksRuntime));
+    updateMonitorLayout(getResources().getConfiguration());
+
+    BlocksOpMode.setActivityAndWebView(this, (WebView) findViewById(R.id.webViewBlocksRuntime));
 
         ClassManagerFactory.registerFilters();
         ClassManagerFactory.processAllClasses();
@@ -556,11 +559,36 @@ public class FtcRobotControllerActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        // don't destroy assets on screen rotation
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+    // don't destroy assets on screen rotation
+    updateMonitorLayout(newConfig);
+  }
+
+  /**
+   * Updates the orientation of monitorContainer (which contains cameraMonitorView and
+   * tfodMonitorView) based on the given configuration. Makes the children split the space.
+   */
+  private void updateMonitorLayout(Configuration configuration) {
+    LinearLayout monitorContainer = (LinearLayout) findViewById(R.id.monitorContainer);
+    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+      // When the phone is landscape, lay out the monitor views horizontally.
+      monitorContainer.setOrientation(LinearLayout.HORIZONTAL);
+      for (int i = 0; i < monitorContainer.getChildCount(); i++) {
+        View view = monitorContainer.getChildAt(i);
+        view.setLayoutParams(new LayoutParams(0, LayoutParams.MATCH_PARENT, 1 /* weight */));
+      }
+    } else {
+      // When the phone is portrait, lay out the monitor views vertically.
+      monitorContainer.setOrientation(LinearLayout.VERTICAL);
+      for (int i = 0; i < monitorContainer.getChildCount(); i++) {
+        View view = monitorContainer.getChildAt(i);
+        view.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 0, 1 /* weight */));
+      }
     }
+    monitorContainer.requestLayout();
+  }
 
     @Override
     protected void onActivityResult(int request, int result, Intent intent) {
