@@ -15,7 +15,7 @@ import org.opencv.imgproc.Imgproc;
 public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputModifier
 {
     private ShapeGoldDetector detector;
-    private volatile int w, h;
+    private static final int w = 640, h = 480;
 
     /*
     Vision Coordinate System:
@@ -43,8 +43,10 @@ public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputMod
         left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        // TODO: Rotate slowly left and right so that the camera can see all of the sampling zones
         while (opModeIsActive())
         {
+            telemetry.clearAll();
             telemetry.addData("Gold on-screen: ", detector.goldSeen());
             telemetry.addData("Width", w);
             telemetry.addData("Height", h);
@@ -61,12 +63,14 @@ public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputMod
                     continue;
                 }
                 // Horizontal error, normalized
-                double e = (-detector.getLocation().y / h - 0.5) * 2;
+                double e = (detector.getLocation().y / h - 0.5) * 2;
                 telemetry.addData("Error", e);
 
-                double l = -0.2;
-                double r =  0.2;
+                // Bias
+                double l = -0.05;
+                double r =  0.05;
 
+                // Turn amount
                 if (e < 0) r -= e * 0.2;
                 else       l -= e * 0.2;
 
@@ -88,8 +92,6 @@ public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputMod
         Point location = detector.getLocation();
         if (location != null)
         {
-            w = bgr.cols(); // we could make these final, but I don't actually know what the size is!
-            h = bgr.rows();
             // Vertical line (blue)
             Imgproc.arrowedLine(bgr, new Point(location.x, 0), new Point(location.x, h-1), new Scalar(0, 0, 255), 1, 8, 0, 0.01);
             // Horizontal line (red)
