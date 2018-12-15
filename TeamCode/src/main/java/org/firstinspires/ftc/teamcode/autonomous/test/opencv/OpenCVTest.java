@@ -42,6 +42,8 @@ public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputMod
         DcMotor right = hardwareMap.dcMotor.get("right");
         left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         // TODO: Rotate slowly left and right so that the camera can see all of the sampling zones
         while (opModeIsActive())
@@ -67,8 +69,8 @@ public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputMod
                 telemetry.addData("Error", e);
 
                 // Bias
-                double l = -0.05;
-                double r =  0.05;
+                double l =  0.1;
+                double r = -0.1;
 
                 // Turn amount
                 if (e < 0) r -= e * 0.2;

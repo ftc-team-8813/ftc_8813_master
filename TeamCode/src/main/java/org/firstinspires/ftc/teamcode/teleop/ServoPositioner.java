@@ -24,7 +24,6 @@ import static org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper.dpad_up;
  * ServoPositioner - Tool to move specific servos individually to collect positions
  */
 
-@Disabled // For now
 @TeleOp(name = "Servo Positioner")
 public class ServoPositioner extends OpMode
 {
@@ -129,6 +128,7 @@ public class ServoPositioner extends OpMode
     {
         for (int i = 0; i < VISIBLE_LINES; i++)
         {
+            if (scroll + i >= servos.length) break;
             String s = servos[scroll + i];
             if (scroll + i == chosen)
             {

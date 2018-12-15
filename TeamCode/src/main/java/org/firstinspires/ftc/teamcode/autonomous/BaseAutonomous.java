@@ -154,8 +154,9 @@ public abstract class BaseAutonomous extends LinearOpMode
             log.i("Finished all tasks");
             while (opModeIsActive())
             {
-                Thread.sleep(100);
+                Thread.sleep(10);
             }
+            Thread.currentThread().interrupt();
         } catch (InterruptedException | RuntimeException | IOException | Error e)
         {
             exc = e;
