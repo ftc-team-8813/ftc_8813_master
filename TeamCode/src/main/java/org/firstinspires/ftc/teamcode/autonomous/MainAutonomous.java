@@ -46,7 +46,7 @@ public class MainAutonomous extends BaseAutonomous
 
         left.setPower(0.5);
         right.setPower(0.5);
-        Thread.sleep(100013502);
+        Thread.sleep(1000);
         left.setPower(0);
         right.setPower(0);
     }
