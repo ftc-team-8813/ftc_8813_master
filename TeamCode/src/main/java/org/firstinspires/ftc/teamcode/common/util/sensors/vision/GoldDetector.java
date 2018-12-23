@@ -1,24 +1,20 @@
-package org.firstinspires.ftc.teamcode.util.sensors.vision;
+package org.firstinspires.ftc.teamcode.common.util.sensors.vision;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStream.OutputModifier
+public class GoldDetector implements CameraStream.CameraListener, CameraStream.OutputModifier
 {
 
     private Worker worker;
@@ -26,10 +22,10 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
     private boolean seen = false;
     private Thread workerThread;
 
-    public ShapeGoldDetector()
+    public GoldDetector()
     {
         worker = new Worker();
-        workerThread = new Thread(worker, "ShapeGoldDetector Worker");
+        workerThread = new Thread(worker, "Gold Detector Worker");
         workerThread.start();
     }
 
@@ -53,43 +49,10 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
     public Mat draw(Mat bgr)
     {
         OverlayData data = worker.overlayData.clone();
-        if (data.contours != null)
+        if (data.contours != null && data.goldRect != null)
         {
-            int i = 0;
-            for (MatOfPoint contour : new ArrayList<>(data.contours))
-            {
-                MatOfPoint2f contour2f = new MatOfPoint2f(contour.toArray());
-                double perim = Imgproc.arcLength(contour2f, true);
-                int edgeCount = contour.height();
-                boolean convex = Imgproc.isContourConvex(contour);
-
-                Scalar color = new Scalar(0, 127, 0);
-                int thickness = 2;
-
-                if (perim < 100)
-                {
-                    thickness = 1;
-                }
-                if (edgeCount < 4 || edgeCount > 6)
-                {
-                    color = new Scalar(0, 0, 127);
-                }
-                if (i == data.contours.size()-1)
-                {
-                    color = new Scalar(127, color.val[1], color.val[2]);
-                }
-                if (convex)
-                {
-                    color = new Scalar(color.val[0]*2, color.val[1]*2, color.val[2]*2);
-                }
-                Imgproc.polylines(bgr, Arrays.asList(contour), true, color, thickness);
-
-                contour2f.release();
-                i++;
-            }
-        }
-        if (data.goldRect != null)
-        {
+            Imgproc.drawContours(bgr, data.contours, -1, new Scalar(0, 255, 0), 2);
+            if (data.contours.size() > 0) Imgproc.drawContours(bgr, data.contours, data.contours.size()-1, new Scalar(255, 0, 0), 2);
             Rect r = data.goldRect;
             Imgproc.rectangle(bgr, new Point(r.x, r.y), new Point(r.x + r.width, r.y + r.height), new Scalar(255, 255, 0), 2);
         }
@@ -128,15 +91,12 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
         @Override
         public void run()
         {
-            int iter = 0;
             while (true)
             {
                 try
                 {
                     work();
                     Thread.sleep(5);
-                    if (iter > 50) System.gc();
-                    iter++;
                 }
                 catch (InterruptedException e)
                 {
@@ -180,38 +140,30 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
             double bestArea = 0;
             for (int i = 0; i < contours.size(); i++)
             {
-                MatOfPoint2f contour2f = new MatOfPoint2f(contours.get(i).toArray());
-                double perim = Imgproc.arcLength(contour2f, true);
-                MatOfPoint2f poly = new MatOfPoint2f();
-                Imgproc.approxPolyDP(contour2f, poly, 0.015 * perim, true);
-
-                MatOfPoint ipoly = new MatOfPoint(poly.toArray());
-                overlayData.contours.add(ipoly);
-                if (perim >= 100 && poly.height() >= 4 && poly.height() <= 6 && Imgproc.isContourConvex(ipoly))
+                double area = Imgproc.contourArea(contours.get(i));
+                if (area > bestArea)
                 {
-                    double area = Imgproc.contourArea(poly);
-                    if (bestArea < area)
-                    {
-                        bestContour = ipoly;
-                        bestArea = area;
-                    }
+                    bestArea = area;
+                    bestContour = contours.get(i);
                 }
-                contours.get(i).release();
-                poly.release();
-                contour2f.release();
+                Moments m = Imgproc.moments(contours.get(i));
+                Point center = new Point(m.m10 / m.m00,
+                        m.m01 / m.m00);
+                overlayData.contours.add(contours.get(i));
+                overlayData.goldCenters.add(center);
             }
             if (bestContour != null)
             {
                 Moments m = Imgproc.moments(bestContour);
                 Point center = new Point(m.m10 / m.m00,
                         m.m01 / m.m00);
-
                 overlayData.goldRect = Imgproc.boundingRect(bestContour);
                 overlayData.contours.add(bestContour);
                 overlayData.goldCenters.add(center);
             }
             mask.release();
             image.release();
+            System.gc();
         }
     }
 

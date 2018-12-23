@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.util;
+package org.firstinspires.ftc.teamcode.common.util;
 
 import android.os.Environment;
 
@@ -311,7 +311,7 @@ public class Config
         String[] values = s.split(",");
         for (int i = 0; i < values.length; i++)
         {
-            values[i] = values[i].trim(); // allow for spaces (e.g. 1, 2, 3 instead of 1,2,3)
+            values[i] = values[i].trim(); // allow for spaces (e.g. 1, 2   ,     3 instead of 1,2,3)
         }
         return values;
     }

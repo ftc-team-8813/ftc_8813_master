@@ -5,11 +5,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskFindGold;
-import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
-import org.firstinspires.ftc.teamcode.util.Config;
-import org.firstinspires.ftc.teamcode.util.sensors.vision.GoldDetector;
-import org.firstinspires.ftc.teamcode.util.sensors.vision.ShapeGoldDetector;
+import org.firstinspires.ftc.teamcode.common.util.sensors.vision.ShapeGoldDetector;
 
 @Autonomous(name="Autonomous")
 public class MainAutonomous extends BaseAutonomous

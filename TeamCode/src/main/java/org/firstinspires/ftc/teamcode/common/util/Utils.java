@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.util;
+package org.firstinspires.ftc.teamcode.common.util;
 
 import android.media.MediaScannerConnection;
 import android.net.Uri;
