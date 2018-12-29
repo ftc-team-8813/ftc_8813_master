@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
+import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Persistent;
@@ -157,7 +158,8 @@ public abstract class BaseAutonomous extends LinearOpMode
             
             //Set the current instance
             instance = this;
-            
+
+            Robot.initialize(hardwareMap);
             initialize();
             
             //Must wait for start, otherwise the robot will run as soon as it is initialized, which can
@@ -184,6 +186,7 @@ public abstract class BaseAutonomous extends LinearOpMode
         finally
         {
             finish();
+            Robot.instance().uninitialize();
             instance = null;
             if (stream != null)
             {
