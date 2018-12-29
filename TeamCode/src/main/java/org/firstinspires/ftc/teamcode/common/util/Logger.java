@@ -91,7 +91,7 @@ public class Logger
         this.tag = tag;
     }
     
-    public void log(int level, String fmt, Object... args)
+    public synchronized void log(int level, String fmt, Object... args)
     {
         if (writer == null)
         {
