@@ -38,16 +38,8 @@ public class IMURecalibrator extends BaseAutonomous
     @Override
     public void run() throws InterruptedException
     {
-        tasks.add(new Task()
-        {
-            
-            @Override
-            public void runTask() throws InterruptedException
-            {
-                log.d("Starting IMU");
-                imu.start();
-            }
-        });
+        log.d("Starting IMU");
+        imu.start();
     }
     
     @Override
