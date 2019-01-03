@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode.common;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.teamcode.common.util.Config;
 
 /**
  * Robot -- a container for all of the robot hardware interfaces
@@ -32,7 +35,7 @@ public class Robot
     // uninitialize() is called on them.
     private static Robot instance;
 
-    private Robot(HardwareMap hardwareMap)
+    private Robot(HardwareMap hardwareMap, Config config)
     {
         // Motors
         leftFront  = hardwareMap.dcMotor.get("left front");
@@ -52,13 +55,20 @@ public class Robot
         // Other
 
         // TODO -- Reverse motors as necessary
+        if (config.getBoolean("lf_reverse", false)) leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (config.getBoolean("lr_reverse", false)) leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (config.getBoolean("rf_reverse", false)) rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (config.getBoolean("rr_reverse", false)) rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (config.getBoolean("ld_reverse", false)) leftDunk.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (config.getBoolean("rd_reverse", false)) rightDunk.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (config.getBoolean("in_reverse", false)) intake.setDirection(DcMotorSimple.Direction.REVERSE);
 
     }
 
-    public static Robot initialize(HardwareMap hardwareMap)
+    public static Robot initialize(HardwareMap hardwareMap, Config config)
     {
         if (instance != null) instance.uninitialize();
-        instance = new Robot(hardwareMap);
+        instance = new Robot(hardwareMap, config);
         return instance;
     }
 
@@ -92,7 +102,7 @@ public class Robot
     public static final double ENC_PER_INCH = ENC_PER_ROTATION_20 / 25.1327; // For 8in wheels on NeveRest motors
     public static final double ENC_PER_CM = ENC_PER_INCH / 2.54;
 
-    public static final double RADIUS_INCH = 15; // TODO this is a placeholder value that needs to be measured
+    public static final double RADIUS_INCH = 7.75;
 
     // Driving (distance)
     // NOTE: All driving functions are blocking (i.e. they wait until the robot is done moving)
@@ -142,8 +152,8 @@ public class Robot
      */
     public void turn(double angle, double radius, double power) throws InterruptedException
     {
-        int distLeft = (int)((radius + RADIUS_INCH) * angle);
-        int distRight = (int)((radius - RADIUS_INCH) * angle);
+        int distLeft = (int)((radius + RADIUS_INCH) * angle * ENC_PER_INCH * 2);
+        int distRight = (int)((radius - RADIUS_INCH) * angle * ENC_PER_INCH * 2);
         turnEnc(distLeft, distRight, power);
     }
 

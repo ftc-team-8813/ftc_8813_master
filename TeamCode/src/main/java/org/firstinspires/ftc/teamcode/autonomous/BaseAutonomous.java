@@ -159,7 +159,7 @@ public abstract class BaseAutonomous extends LinearOpMode
             //Set the current instance
             instance = this;
 
-            Robot.initialize(hardwareMap);
+            Robot.initialize(hardwareMap, config);
             initialize();
             
             //Must wait for start, otherwise the robot will run as soon as it is initialized, which can
