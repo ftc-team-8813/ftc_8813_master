@@ -17,6 +17,7 @@ public class KNearest extends StatModel {
     // internal usage only
     public static KNearest __fromPtr__(long addr) { return new KNearest(addr); }
 
+    // C++: enum Types
     public static final int
             BRUTE_FORCE = 1,
             KDTREE = 2;

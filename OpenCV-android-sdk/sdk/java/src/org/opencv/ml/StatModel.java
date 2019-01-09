@@ -17,6 +17,7 @@ public class StatModel extends Algorithm {
     // internal usage only
     public static StatModel __fromPtr__(long addr) { return new StatModel(addr); }
 
+    // C++: enum Flags
     public static final int
             UPDATE_MODEL = 1,
             RAW_OUTPUT = 1,

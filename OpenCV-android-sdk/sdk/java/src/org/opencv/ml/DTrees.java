@@ -18,6 +18,7 @@ public class DTrees extends StatModel {
     // internal usage only
     public static DTrees __fromPtr__(long addr) { return new DTrees(addr); }
 
+    // C++: enum Flags
     public static final int
             PREDICT_AUTO = 0,
             PREDICT_SUM = (1<<8),

@@ -17,6 +17,7 @@ public class Boost extends DTrees {
     // internal usage only
     public static Boost __fromPtr__(long addr) { return new Boost(addr); }
 
+    // C++: enum Types
     public static final int
             DISCRETE = 0,
             REAL = 1,

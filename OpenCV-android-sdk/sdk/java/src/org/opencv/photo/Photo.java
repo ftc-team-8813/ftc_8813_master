@@ -16,7 +16,6 @@ import org.opencv.photo.MergeMertens;
 import org.opencv.photo.MergeRobertson;
 import org.opencv.photo.Tonemap;
 import org.opencv.photo.TonemapDrago;
-import org.opencv.photo.TonemapDurand;
 import org.opencv.photo.TonemapMantiuk;
 import org.opencv.photo.TonemapReinhard;
 import org.opencv.utils.Converters;
@@ -26,11 +25,7 @@ import org.opencv.utils.Converters;
 
 public class Photo {
 
-    private static final int
-            CV_INPAINT_NS = 0,
-            CV_INPAINT_TELEA = 1;
-
-
+    // C++: enum <unnamed>
     public static final int
             INPAINT_NS = 0,
             INPAINT_TELEA = 1,
@@ -284,65 +279,6 @@ public class Photo {
     {
         
         TonemapDrago retVal = TonemapDrago.__fromPtr__(createTonemapDrago_3());
-        
-        return retVal;
-    }
-
-
-    //
-    // C++:  Ptr_TonemapDurand cv::createTonemapDurand(float gamma = 1.0f, float contrast = 4.0f, float saturation = 1.0f, float sigma_space = 2.0f, float sigma_color = 2.0f)
-    //
-
-    //javadoc: createTonemapDurand(gamma, contrast, saturation, sigma_space, sigma_color)
-    public static TonemapDurand createTonemapDurand(float gamma, float contrast, float saturation, float sigma_space, float sigma_color)
-    {
-        
-        TonemapDurand retVal = TonemapDurand.__fromPtr__(createTonemapDurand_0(gamma, contrast, saturation, sigma_space, sigma_color));
-        
-        return retVal;
-    }
-
-    //javadoc: createTonemapDurand(gamma, contrast, saturation, sigma_space)
-    public static TonemapDurand createTonemapDurand(float gamma, float contrast, float saturation, float sigma_space)
-    {
-        
-        TonemapDurand retVal = TonemapDurand.__fromPtr__(createTonemapDurand_1(gamma, contrast, saturation, sigma_space));
-        
-        return retVal;
-    }
-
-    //javadoc: createTonemapDurand(gamma, contrast, saturation)
-    public static TonemapDurand createTonemapDurand(float gamma, float contrast, float saturation)
-    {
-        
-        TonemapDurand retVal = TonemapDurand.__fromPtr__(createTonemapDurand_2(gamma, contrast, saturation));
-        
-        return retVal;
-    }
-
-    //javadoc: createTonemapDurand(gamma, contrast)
-    public static TonemapDurand createTonemapDurand(float gamma, float contrast)
-    {
-        
-        TonemapDurand retVal = TonemapDurand.__fromPtr__(createTonemapDurand_3(gamma, contrast));
-        
-        return retVal;
-    }
-
-    //javadoc: createTonemapDurand(gamma)
-    public static TonemapDurand createTonemapDurand(float gamma)
-    {
-        
-        TonemapDurand retVal = TonemapDurand.__fromPtr__(createTonemapDurand_4(gamma));
-        
-        return retVal;
-    }
-
-    //javadoc: createTonemapDurand()
-    public static TonemapDurand createTonemapDurand()
-    {
-        
-        TonemapDurand retVal = TonemapDurand.__fromPtr__(createTonemapDurand_5());
         
         return retVal;
     }
@@ -1081,14 +1017,6 @@ public class Photo {
     private static native long createTonemapDrago_1(float gamma, float saturation);
     private static native long createTonemapDrago_2(float gamma);
     private static native long createTonemapDrago_3();
-
-    // C++:  Ptr_TonemapDurand cv::createTonemapDurand(float gamma = 1.0f, float contrast = 4.0f, float saturation = 1.0f, float sigma_space = 2.0f, float sigma_color = 2.0f)
-    private static native long createTonemapDurand_0(float gamma, float contrast, float saturation, float sigma_space, float sigma_color);
-    private static native long createTonemapDurand_1(float gamma, float contrast, float saturation, float sigma_space);
-    private static native long createTonemapDurand_2(float gamma, float contrast, float saturation);
-    private static native long createTonemapDurand_3(float gamma, float contrast);
-    private static native long createTonemapDurand_4(float gamma);
-    private static native long createTonemapDurand_5();
 
     // C++:  Ptr_TonemapMantiuk cv::createTonemapMantiuk(float gamma = 1.0f, float scale = 0.7f, float saturation = 1.0f)
     private static native long createTonemapMantiuk_0(float gamma, float scale, float saturation);

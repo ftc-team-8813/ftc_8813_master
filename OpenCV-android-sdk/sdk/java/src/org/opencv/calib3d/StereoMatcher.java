@@ -16,6 +16,7 @@ public class StereoMatcher extends Algorithm {
     // internal usage only
     public static StereoMatcher __fromPtr__(long addr) { return new StereoMatcher(addr); }
 
+    // C++: enum <unnamed>
     public static final int
             DISP_SHIFT = 4,
             DISP_SCALE = (1 << DISP_SHIFT);

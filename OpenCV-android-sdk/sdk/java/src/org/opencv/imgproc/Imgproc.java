@@ -65,59 +65,29 @@ public class Imgproc {
             CV_THRESH_TRIANGLE = 16;
 
 
+    // C++: enum HersheyFonts
     public static final int
-            LINE_AA = 16,
-            LINE_8 = 8,
-            LINE_4 = 4,
-            CV_BLUR_NO_SCALE = 0,
-            CV_BLUR = 1,
-            CV_GAUSSIAN = 2,
-            CV_MEDIAN = 3,
-            CV_BILATERAL = 4,
-            CV_GAUSSIAN_5x5 = 7,
-            CV_SCHARR = -1,
-            CV_MAX_SOBEL_KSIZE = 7,
-            CV_RGBA2mRGBA = 125,
-            CV_mRGBA2RGBA = 126,
-            CV_WARP_FILL_OUTLIERS = 8,
-            CV_WARP_INVERSE_MAP = 16,
-            CV_SHAPE_RECT = 0,
-            CV_SHAPE_CROSS = 1,
-            CV_SHAPE_ELLIPSE = 2,
-            CV_SHAPE_CUSTOM = 100,
-            CV_CHAIN_CODE = 0,
-            CV_LINK_RUNS = 5,
-            CV_POLY_APPROX_DP = 0,
-            CV_CONTOURS_MATCH_I1 = 1,
-            CV_CONTOURS_MATCH_I2 = 2,
-            CV_CONTOURS_MATCH_I3 = 3,
-            CV_CLOCKWISE = 1,
-            CV_COUNTER_CLOCKWISE = 2,
-            CV_COMP_CORREL = 0,
-            CV_COMP_CHISQR = 1,
-            CV_COMP_INTERSECT = 2,
-            CV_COMP_BHATTACHARYYA = 3,
-            CV_COMP_HELLINGER = CV_COMP_BHATTACHARYYA,
-            CV_COMP_CHISQR_ALT = 4,
-            CV_COMP_KL_DIV = 5,
-            CV_DIST_MASK_3 = 3,
-            CV_DIST_MASK_5 = 5,
-            CV_DIST_MASK_PRECISE = 0,
-            CV_DIST_LABEL_CCOMP = 0,
-            CV_DIST_LABEL_PIXEL = 1,
-            CV_DIST_USER = -1,
-            CV_DIST_L1 = 1,
-            CV_DIST_L2 = 2,
-            CV_DIST_C = 3,
-            CV_DIST_L12 = 4,
-            CV_DIST_FAIR = 5,
-            CV_DIST_WELSCH = 6,
-            CV_DIST_HUBER = 7,
-            CV_CANNY_L2_GRADIENT = (1 << 31),
-            CV_HOUGH_STANDARD = 0,
-            CV_HOUGH_PROBABILISTIC = 1,
-            CV_HOUGH_MULTI_SCALE = 2,
-            CV_HOUGH_GRADIENT = 3,
+            FONT_HERSHEY_SIMPLEX = 0,
+            FONT_HERSHEY_PLAIN = 1,
+            FONT_HERSHEY_DUPLEX = 2,
+            FONT_HERSHEY_COMPLEX = 3,
+            FONT_HERSHEY_TRIPLEX = 4,
+            FONT_HERSHEY_COMPLEX_SMALL = 5,
+            FONT_HERSHEY_SCRIPT_SIMPLEX = 6,
+            FONT_HERSHEY_SCRIPT_COMPLEX = 7,
+            FONT_ITALIC = 16;
+
+
+    // C++: enum InterpolationMasks
+    public static final int
+            INTER_BITS = 5,
+            INTER_BITS2 = INTER_BITS * 2,
+            INTER_TAB_SIZE = 1 << INTER_BITS,
+            INTER_TAB_SIZE2 = INTER_TAB_SIZE * INTER_TAB_SIZE;
+
+
+    // C++: enum MorphTypes
+    public static final int
             MORPH_ERODE = 0,
             MORPH_DILATE = 1,
             MORPH_OPEN = 2,
@@ -125,10 +95,85 @@ public class Imgproc {
             MORPH_GRADIENT = 4,
             MORPH_TOPHAT = 5,
             MORPH_BLACKHAT = 6,
-            MORPH_HITMISS = 7,
-            MORPH_RECT = 0,
-            MORPH_CROSS = 1,
-            MORPH_ELLIPSE = 2,
+            MORPH_HITMISS = 7;
+
+
+    // C++: enum FloodFillFlags
+    public static final int
+            FLOODFILL_FIXED_RANGE = 1 << 16,
+            FLOODFILL_MASK_ONLY = 1 << 17;
+
+
+    // C++: enum HoughModes
+    public static final int
+            HOUGH_STANDARD = 0,
+            HOUGH_PROBABILISTIC = 1,
+            HOUGH_MULTI_SCALE = 2,
+            HOUGH_GRADIENT = 3;
+
+
+    // C++: enum ConnectedComponentsAlgorithmsTypes
+    public static final int
+            CCL_WU = 0,
+            CCL_DEFAULT = -1,
+            CCL_GRANA = 1;
+
+
+    // C++: enum RetrievalModes
+    public static final int
+            RETR_EXTERNAL = 0,
+            RETR_LIST = 1,
+            RETR_CCOMP = 2,
+            RETR_TREE = 3,
+            RETR_FLOODFILL = 4;
+
+
+    // C++: enum GrabCutClasses
+    public static final int
+            GC_BGD = 0,
+            GC_FGD = 1,
+            GC_PR_BGD = 2,
+            GC_PR_FGD = 3;
+
+
+    // C++: enum ColormapTypes
+    public static final int
+            COLORMAP_AUTUMN = 0,
+            COLORMAP_BONE = 1,
+            COLORMAP_JET = 2,
+            COLORMAP_WINTER = 3,
+            COLORMAP_RAINBOW = 4,
+            COLORMAP_OCEAN = 5,
+            COLORMAP_SUMMER = 6,
+            COLORMAP_SPRING = 7,
+            COLORMAP_COOL = 8,
+            COLORMAP_HSV = 9,
+            COLORMAP_PINK = 10,
+            COLORMAP_HOT = 11,
+            COLORMAP_PARULA = 12;
+
+
+    // C++: enum HistCompMethods
+    public static final int
+            HISTCMP_CORREL = 0,
+            HISTCMP_CHISQR = 1,
+            HISTCMP_INTERSECT = 2,
+            HISTCMP_BHATTACHARYYA = 3,
+            HISTCMP_HELLINGER = HISTCMP_BHATTACHARYYA,
+            HISTCMP_CHISQR_ALT = 4,
+            HISTCMP_KL_DIV = 5;
+
+
+    // C++: enum LineTypes
+    public static final int
+            FILLED = -1,
+            LINE_4 = 4,
+            LINE_8 = 8,
+            LINE_AA = 16;
+
+
+    // C++: enum InterpolationFlags
+    public static final int
             INTER_NEAREST = 0,
             INTER_LINEAR = 1,
             INTER_CUBIC = 2,
@@ -137,83 +182,44 @@ public class Imgproc {
             INTER_LINEAR_EXACT = 5,
             INTER_MAX = 7,
             WARP_FILL_OUTLIERS = 8,
-            WARP_INVERSE_MAP = 16,
-            WARP_POLAR_LINEAR = 0,
-            WARP_POLAR_LOG = 256,
-            INTER_BITS = 5,
-            INTER_BITS2 = INTER_BITS * 2,
-            INTER_TAB_SIZE = 1 << INTER_BITS,
-            INTER_TAB_SIZE2 = INTER_TAB_SIZE * INTER_TAB_SIZE,
-            DIST_USER = -1,
-            DIST_L1 = 1,
-            DIST_L2 = 2,
-            DIST_C = 3,
-            DIST_L12 = 4,
-            DIST_FAIR = 5,
-            DIST_WELSCH = 6,
-            DIST_HUBER = 7,
-            DIST_MASK_3 = 3,
-            DIST_MASK_5 = 5,
-            DIST_MASK_PRECISE = 0,
-            THRESH_BINARY = 0,
-            THRESH_BINARY_INV = 1,
-            THRESH_TRUNC = 2,
-            THRESH_TOZERO = 3,
-            THRESH_TOZERO_INV = 4,
-            THRESH_MASK = 7,
-            THRESH_OTSU = 8,
-            THRESH_TRIANGLE = 16,
-            ADAPTIVE_THRESH_MEAN_C = 0,
-            ADAPTIVE_THRESH_GAUSSIAN_C = 1,
-            PROJ_SPHERICAL_ORTHO = 0,
-            PROJ_SPHERICAL_EQRECT = 1,
-            GC_BGD = 0,
-            GC_FGD = 1,
-            GC_PR_BGD = 2,
-            GC_PR_FGD = 3,
-            GC_INIT_WITH_RECT = 0,
-            GC_INIT_WITH_MASK = 1,
-            GC_EVAL = 2,
-            GC_EVAL_FREEZE_MODEL = 3,
-            DIST_LABEL_CCOMP = 0,
-            DIST_LABEL_PIXEL = 1,
-            FLOODFILL_FIXED_RANGE = 1 << 16,
-            FLOODFILL_MASK_ONLY = 1 << 17,
-            CC_STAT_LEFT = 0,
-            CC_STAT_TOP = 1,
-            CC_STAT_WIDTH = 2,
-            CC_STAT_HEIGHT = 3,
-            CC_STAT_AREA = 4,
-            CC_STAT_MAX = 5,
-            CCL_WU = 0,
-            CCL_DEFAULT = -1,
-            CCL_GRANA = 1,
-            RETR_EXTERNAL = 0,
-            RETR_LIST = 1,
-            RETR_CCOMP = 2,
-            RETR_TREE = 3,
-            RETR_FLOODFILL = 4,
+            WARP_INVERSE_MAP = 16;
+
+
+    // C++: enum SpecialFilter
+    public static final int
+            FILTER_SCHARR = -1;
+
+
+    // C++: enum ContourApproximationModes
+    public static final int
             CHAIN_APPROX_NONE = 1,
             CHAIN_APPROX_SIMPLE = 2,
             CHAIN_APPROX_TC89_L1 = 3,
-            CHAIN_APPROX_TC89_KCOS = 4,
+            CHAIN_APPROX_TC89_KCOS = 4;
+
+
+    // C++: enum RectanglesIntersectTypes
+    public static final int
+            INTERSECT_NONE = 0,
+            INTERSECT_PARTIAL = 1,
+            INTERSECT_FULL = 2;
+
+
+    // C++: enum ShapeMatchModes
+    public static final int
             CONTOURS_MATCH_I1 = 1,
             CONTOURS_MATCH_I2 = 2,
-            CONTOURS_MATCH_I3 = 3,
-            HOUGH_STANDARD = 0,
-            HOUGH_PROBABILISTIC = 1,
-            HOUGH_MULTI_SCALE = 2,
-            HOUGH_GRADIENT = 3,
-            LSD_REFINE_NONE = 0,
-            LSD_REFINE_STD = 1,
-            LSD_REFINE_ADV = 2,
-            HISTCMP_CORREL = 0,
-            HISTCMP_CHISQR = 1,
-            HISTCMP_INTERSECT = 2,
-            HISTCMP_BHATTACHARYYA = 3,
-            HISTCMP_HELLINGER = HISTCMP_BHATTACHARYYA,
-            HISTCMP_CHISQR_ALT = 4,
-            HISTCMP_KL_DIV = 5,
+            CONTOURS_MATCH_I3 = 3;
+
+
+    // C++: enum WarpPolarMode
+    public static final int
+            WARP_POLAR_LINEAR = 0,
+            WARP_POLAR_LOG = 256;
+
+
+    // C++: enum ColorConversionCodes
+    public static final int
             COLOR_BGR2BGRA = 0,
             COLOR_RGB2RGBA = COLOR_BGR2BGRA,
             COLOR_BGRA2BGR = 1,
@@ -419,29 +425,157 @@ public class Imgproc {
             COLOR_BayerGB2RGBA = COLOR_BayerGR2BGRA,
             COLOR_BayerRG2RGBA = COLOR_BayerBG2BGRA,
             COLOR_BayerGR2RGBA = COLOR_BayerGB2BGRA,
-            COLOR_COLORCVT_MAX = 143,
-            INTERSECT_NONE = 0,
-            INTERSECT_PARTIAL = 1,
-            INTERSECT_FULL = 2,
+            COLOR_COLORCVT_MAX = 143;
+
+
+    // C++: enum LineSegmentDetectorModes
+    public static final int
+            LSD_REFINE_NONE = 0,
+            LSD_REFINE_STD = 1,
+            LSD_REFINE_ADV = 2;
+
+
+    // C++: enum ThresholdTypes
+    public static final int
+            THRESH_BINARY = 0,
+            THRESH_BINARY_INV = 1,
+            THRESH_TRUNC = 2,
+            THRESH_TOZERO = 3,
+            THRESH_TOZERO_INV = 4,
+            THRESH_MASK = 7,
+            THRESH_OTSU = 8,
+            THRESH_TRIANGLE = 16;
+
+
+    // C++: enum AdaptiveThresholdTypes
+    public static final int
+            ADAPTIVE_THRESH_MEAN_C = 0,
+            ADAPTIVE_THRESH_GAUSSIAN_C = 1;
+
+
+    // C++: enum MorphShapes_c
+    public static final int
+            CV_SHAPE_RECT = 0,
+            CV_SHAPE_CROSS = 1,
+            CV_SHAPE_ELLIPSE = 2,
+            CV_SHAPE_CUSTOM = 100;
+
+
+    // C++: enum <unnamed>
+    public static final int
+            CV_GAUSSIAN_5x5 = 7,
+            CV_SCHARR = -1,
+            CV_MAX_SOBEL_KSIZE = 7,
+            CV_RGBA2mRGBA = 125,
+            CV_mRGBA2RGBA = 126,
+            CV_WARP_FILL_OUTLIERS = 8,
+            CV_WARP_INVERSE_MAP = 16,
+            CV_CHAIN_CODE = 0,
+            CV_LINK_RUNS = 5,
+            CV_POLY_APPROX_DP = 0,
+            CV_CONTOURS_MATCH_I1 = 1,
+            CV_CONTOURS_MATCH_I2 = 2,
+            CV_CONTOURS_MATCH_I3 = 3,
+            CV_CLOCKWISE = 1,
+            CV_COUNTER_CLOCKWISE = 2,
+            CV_COMP_CORREL = 0,
+            CV_COMP_CHISQR = 1,
+            CV_COMP_INTERSECT = 2,
+            CV_COMP_BHATTACHARYYA = 3,
+            CV_COMP_HELLINGER = CV_COMP_BHATTACHARYYA,
+            CV_COMP_CHISQR_ALT = 4,
+            CV_COMP_KL_DIV = 5,
+            CV_DIST_MASK_3 = 3,
+            CV_DIST_MASK_5 = 5,
+            CV_DIST_MASK_PRECISE = 0,
+            CV_DIST_LABEL_CCOMP = 0,
+            CV_DIST_LABEL_PIXEL = 1,
+            CV_DIST_USER = -1,
+            CV_DIST_L1 = 1,
+            CV_DIST_L2 = 2,
+            CV_DIST_C = 3,
+            CV_DIST_L12 = 4,
+            CV_DIST_FAIR = 5,
+            CV_DIST_WELSCH = 6,
+            CV_DIST_HUBER = 7,
+            CV_CANNY_L2_GRADIENT = (1 << 31),
+            CV_HOUGH_STANDARD = 0,
+            CV_HOUGH_PROBABILISTIC = 1,
+            CV_HOUGH_MULTI_SCALE = 2,
+            CV_HOUGH_GRADIENT = 3;
+
+
+    // C++: enum GrabCutModes
+    public static final int
+            GC_INIT_WITH_RECT = 0,
+            GC_INIT_WITH_MASK = 1,
+            GC_EVAL = 2,
+            GC_EVAL_FREEZE_MODEL = 3;
+
+
+    // C++: enum MorphShapes
+    public static final int
+            MORPH_RECT = 0,
+            MORPH_CROSS = 1,
+            MORPH_ELLIPSE = 2;
+
+
+    // C++: enum DistanceTransformLabelTypes
+    public static final int
+            DIST_LABEL_CCOMP = 0,
+            DIST_LABEL_PIXEL = 1;
+
+
+    // C++: enum DistanceTypes
+    public static final int
+            DIST_USER = -1,
+            DIST_L1 = 1,
+            DIST_L2 = 2,
+            DIST_C = 3,
+            DIST_L12 = 4,
+            DIST_FAIR = 5,
+            DIST_WELSCH = 6,
+            DIST_HUBER = 7;
+
+
+    // C++: enum TemplateMatchModes
+    public static final int
             TM_SQDIFF = 0,
             TM_SQDIFF_NORMED = 1,
             TM_CCORR = 2,
             TM_CCORR_NORMED = 3,
             TM_CCOEFF = 4,
-            TM_CCOEFF_NORMED = 5,
-            COLORMAP_AUTUMN = 0,
-            COLORMAP_BONE = 1,
-            COLORMAP_JET = 2,
-            COLORMAP_WINTER = 3,
-            COLORMAP_RAINBOW = 4,
-            COLORMAP_OCEAN = 5,
-            COLORMAP_SUMMER = 6,
-            COLORMAP_SPRING = 7,
-            COLORMAP_COOL = 8,
-            COLORMAP_HSV = 9,
-            COLORMAP_PINK = 10,
-            COLORMAP_HOT = 11,
-            COLORMAP_PARULA = 12,
+            TM_CCOEFF_NORMED = 5;
+
+
+    // C++: enum DistanceTransformMasks
+    public static final int
+            DIST_MASK_3 = 3,
+            DIST_MASK_5 = 5,
+            DIST_MASK_PRECISE = 0;
+
+
+    // C++: enum ConnectedComponentsTypes
+    public static final int
+            CC_STAT_LEFT = 0,
+            CC_STAT_TOP = 1,
+            CC_STAT_WIDTH = 2,
+            CC_STAT_HEIGHT = 3,
+            CC_STAT_AREA = 4,
+            CC_STAT_MAX = 5;
+
+
+    // C++: enum SmoothMethod_c
+    public static final int
+            CV_BLUR_NO_SCALE = 0,
+            CV_BLUR = 1,
+            CV_GAUSSIAN = 2,
+            CV_MEDIAN = 3,
+            CV_BILATERAL = 4;
+
+
+    // C++: enum MarkerTypes
+    public static final int
             MARKER_CROSS = 0,
             MARKER_TILTED_CROSS = 1,
             MARKER_STAR = 2,
@@ -461,38 +595,6 @@ public class Imgproc {
         Mat src_mat = src;
         Mat dst_mat = dst;
         Mat retVal = new Mat(getAffineTransform_0(src_mat.nativeObj, dst_mat.nativeObj));
-        
-        return retVal;
-    }
-
-
-    //
-    // C++:  Mat cv::getDefaultNewCameraMatrix(Mat cameraMatrix, Size imgsize = Size(), bool centerPrincipalPoint = false)
-    //
-
-    //javadoc: getDefaultNewCameraMatrix(cameraMatrix, imgsize, centerPrincipalPoint)
-    public static Mat getDefaultNewCameraMatrix(Mat cameraMatrix, Size imgsize, boolean centerPrincipalPoint)
-    {
-        
-        Mat retVal = new Mat(getDefaultNewCameraMatrix_0(cameraMatrix.nativeObj, imgsize.width, imgsize.height, centerPrincipalPoint));
-        
-        return retVal;
-    }
-
-    //javadoc: getDefaultNewCameraMatrix(cameraMatrix, imgsize)
-    public static Mat getDefaultNewCameraMatrix(Mat cameraMatrix, Size imgsize)
-    {
-        
-        Mat retVal = new Mat(getDefaultNewCameraMatrix_1(cameraMatrix.nativeObj, imgsize.width, imgsize.height));
-        
-        return retVal;
-    }
-
-    //javadoc: getDefaultNewCameraMatrix(cameraMatrix)
-    public static Mat getDefaultNewCameraMatrix(Mat cameraMatrix)
-    {
-        
-        Mat retVal = new Mat(getDefaultNewCameraMatrix_2(cameraMatrix.nativeObj));
         
         return retVal;
     }
@@ -554,14 +656,23 @@ public class Imgproc {
 
 
     //
-    // C++:  Mat cv::getPerspectiveTransform(Mat src, Mat dst)
+    // C++:  Mat cv::getPerspectiveTransform(Mat src, Mat dst, int solveMethod = DECOMP_LU)
     //
+
+    //javadoc: getPerspectiveTransform(src, dst, solveMethod)
+    public static Mat getPerspectiveTransform(Mat src, Mat dst, int solveMethod)
+    {
+        
+        Mat retVal = new Mat(getPerspectiveTransform_0(src.nativeObj, dst.nativeObj, solveMethod));
+        
+        return retVal;
+    }
 
     //javadoc: getPerspectiveTransform(src, dst)
     public static Mat getPerspectiveTransform(Mat src, Mat dst)
     {
         
-        Mat retVal = new Mat(getPerspectiveTransform_0(src.nativeObj, dst.nativeObj));
+        Mat retVal = new Mat(getPerspectiveTransform_1(src.nativeObj, dst.nativeObj));
         
         return retVal;
     }
@@ -778,14 +889,14 @@ public class Imgproc {
 
 
     //
-    // C++:  Rect cv::boundingRect(vector_Point points)
+    // C++:  Rect cv::boundingRect(Mat array)
     //
 
-    //javadoc: boundingRect(points)
-    public static Rect boundingRect(MatOfPoint points)
+    //javadoc: boundingRect(array)
+    public static Rect boundingRect(Mat array)
     {
-        Mat points_mat = points;
-        Rect retVal = new Rect(boundingRect_0(points_mat.nativeObj));
+        
+        Rect retVal = new Rect(boundingRect_0(array.nativeObj));
         
         return retVal;
     }
@@ -1002,38 +1113,6 @@ public class Imgproc {
     {
         
         double retVal = threshold_0(src.nativeObj, dst.nativeObj, thresh, maxval, type);
-        
-        return retVal;
-    }
-
-
-    //
-    // C++:  float cv::initWideAngleProjMap(Mat cameraMatrix, Mat distCoeffs, Size imageSize, int destImageWidth, int m1type, Mat& map1, Mat& map2, int projType = PROJ_SPHERICAL_EQRECT, double alpha = 0)
-    //
-
-    //javadoc: initWideAngleProjMap(cameraMatrix, distCoeffs, imageSize, destImageWidth, m1type, map1, map2, projType, alpha)
-    public static float initWideAngleProjMap(Mat cameraMatrix, Mat distCoeffs, Size imageSize, int destImageWidth, int m1type, Mat map1, Mat map2, int projType, double alpha)
-    {
-        
-        float retVal = initWideAngleProjMap_0(cameraMatrix.nativeObj, distCoeffs.nativeObj, imageSize.width, imageSize.height, destImageWidth, m1type, map1.nativeObj, map2.nativeObj, projType, alpha);
-        
-        return retVal;
-    }
-
-    //javadoc: initWideAngleProjMap(cameraMatrix, distCoeffs, imageSize, destImageWidth, m1type, map1, map2, projType)
-    public static float initWideAngleProjMap(Mat cameraMatrix, Mat distCoeffs, Size imageSize, int destImageWidth, int m1type, Mat map1, Mat map2, int projType)
-    {
-        
-        float retVal = initWideAngleProjMap_1(cameraMatrix.nativeObj, distCoeffs.nativeObj, imageSize.width, imageSize.height, destImageWidth, m1type, map1.nativeObj, map2.nativeObj, projType);
-        
-        return retVal;
-    }
-
-    //javadoc: initWideAngleProjMap(cameraMatrix, distCoeffs, imageSize, destImageWidth, m1type, map1, map2)
-    public static float initWideAngleProjMap(Mat cameraMatrix, Mat distCoeffs, Size imageSize, int destImageWidth, int m1type, Mat map1, Mat map2)
-    {
-        
-        float retVal = initWideAngleProjMap_2(cameraMatrix.nativeObj, distCoeffs.nativeObj, imageSize.width, imageSize.height, destImageWidth, m1type, map1.nativeObj, map2.nativeObj);
         
         return retVal;
     }
@@ -2241,23 +2320,23 @@ public class Imgproc {
 
 
     //
-    // C++:  void cv::demosaicing(Mat _src, Mat& _dst, int code, int dcn = 0)
+    // C++:  void cv::demosaicing(Mat src, Mat& dst, int code, int dstCn = 0)
     //
 
-    //javadoc: demosaicing(_src, _dst, code, dcn)
-    public static void demosaicing(Mat _src, Mat _dst, int code, int dcn)
+    //javadoc: demosaicing(src, dst, code, dstCn)
+    public static void demosaicing(Mat src, Mat dst, int code, int dstCn)
     {
         
-        demosaicing_0(_src.nativeObj, _dst.nativeObj, code, dcn);
+        demosaicing_0(src.nativeObj, dst.nativeObj, code, dstCn);
         
         return;
     }
 
-    //javadoc: demosaicing(_src, _dst, code)
-    public static void demosaicing(Mat _src, Mat _dst, int code)
+    //javadoc: demosaicing(src, dst, code)
+    public static void demosaicing(Mat src, Mat dst, int code)
     {
         
-        demosaicing_1(_src.nativeObj, _dst.nativeObj, code);
+        demosaicing_1(src.nativeObj, dst.nativeObj, code);
         
         return;
     }
@@ -2744,7 +2823,7 @@ public class Imgproc {
 
 
     //
-    // C++:  void cv::findContours(Mat& image, vector_vector_Point& contours, Mat& hierarchy, int mode, int method, Point offset = Point())
+    // C++:  void cv::findContours(Mat image, vector_vector_Point& contours, Mat& hierarchy, int mode, int method, Point offset = Point())
     //
 
     //javadoc: findContours(image, contours, hierarchy, mode, method, offset)
@@ -2937,20 +3016,6 @@ public class Imgproc {
     {
         
         grabCut_1(img.nativeObj, mask.nativeObj, rect.x, rect.y, rect.width, rect.height, bgdModel.nativeObj, fgdModel.nativeObj, iterCount);
-        
-        return;
-    }
-
-
-    //
-    // C++:  void cv::initUndistortRectifyMap(Mat cameraMatrix, Mat distCoeffs, Mat R, Mat newCameraMatrix, Size size, int m1type, Mat& map1, Mat& map2)
-    //
-
-    //javadoc: initUndistortRectifyMap(cameraMatrix, distCoeffs, R, newCameraMatrix, size, m1type, map1, map2)
-    public static void initUndistortRectifyMap(Mat cameraMatrix, Mat distCoeffs, Mat R, Mat newCameraMatrix, Size size, int m1type, Mat map1, Mat map2)
-    {
-        
-        initUndistortRectifyMap_0(cameraMatrix.nativeObj, distCoeffs.nativeObj, R.nativeObj, newCameraMatrix.nativeObj, size.width, size.height, m1type, map1.nativeObj, map2.nativeObj);
         
         return;
     }
@@ -3479,6 +3544,47 @@ public class Imgproc {
 
 
     //
+    // C++:  void cv::rectangle(Mat& img, Rect rec, Scalar color, int thickness = 1, int lineType = LINE_8, int shift = 0)
+    //
+
+    //javadoc: rectangle(img, rec, color, thickness, lineType, shift)
+    public static void rectangle(Mat img, Rect rec, Scalar color, int thickness, int lineType, int shift)
+    {
+        
+        rectangle_4(img.nativeObj, rec.x, rec.y, rec.width, rec.height, color.val[0], color.val[1], color.val[2], color.val[3], thickness, lineType, shift);
+        
+        return;
+    }
+
+    //javadoc: rectangle(img, rec, color, thickness, lineType)
+    public static void rectangle(Mat img, Rect rec, Scalar color, int thickness, int lineType)
+    {
+        
+        rectangle_5(img.nativeObj, rec.x, rec.y, rec.width, rec.height, color.val[0], color.val[1], color.val[2], color.val[3], thickness, lineType);
+        
+        return;
+    }
+
+    //javadoc: rectangle(img, rec, color, thickness)
+    public static void rectangle(Mat img, Rect rec, Scalar color, int thickness)
+    {
+        
+        rectangle_6(img.nativeObj, rec.x, rec.y, rec.width, rec.height, color.val[0], color.val[1], color.val[2], color.val[3], thickness);
+        
+        return;
+    }
+
+    //javadoc: rectangle(img, rec, color)
+    public static void rectangle(Mat img, Rect rec, Scalar color)
+    {
+        
+        rectangle_7(img.nativeObj, rec.x, rec.y, rec.width, rec.height, color.val[0], color.val[1], color.val[2], color.val[3]);
+        
+        return;
+    }
+
+
+    //
     // C++:  void cv::remap(Mat src, Mat& dst, Mat map1, Mat map2, int interpolation, int borderMode = BORDER_CONSTANT, Scalar borderValue = Scalar())
     //
 
@@ -3625,110 +3731,41 @@ public class Imgproc {
 
 
     //
-    // C++:  void cv::sqrBoxFilter(Mat _src, Mat& _dst, int ddepth, Size ksize, Point anchor = Point(-1, -1), bool normalize = true, int borderType = BORDER_DEFAULT)
+    // C++:  void cv::sqrBoxFilter(Mat src, Mat& dst, int ddepth, Size ksize, Point anchor = Point(-1, -1), bool normalize = true, int borderType = BORDER_DEFAULT)
     //
 
-    //javadoc: sqrBoxFilter(_src, _dst, ddepth, ksize, anchor, normalize, borderType)
-    public static void sqrBoxFilter(Mat _src, Mat _dst, int ddepth, Size ksize, Point anchor, boolean normalize, int borderType)
+    //javadoc: sqrBoxFilter(src, dst, ddepth, ksize, anchor, normalize, borderType)
+    public static void sqrBoxFilter(Mat src, Mat dst, int ddepth, Size ksize, Point anchor, boolean normalize, int borderType)
     {
         
-        sqrBoxFilter_0(_src.nativeObj, _dst.nativeObj, ddepth, ksize.width, ksize.height, anchor.x, anchor.y, normalize, borderType);
+        sqrBoxFilter_0(src.nativeObj, dst.nativeObj, ddepth, ksize.width, ksize.height, anchor.x, anchor.y, normalize, borderType);
         
         return;
     }
 
-    //javadoc: sqrBoxFilter(_src, _dst, ddepth, ksize, anchor, normalize)
-    public static void sqrBoxFilter(Mat _src, Mat _dst, int ddepth, Size ksize, Point anchor, boolean normalize)
+    //javadoc: sqrBoxFilter(src, dst, ddepth, ksize, anchor, normalize)
+    public static void sqrBoxFilter(Mat src, Mat dst, int ddepth, Size ksize, Point anchor, boolean normalize)
     {
         
-        sqrBoxFilter_1(_src.nativeObj, _dst.nativeObj, ddepth, ksize.width, ksize.height, anchor.x, anchor.y, normalize);
+        sqrBoxFilter_1(src.nativeObj, dst.nativeObj, ddepth, ksize.width, ksize.height, anchor.x, anchor.y, normalize);
         
         return;
     }
 
-    //javadoc: sqrBoxFilter(_src, _dst, ddepth, ksize, anchor)
-    public static void sqrBoxFilter(Mat _src, Mat _dst, int ddepth, Size ksize, Point anchor)
+    //javadoc: sqrBoxFilter(src, dst, ddepth, ksize, anchor)
+    public static void sqrBoxFilter(Mat src, Mat dst, int ddepth, Size ksize, Point anchor)
     {
         
-        sqrBoxFilter_2(_src.nativeObj, _dst.nativeObj, ddepth, ksize.width, ksize.height, anchor.x, anchor.y);
+        sqrBoxFilter_2(src.nativeObj, dst.nativeObj, ddepth, ksize.width, ksize.height, anchor.x, anchor.y);
         
         return;
     }
 
-    //javadoc: sqrBoxFilter(_src, _dst, ddepth, ksize)
-    public static void sqrBoxFilter(Mat _src, Mat _dst, int ddepth, Size ksize)
+    //javadoc: sqrBoxFilter(src, dst, ddepth, ksize)
+    public static void sqrBoxFilter(Mat src, Mat dst, int ddepth, Size ksize)
     {
         
-        sqrBoxFilter_3(_src.nativeObj, _dst.nativeObj, ddepth, ksize.width, ksize.height);
-        
-        return;
-    }
-
-
-    //
-    // C++:  void cv::undistort(Mat src, Mat& dst, Mat cameraMatrix, Mat distCoeffs, Mat newCameraMatrix = Mat())
-    //
-
-    //javadoc: undistort(src, dst, cameraMatrix, distCoeffs, newCameraMatrix)
-    public static void undistort(Mat src, Mat dst, Mat cameraMatrix, Mat distCoeffs, Mat newCameraMatrix)
-    {
-        
-        undistort_0(src.nativeObj, dst.nativeObj, cameraMatrix.nativeObj, distCoeffs.nativeObj, newCameraMatrix.nativeObj);
-        
-        return;
-    }
-
-    //javadoc: undistort(src, dst, cameraMatrix, distCoeffs)
-    public static void undistort(Mat src, Mat dst, Mat cameraMatrix, Mat distCoeffs)
-    {
-        
-        undistort_1(src.nativeObj, dst.nativeObj, cameraMatrix.nativeObj, distCoeffs.nativeObj);
-        
-        return;
-    }
-
-
-    //
-    // C++:  void cv::undistortPoints(Mat src, Mat& dst, Mat cameraMatrix, Mat distCoeffs, Mat R, Mat P, TermCriteria criteria)
-    //
-
-    //javadoc: undistortPointsIter(src, dst, cameraMatrix, distCoeffs, R, P, criteria)
-    public static void undistortPointsIter(Mat src, Mat dst, Mat cameraMatrix, Mat distCoeffs, Mat R, Mat P, TermCriteria criteria)
-    {
-        
-        undistortPointsIter_0(src.nativeObj, dst.nativeObj, cameraMatrix.nativeObj, distCoeffs.nativeObj, R.nativeObj, P.nativeObj, criteria.type, criteria.maxCount, criteria.epsilon);
-        
-        return;
-    }
-
-
-    //
-    // C++:  void cv::undistortPoints(Mat src, Mat& dst, Mat cameraMatrix, Mat distCoeffs, Mat R = Mat(), Mat P = Mat())
-    //
-
-    //javadoc: undistortPoints(src, dst, cameraMatrix, distCoeffs, R, P)
-    public static void undistortPoints(Mat src, Mat dst, Mat cameraMatrix, Mat distCoeffs, Mat R, Mat P)
-    {
-        
-        undistortPoints_0(src.nativeObj, dst.nativeObj, cameraMatrix.nativeObj, distCoeffs.nativeObj, R.nativeObj, P.nativeObj);
-        
-        return;
-    }
-
-    //javadoc: undistortPoints(src, dst, cameraMatrix, distCoeffs, R)
-    public static void undistortPoints(Mat src, Mat dst, Mat cameraMatrix, Mat distCoeffs, Mat R)
-    {
-        
-        undistortPoints_1(src.nativeObj, dst.nativeObj, cameraMatrix.nativeObj, distCoeffs.nativeObj, R.nativeObj);
-        
-        return;
-    }
-
-    //javadoc: undistortPoints(src, dst, cameraMatrix, distCoeffs)
-    public static void undistortPoints(Mat src, Mat dst, Mat cameraMatrix, Mat distCoeffs)
-    {
-        
-        undistortPoints_2(src.nativeObj, dst.nativeObj, cameraMatrix.nativeObj, distCoeffs.nativeObj);
+        sqrBoxFilter_3(src.nativeObj, dst.nativeObj, ddepth, ksize.width, ksize.height);
         
         return;
     }
@@ -3860,11 +3897,6 @@ public static Size getTextSize(String text, int fontFace, double fontScale, int 
     // C++:  Mat cv::getAffineTransform(vector_Point2f src, vector_Point2f dst)
     private static native long getAffineTransform_0(long src_mat_nativeObj, long dst_mat_nativeObj);
 
-    // C++:  Mat cv::getDefaultNewCameraMatrix(Mat cameraMatrix, Size imgsize = Size(), bool centerPrincipalPoint = false)
-    private static native long getDefaultNewCameraMatrix_0(long cameraMatrix_nativeObj, double imgsize_width, double imgsize_height, boolean centerPrincipalPoint);
-    private static native long getDefaultNewCameraMatrix_1(long cameraMatrix_nativeObj, double imgsize_width, double imgsize_height);
-    private static native long getDefaultNewCameraMatrix_2(long cameraMatrix_nativeObj);
-
     // C++:  Mat cv::getGaborKernel(Size ksize, double sigma, double theta, double lambd, double gamma, double psi = CV_PI*0.5, int ktype = CV_64F)
     private static native long getGaborKernel_0(double ksize_width, double ksize_height, double sigma, double theta, double lambd, double gamma, double psi, int ktype);
     private static native long getGaborKernel_1(double ksize_width, double ksize_height, double sigma, double theta, double lambd, double gamma, double psi);
@@ -3874,8 +3906,9 @@ public static Size getTextSize(String text, int fontFace, double fontScale, int 
     private static native long getGaussianKernel_0(int ksize, double sigma, int ktype);
     private static native long getGaussianKernel_1(int ksize, double sigma);
 
-    // C++:  Mat cv::getPerspectiveTransform(Mat src, Mat dst)
-    private static native long getPerspectiveTransform_0(long src_nativeObj, long dst_nativeObj);
+    // C++:  Mat cv::getPerspectiveTransform(Mat src, Mat dst, int solveMethod = DECOMP_LU)
+    private static native long getPerspectiveTransform_0(long src_nativeObj, long dst_nativeObj, int solveMethod);
+    private static native long getPerspectiveTransform_1(long src_nativeObj, long dst_nativeObj);
 
     // C++:  Mat cv::getRotationMatrix2D(Point2f center, double angle, double scale)
     private static native long getRotationMatrix2D_0(double center_x, double center_y, double angle, double scale);
@@ -3909,8 +3942,8 @@ public static Size getTextSize(String text, int fontFace, double fontScale, int 
     private static native long createLineSegmentDetector_7(int _refine);
     private static native long createLineSegmentDetector_8();
 
-    // C++:  Rect cv::boundingRect(vector_Point points)
-    private static native double[] boundingRect_0(long points_mat_nativeObj);
+    // C++:  Rect cv::boundingRect(Mat array)
+    private static native double[] boundingRect_0(long array_nativeObj);
 
     // C++:  RotatedRect cv::fitEllipse(vector_Point2f points)
     private static native double[] fitEllipse_0(long points_mat_nativeObj);
@@ -3955,11 +3988,6 @@ public static Size getTextSize(String text, int fontFace, double fontScale, int 
 
     // C++:  double cv::threshold(Mat src, Mat& dst, double thresh, double maxval, int type)
     private static native double threshold_0(long src_nativeObj, long dst_nativeObj, double thresh, double maxval, int type);
-
-    // C++:  float cv::initWideAngleProjMap(Mat cameraMatrix, Mat distCoeffs, Size imageSize, int destImageWidth, int m1type, Mat& map1, Mat& map2, int projType = PROJ_SPHERICAL_EQRECT, double alpha = 0)
-    private static native float initWideAngleProjMap_0(long cameraMatrix_nativeObj, long distCoeffs_nativeObj, double imageSize_width, double imageSize_height, int destImageWidth, int m1type, long map1_nativeObj, long map2_nativeObj, int projType, double alpha);
-    private static native float initWideAngleProjMap_1(long cameraMatrix_nativeObj, long distCoeffs_nativeObj, double imageSize_width, double imageSize_height, int destImageWidth, int m1type, long map1_nativeObj, long map2_nativeObj, int projType);
-    private static native float initWideAngleProjMap_2(long cameraMatrix_nativeObj, long distCoeffs_nativeObj, double imageSize_width, double imageSize_height, int destImageWidth, int m1type, long map1_nativeObj, long map2_nativeObj);
 
     // C++:  float cv::intersectConvexConvex(Mat _p1, Mat _p2, Mat& _p12, bool handleNested = true)
     private static native float intersectConvexConvex_0(long _p1_nativeObj, long _p2_nativeObj, long _p12_nativeObj, boolean handleNested);
@@ -4158,9 +4186,9 @@ public static Size getTextSize(String text, int fontFace, double fontScale, int 
     // C++:  void cv::cvtColorTwoPlane(Mat src1, Mat src2, Mat& dst, int code)
     private static native void cvtColorTwoPlane_0(long src1_nativeObj, long src2_nativeObj, long dst_nativeObj, int code);
 
-    // C++:  void cv::demosaicing(Mat _src, Mat& _dst, int code, int dcn = 0)
-    private static native void demosaicing_0(long _src_nativeObj, long _dst_nativeObj, int code, int dcn);
-    private static native void demosaicing_1(long _src_nativeObj, long _dst_nativeObj, int code);
+    // C++:  void cv::demosaicing(Mat src, Mat& dst, int code, int dstCn = 0)
+    private static native void demosaicing_0(long src_nativeObj, long dst_nativeObj, int code, int dstCn);
+    private static native void demosaicing_1(long src_nativeObj, long dst_nativeObj, int code);
 
     // C++:  void cv::dilate(Mat src, Mat& dst, Mat kernel, Point anchor = Point(-1,-1), int iterations = 1, int borderType = BORDER_CONSTANT, Scalar borderValue = morphologyDefaultBorderValue())
     private static native void dilate_0(long src_nativeObj, long dst_nativeObj, long kernel_nativeObj, double anchor_x, double anchor_y, int iterations, int borderType, double borderValue_val0, double borderValue_val1, double borderValue_val2, double borderValue_val3);
@@ -4233,7 +4261,7 @@ public static Size getTextSize(String text, int fontFace, double fontScale, int 
     private static native void filter2D_2(long src_nativeObj, long dst_nativeObj, int ddepth, long kernel_nativeObj, double anchor_x, double anchor_y);
     private static native void filter2D_3(long src_nativeObj, long dst_nativeObj, int ddepth, long kernel_nativeObj);
 
-    // C++:  void cv::findContours(Mat& image, vector_vector_Point& contours, Mat& hierarchy, int mode, int method, Point offset = Point())
+    // C++:  void cv::findContours(Mat image, vector_vector_Point& contours, Mat& hierarchy, int mode, int method, Point offset = Point())
     private static native void findContours_0(long image_nativeObj, long contours_mat_nativeObj, long hierarchy_nativeObj, int mode, int method, double offset_x, double offset_y);
     private static native void findContours_1(long image_nativeObj, long contours_mat_nativeObj, long hierarchy_nativeObj, int mode, int method);
 
@@ -4264,9 +4292,6 @@ public static Size getTextSize(String text, int fontFace, double fontScale, int 
     // C++:  void cv::grabCut(Mat img, Mat& mask, Rect rect, Mat& bgdModel, Mat& fgdModel, int iterCount, int mode = GC_EVAL)
     private static native void grabCut_0(long img_nativeObj, long mask_nativeObj, int rect_x, int rect_y, int rect_width, int rect_height, long bgdModel_nativeObj, long fgdModel_nativeObj, int iterCount, int mode);
     private static native void grabCut_1(long img_nativeObj, long mask_nativeObj, int rect_x, int rect_y, int rect_width, int rect_height, long bgdModel_nativeObj, long fgdModel_nativeObj, int iterCount);
-
-    // C++:  void cv::initUndistortRectifyMap(Mat cameraMatrix, Mat distCoeffs, Mat R, Mat newCameraMatrix, Size size, int m1type, Mat& map1, Mat& map2)
-    private static native void initUndistortRectifyMap_0(long cameraMatrix_nativeObj, long distCoeffs_nativeObj, long R_nativeObj, long newCameraMatrix_nativeObj, double size_width, double size_height, int m1type, long map1_nativeObj, long map2_nativeObj);
 
     // C++:  void cv::integral(Mat src, Mat& sum, Mat& sqsum, Mat& tilted, int sdepth = -1, int sqdepth = -1)
     private static native void integral3_0(long src_nativeObj, long sum_nativeObj, long sqsum_nativeObj, long tilted_nativeObj, int sdepth, int sqdepth);
@@ -4351,6 +4376,12 @@ public static Size getTextSize(String text, int fontFace, double fontScale, int 
     private static native void rectangle_2(long img_nativeObj, double pt1_x, double pt1_y, double pt2_x, double pt2_y, double color_val0, double color_val1, double color_val2, double color_val3, int thickness);
     private static native void rectangle_3(long img_nativeObj, double pt1_x, double pt1_y, double pt2_x, double pt2_y, double color_val0, double color_val1, double color_val2, double color_val3);
 
+    // C++:  void cv::rectangle(Mat& img, Rect rec, Scalar color, int thickness = 1, int lineType = LINE_8, int shift = 0)
+    private static native void rectangle_4(long img_nativeObj, int rec_x, int rec_y, int rec_width, int rec_height, double color_val0, double color_val1, double color_val2, double color_val3, int thickness, int lineType, int shift);
+    private static native void rectangle_5(long img_nativeObj, int rec_x, int rec_y, int rec_width, int rec_height, double color_val0, double color_val1, double color_val2, double color_val3, int thickness, int lineType);
+    private static native void rectangle_6(long img_nativeObj, int rec_x, int rec_y, int rec_width, int rec_height, double color_val0, double color_val1, double color_val2, double color_val3, int thickness);
+    private static native void rectangle_7(long img_nativeObj, int rec_x, int rec_y, int rec_width, int rec_height, double color_val0, double color_val1, double color_val2, double color_val3);
+
     // C++:  void cv::remap(Mat src, Mat& dst, Mat map1, Mat map2, int interpolation, int borderMode = BORDER_CONSTANT, Scalar borderValue = Scalar())
     private static native void remap_0(long src_nativeObj, long dst_nativeObj, long map1_nativeObj, long map2_nativeObj, int interpolation, int borderMode, double borderValue_val0, double borderValue_val1, double borderValue_val2, double borderValue_val3);
     private static native void remap_1(long src_nativeObj, long dst_nativeObj, long map1_nativeObj, long map2_nativeObj, int interpolation, int borderMode);
@@ -4373,23 +4404,11 @@ public static Size getTextSize(String text, int fontFace, double fontScale, int 
     private static native void spatialGradient_1(long src_nativeObj, long dx_nativeObj, long dy_nativeObj, int ksize);
     private static native void spatialGradient_2(long src_nativeObj, long dx_nativeObj, long dy_nativeObj);
 
-    // C++:  void cv::sqrBoxFilter(Mat _src, Mat& _dst, int ddepth, Size ksize, Point anchor = Point(-1, -1), bool normalize = true, int borderType = BORDER_DEFAULT)
-    private static native void sqrBoxFilter_0(long _src_nativeObj, long _dst_nativeObj, int ddepth, double ksize_width, double ksize_height, double anchor_x, double anchor_y, boolean normalize, int borderType);
-    private static native void sqrBoxFilter_1(long _src_nativeObj, long _dst_nativeObj, int ddepth, double ksize_width, double ksize_height, double anchor_x, double anchor_y, boolean normalize);
-    private static native void sqrBoxFilter_2(long _src_nativeObj, long _dst_nativeObj, int ddepth, double ksize_width, double ksize_height, double anchor_x, double anchor_y);
-    private static native void sqrBoxFilter_3(long _src_nativeObj, long _dst_nativeObj, int ddepth, double ksize_width, double ksize_height);
-
-    // C++:  void cv::undistort(Mat src, Mat& dst, Mat cameraMatrix, Mat distCoeffs, Mat newCameraMatrix = Mat())
-    private static native void undistort_0(long src_nativeObj, long dst_nativeObj, long cameraMatrix_nativeObj, long distCoeffs_nativeObj, long newCameraMatrix_nativeObj);
-    private static native void undistort_1(long src_nativeObj, long dst_nativeObj, long cameraMatrix_nativeObj, long distCoeffs_nativeObj);
-
-    // C++:  void cv::undistortPoints(Mat src, Mat& dst, Mat cameraMatrix, Mat distCoeffs, Mat R, Mat P, TermCriteria criteria)
-    private static native void undistortPointsIter_0(long src_nativeObj, long dst_nativeObj, long cameraMatrix_nativeObj, long distCoeffs_nativeObj, long R_nativeObj, long P_nativeObj, int criteria_type, int criteria_maxCount, double criteria_epsilon);
-
-    // C++:  void cv::undistortPoints(Mat src, Mat& dst, Mat cameraMatrix, Mat distCoeffs, Mat R = Mat(), Mat P = Mat())
-    private static native void undistortPoints_0(long src_nativeObj, long dst_nativeObj, long cameraMatrix_nativeObj, long distCoeffs_nativeObj, long R_nativeObj, long P_nativeObj);
-    private static native void undistortPoints_1(long src_nativeObj, long dst_nativeObj, long cameraMatrix_nativeObj, long distCoeffs_nativeObj, long R_nativeObj);
-    private static native void undistortPoints_2(long src_nativeObj, long dst_nativeObj, long cameraMatrix_nativeObj, long distCoeffs_nativeObj);
+    // C++:  void cv::sqrBoxFilter(Mat src, Mat& dst, int ddepth, Size ksize, Point anchor = Point(-1, -1), bool normalize = true, int borderType = BORDER_DEFAULT)
+    private static native void sqrBoxFilter_0(long src_nativeObj, long dst_nativeObj, int ddepth, double ksize_width, double ksize_height, double anchor_x, double anchor_y, boolean normalize, int borderType);
+    private static native void sqrBoxFilter_1(long src_nativeObj, long dst_nativeObj, int ddepth, double ksize_width, double ksize_height, double anchor_x, double anchor_y, boolean normalize);
+    private static native void sqrBoxFilter_2(long src_nativeObj, long dst_nativeObj, int ddepth, double ksize_width, double ksize_height, double anchor_x, double anchor_y);
+    private static native void sqrBoxFilter_3(long src_nativeObj, long dst_nativeObj, int ddepth, double ksize_width, double ksize_height);
 
     // C++:  void cv::warpAffine(Mat src, Mat& dst, Mat M, Size dsize, int flags = INTER_LINEAR, int borderMode = BORDER_CONSTANT, Scalar borderValue = Scalar())
     private static native void warpAffine_0(long src_nativeObj, long dst_nativeObj, long M_nativeObj, double dsize_width, double dsize_height, int flags, int borderMode, double borderValue_val0, double borderValue_val1, double borderValue_val2, double borderValue_val3);

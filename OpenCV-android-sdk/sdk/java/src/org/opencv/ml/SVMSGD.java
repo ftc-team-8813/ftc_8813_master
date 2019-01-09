@@ -19,9 +19,14 @@ public class SVMSGD extends StatModel {
     // internal usage only
     public static SVMSGD __fromPtr__(long addr) { return new SVMSGD(addr); }
 
+    // C++: enum SvmsgdType
     public static final int
             SGD = 0,
-            ASGD = 1,
+            ASGD = 1;
+
+
+    // C++: enum MarginType
+    public static final int
             SOFT_MARGIN = 0,
             HARD_MARGIN = 1;
 

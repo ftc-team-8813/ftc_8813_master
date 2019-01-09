@@ -19,18 +19,27 @@ public class ANN_MLP extends StatModel {
     // internal usage only
     public static ANN_MLP __fromPtr__(long addr) { return new ANN_MLP(addr); }
 
+    // C++: enum TrainingMethods
     public static final int
             BACKPROP = 0,
             RPROP = 1,
-            ANNEAL = 2,
+            ANNEAL = 2;
+
+
+    // C++: enum TrainFlags
+    public static final int
+            UPDATE_WEIGHTS = 1,
+            NO_INPUT_SCALE = 2,
+            NO_OUTPUT_SCALE = 4;
+
+
+    // C++: enum ActivationFunctions
+    public static final int
             IDENTITY = 0,
             SIGMOID_SYM = 1,
             GAUSSIAN = 2,
             RELU = 3,
-            LEAKYRELU = 4,
-            UPDATE_WEIGHTS = 1,
-            NO_INPUT_SCALE = 2,
-            NO_OUTPUT_SCALE = 4;
+            LEAKYRELU = 4;
 
 
     //
