@@ -1,11 +1,17 @@
 package org.firstinspires.ftc.teamcode.common;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.Persistent;
+import org.firstinspires.ftc.teamcode.common.util.sensors.IMU;
+import org.firstinspires.ftc.teamcode.common.util.sensors.Switch;
 
 /**
  * Robot -- a container for all of the robot hardware interfaces
@@ -17,12 +23,21 @@ public class Robot
     public final DcMotor rightFront, rightRear;
     public final DcMotor leftDunk, rightDunk;
     public final DcMotor intake;
+    public final DcMotor intakePivot;
+
+    // PID controllers
+    public final MotorController pivot;
 
     // Servos
     public final Servo dunk;
-    public final Servo intakeFlipper;
 
     // Sensors
+    public final IMU imu;
+    public final Switch pivotLimit;
+    public final Switch liftLimit;
+
+    // Other
+    public final Config config;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //  Initialization and Lifecycle                                                                  //
@@ -37,24 +52,40 @@ public class Robot
 
     private Robot(HardwareMap hardwareMap, Config config)
     {
+        this.config = config;
         // Motors
-        leftFront  = hardwareMap.dcMotor.get("left front");
-        leftRear   = hardwareMap.dcMotor.get("left rear");
+        leftFront = hardwareMap.dcMotor.get("left front");
+        leftRear = hardwareMap.dcMotor.get("left rear");
         rightFront = hardwareMap.dcMotor.get("right front");
-        rightRear  = hardwareMap.dcMotor.get("right rear");
-        leftDunk   = hardwareMap.dcMotor.get("left dunk");
-        rightDunk  = hardwareMap.dcMotor.get("right dunk");
-        intake     = hardwareMap.dcMotor.get("intake");
+        rightRear = hardwareMap.dcMotor.get("right rear");
+        leftDunk = hardwareMap.dcMotor.get("left dunk");
+        rightDunk = hardwareMap.dcMotor.get("right dunk");
+        intake = hardwareMap.dcMotor.get("intake");
+        intakePivot = hardwareMap.dcMotor.get("intake pivot");
+
+        // Motor controllers
+        pivot = new MotorController(intakePivot, config);
 
         // Servos
-        dunk          = hardwareMap.servo.get("dunk");
-        intakeFlipper = hardwareMap.servo.get("intake flipper");
+        dunk = hardwareMap.servo.get("dunk");
 
         // Sensors
+        if (Persistent.get("imu") != null)
+        {
+            imu = (IMU)Persistent.get("imu");
+        }
+        else
+        {
+            imu = null;
+            // imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+            Persistent.put("imu", imu);
+        }
+        pivotLimit = new Switch(hardwareMap.digitalChannel.get("pivot limit"));
+        liftLimit = new Switch(hardwareMap.digitalChannel.get("lift limit"));
 
         // Other
 
-        // TODO -- Reverse motors as necessary
+        // Reverse motors as necessary
         if (config.getBoolean("lf_reverse", false)) leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("lr_reverse", false)) leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("rf_reverse", false)) rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -62,6 +93,7 @@ public class Robot
         if (config.getBoolean("ld_reverse", false)) leftDunk.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("rd_reverse", false)) rightDunk.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("in_reverse", false)) intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (config.getBoolean("ip_reverse", false)) intakePivot.setDirection(DcMotorSimple.Direction.REVERSE);
 
     }
 
@@ -87,12 +119,28 @@ public class Robot
         rightDunk.setPower(0);
         intake.setPower(0);
         // Stop external threads and close open files (if any) here
-
+        pivot.close();
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //  Functions                                                                                     //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////
+    // Intake pivot calibration and control
+
+    public void initPivot() throws InterruptedException
+    {
+        intakePivot.setPower(-0.25);
+        while (!pivotLimit.pressed())
+        {
+            Thread.sleep(1);
+        }
+        intakePivot.setPower(0);
+        intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intakePivot.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        pivot.hold(0);
+    }
 
     ///////////////////////////////////
     // Autonomous utilities
@@ -144,6 +192,8 @@ public class Robot
      * <p>To do a point turn (one wheel forward, one wheel backwards), set {@code radius} to 0</p>
      * <p>To do a wheel turn (one wheel forward, one wheel stopped), set {@code radius} to {@link Robot#RADIUS_INCH Robot.RADIUS_INCH }</p>
      * <p>To turn counterclockwise, set {@code radius} negative (or {@code angle} negative for point turns)</p>
+     * <p><b>Note:</b> Turning in an arc is very inaccurate at the moment, as the faster wheel will drive the slower wheel, increasing
+     *   the turn radius and reducing the actual turn angle. Avoid using arc turns when accuracy is needed.</p>
      * @param angle The angle (in radians; 180 degrees = PI radians) to turn
      * @param radius The turn radius (in inches)
      * @param power How fast to turn (-1 - 1; negative power has the same effect as negative angle)
@@ -169,22 +219,19 @@ public class Robot
      */
     public void forwardEnc(int distance, double power) throws InterruptedException
     {
-        leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        leftFront.setTargetPosition(leftFront.getCurrentPosition() + distance);
-        rightFront.setTargetPosition(rightFront.getCurrentPosition() + distance);
-        leftRear.setTargetPosition(leftRear.getCurrentPosition() + distance);
-        rightRear.setTargetPosition(rightRear.getCurrentPosition() + distance);
+        int start = leftRear.getCurrentPosition();
 
-        leftFront.setPower(power);
-        rightFront.setPower(power);
-        leftRear.setPower(power);
-        rightRear.setPower(power);
+        leftFront.setPower(Math.abs(power) * Math.signum(distance));
+        rightFront.setPower(Math.abs(power) * Math.signum(distance));
+        leftRear.setPower(Math.abs(power) * Math.signum(distance));
+        rightRear.setPower(Math.abs(power) * Math.signum(distance));
 
-        while (leftFront.isBusy() || rightFront.isBusy() || leftRear.isBusy() || rightRear.isBusy())
+        while (Math.abs(leftRear.getCurrentPosition() - start) < Math.abs(distance))
         {
             Thread.sleep(5);
         }
@@ -194,10 +241,7 @@ public class Robot
         rightFront.setPower(0);
         rightRear.setPower(0);
 
-        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
     }
 
     // TODO needs testing
@@ -240,29 +284,55 @@ public class Robot
         int startLeft = leftRear.getCurrentPosition();
         int startRight = rightRear.getCurrentPosition();
 
-        leftFront.setPower(powerLeft);
-        leftRear.setPower(powerLeft);
+        MotorController ml = new MotorController(leftRear, config);
+        MotorController mr = new MotorController(rightRear, config);
 
-        rightFront.setPower(powerRight);
-        rightRear.setPower(powerRight);
+        // Turn off front wheel braking to improve performance since we're just dragging them
+        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        leftFront.setPower(0);
+        ml.setPower(Math.abs(powerLeft));
+
+        rightFront.setPower(0);
+        mr.setPower(Math.abs(powerRight));
+
+        ml.startRunToPosition(startLeft + distLeft);
+        mr.startRunToPosition(startRight + distRight);
 
         boolean leftBusy = true, rightBusy = true;
 
         while (leftBusy || rightBusy)
         {
-            if (Math.abs(leftRear.getCurrentPosition() - startLeft) >= Math.abs(distLeft))
+            try
             {
-                leftBusy = false;
-                leftFront.setPower(0);
-                leftRear.setPower(0);
+                if (!ml.isHolding())
+                {
+                    leftBusy = false;
+                    ml.hold(ml.getCurrentPosition());
+                }
+                if (!mr.isHolding())
+                {
+                    rightBusy = false;
+                    mr.hold(mr.getCurrentPosition());
+                }
+                Thread.sleep(5);
             }
-            if (Math.abs(rightRear.getCurrentPosition() - startRight) >= Math.abs(distRight))
+            catch (InterruptedException e)
             {
-                rightBusy = false;
-                rightFront.setPower(0);
-                rightRear.setPower(0);
+                leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                ml.close();
+                mr.close();
+                throw e;
             }
-            Thread.sleep(5);
         }
+
+        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        ml.close();
+        mr.close();
     }
+
+
 }

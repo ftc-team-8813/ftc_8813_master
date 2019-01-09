@@ -42,32 +42,36 @@ public class DriveTest extends BaseAutonomous
         test_line.setValue("");
         countdown(10);
         */
-
         test_line.setCaption("Test 1, Part 0");
         test_line.setValue("Point-turn 360 degrees");
         countdown(3);
 
-        robot.turn(2 * Math.PI, 0, .25);
+        robot.turn(2 * Math.PI, 0, .5);
 
         test_line.setCaption("Test 1, Part 1");
-        test_line.setValue("Wheel-turn 180 degrees");
+        test_line.setValue("Point-turn 180 degrees counterclockwise");
         countdown(3);
 
-        robot.turn(Math.PI, Robot.RADIUS_INCH, .5);
+        robot.turn(-Math.PI, 0, .5);
 
         test_line.setCaption("Test 1, Part 2");
-        test_line.setValue("Wheel-turn counterclockwise 180 degrees");
+        test_line.setValue("Point turn accuracy test -- 8x 90 degree turns at 25% power");
         countdown(3);
 
-        robot.turn(Math.PI, -Robot.RADIUS_INCH, .5);
+        for (int i = 0; i < 8; i++)
+        {
+            robot.turn(Math.PI / 2, 0, .5);
+            Thread.sleep(1000);
+        }
 
         test_line.setCaption("Test 1, Part 3");
-        test_line.setValue("Drive in a spiral (needs space!!)");
-        countdown(10);
+        test_line.setValue("Point turn speed accuracy test -- 4x 90 degree turns; 25% power increments");
+        countdown(3);
 
-        for (int r = 0; r < 10; r++)
+        for (int i = 0; i < 4; i++)
         {
-            robot.turn(Math.PI / 2, r, .5);
+            robot.turn(Math.PI / 2, 0, .25 + .25 * i);
+            Thread.sleep(1000);
         }
     }
 

@@ -48,7 +48,7 @@ public class MotorController implements Closeable
             if (!noReset)
             {
                 motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
             target = 0;
             kP = 0;
@@ -65,10 +65,12 @@ public class MotorController implements Closeable
                 if (holding)
                 {
                     stopping = false;
+                    // TODO I think we need to do some unit conversion, maybe something like encoder counts -> revolutions
+                    //      and rpm -> motor power
                     double error = target - getCurrentPosition(); //target > pos : error positive
                     integral += error;
                     double derivative = error - prev_error;
-                    if (derivative == 0)
+                    if (derivative == 0 && error > sse)
                     {
                         if (stall_begin == 0)
                         {
@@ -87,7 +89,7 @@ public class MotorController implements Closeable
                     speed = Utils.constrain(speed, -1, 1) * power;
                     if (Math.abs(error) < sse)
                     {
-                        if (stopNearTarget && derivative < 2)
+                        if (stopNearTarget && Math.abs(derivative) < 2)
                         {
                             stopHolding();
                             stopNearTarget = false;
