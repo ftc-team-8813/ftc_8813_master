@@ -20,7 +20,7 @@ public class VideoCapture {
     public static VideoCapture __fromPtr__(long addr) { return new VideoCapture(addr); }
 
     //
-    // C++:   cv::VideoCapture::VideoCapture(String filename, int apiPreference)
+    // C++:   cv::VideoCapture::VideoCapture(String filename, int apiPreference = CAP_ANY)
     //
 
     //javadoc: VideoCapture::VideoCapture(filename, apiPreference)
@@ -31,11 +31,6 @@ public class VideoCapture {
         
         return;
     }
-
-
-    //
-    // C++:   cv::VideoCapture::VideoCapture(String filename)
-    //
 
     //javadoc: VideoCapture::VideoCapture(filename)
     public   VideoCapture(String filename)
@@ -48,14 +43,23 @@ public class VideoCapture {
 
 
     //
-    // C++:   cv::VideoCapture::VideoCapture(int index)
+    // C++:   cv::VideoCapture::VideoCapture(int index, int apiPreference = CAP_ANY)
     //
+
+    //javadoc: VideoCapture::VideoCapture(index, apiPreference)
+    public   VideoCapture(int index, int apiPreference)
+    {
+        
+        nativeObj = VideoCapture_2(index, apiPreference);
+        
+        return;
+    }
 
     //javadoc: VideoCapture::VideoCapture(index)
     public   VideoCapture(int index)
     {
         
-        nativeObj = VideoCapture_2(index);
+        nativeObj = VideoCapture_3(index);
         
         return;
     }
@@ -69,9 +73,23 @@ public class VideoCapture {
     public   VideoCapture()
     {
         
-        nativeObj = VideoCapture_3();
+        nativeObj = VideoCapture_4();
         
         return;
+    }
+
+
+    //
+    // C++:  String cv::VideoCapture::getBackendName()
+    //
+
+    //javadoc: VideoCapture::getBackendName()
+    public  String getBackendName()
+    {
+        
+        String retVal = getBackendName_0(nativeObj);
+        
+        return retVal;
     }
 
 
@@ -104,7 +122,7 @@ public class VideoCapture {
 
 
     //
-    // C++:  bool cv::VideoCapture::open(String filename, int apiPreference)
+    // C++:  bool cv::VideoCapture::open(String filename, int apiPreference = CAP_ANY)
     //
 
     //javadoc: VideoCapture::open(filename, apiPreference)
@@ -115,11 +133,6 @@ public class VideoCapture {
         
         return retVal;
     }
-
-
-    //
-    // C++:  bool cv::VideoCapture::open(String filename)
-    //
 
     //javadoc: VideoCapture::open(filename)
     public  boolean open(String filename)
@@ -132,22 +145,17 @@ public class VideoCapture {
 
 
     //
-    // C++:  bool cv::VideoCapture::open(int cameraNum, int apiPreference)
+    // C++:  bool cv::VideoCapture::open(int index, int apiPreference = CAP_ANY)
     //
 
-    //javadoc: VideoCapture::open(cameraNum, apiPreference)
-    public  boolean open(int cameraNum, int apiPreference)
+    //javadoc: VideoCapture::open(index, apiPreference)
+    public  boolean open(int index, int apiPreference)
     {
         
-        boolean retVal = open_2(nativeObj, cameraNum, apiPreference);
+        boolean retVal = open_2(nativeObj, index, apiPreference);
         
         return retVal;
     }
-
-
-    //
-    // C++:  bool cv::VideoCapture::open(int index)
-    //
 
     //javadoc: VideoCapture::open(index)
     public  boolean open(int index)
@@ -245,17 +253,19 @@ public class VideoCapture {
 
 
 
-    // C++:   cv::VideoCapture::VideoCapture(String filename, int apiPreference)
+    // C++:   cv::VideoCapture::VideoCapture(String filename, int apiPreference = CAP_ANY)
     private static native long VideoCapture_0(String filename, int apiPreference);
-
-    // C++:   cv::VideoCapture::VideoCapture(String filename)
     private static native long VideoCapture_1(String filename);
 
-    // C++:   cv::VideoCapture::VideoCapture(int index)
-    private static native long VideoCapture_2(int index);
+    // C++:   cv::VideoCapture::VideoCapture(int index, int apiPreference = CAP_ANY)
+    private static native long VideoCapture_2(int index, int apiPreference);
+    private static native long VideoCapture_3(int index);
 
     // C++:   cv::VideoCapture::VideoCapture()
-    private static native long VideoCapture_3();
+    private static native long VideoCapture_4();
+
+    // C++:  String cv::VideoCapture::getBackendName()
+    private static native String getBackendName_0(long nativeObj);
 
     // C++:  bool cv::VideoCapture::grab()
     private static native boolean grab_0(long nativeObj);
@@ -263,16 +273,12 @@ public class VideoCapture {
     // C++:  bool cv::VideoCapture::isOpened()
     private static native boolean isOpened_0(long nativeObj);
 
-    // C++:  bool cv::VideoCapture::open(String filename, int apiPreference)
+    // C++:  bool cv::VideoCapture::open(String filename, int apiPreference = CAP_ANY)
     private static native boolean open_0(long nativeObj, String filename, int apiPreference);
-
-    // C++:  bool cv::VideoCapture::open(String filename)
     private static native boolean open_1(long nativeObj, String filename);
 
-    // C++:  bool cv::VideoCapture::open(int cameraNum, int apiPreference)
-    private static native boolean open_2(long nativeObj, int cameraNum, int apiPreference);
-
-    // C++:  bool cv::VideoCapture::open(int index)
+    // C++:  bool cv::VideoCapture::open(int index, int apiPreference = CAP_ANY)
+    private static native boolean open_2(long nativeObj, int index, int apiPreference);
     private static native boolean open_3(long nativeObj, int index);
 
     // C++:  bool cv::VideoCapture::read(Mat& image)

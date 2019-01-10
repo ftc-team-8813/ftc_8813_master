@@ -27,6 +27,7 @@ public class Subdiv2D {
     // internal usage only
     public static Subdiv2D __fromPtr__(long addr) { return new Subdiv2D(addr); }
 
+    // C++: enum <unnamed>
     public static final int
             PTLOC_ERROR = -2,
             PTLOC_OUTSIDE_RECT = -1,

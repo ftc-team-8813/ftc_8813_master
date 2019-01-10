@@ -19,10 +19,15 @@ public class LogisticRegression extends StatModel {
     // internal usage only
     public static LogisticRegression __fromPtr__(long addr) { return new LogisticRegression(addr); }
 
+    // C++: enum RegKinds
     public static final int
             REG_DISABLE = -1,
             REG_L1 = 0,
-            REG_L2 = 1,
+            REG_L2 = 1;
+
+
+    // C++: enum Methods
+    public static final int
             BATCH = 0,
             MINI_BATCH = 1;
 

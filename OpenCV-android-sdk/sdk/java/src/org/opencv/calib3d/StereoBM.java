@@ -17,6 +17,7 @@ public class StereoBM extends StereoMatcher {
     // internal usage only
     public static StereoBM __fromPtr__(long addr) { return new StereoBM(addr); }
 
+    // C++: enum <unnamed>
     public static final int
             PREFILTER_NORMALIZED_RESPONSE = 0,
             PREFILTER_XSOBEL = 1;

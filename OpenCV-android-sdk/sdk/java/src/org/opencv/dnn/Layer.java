@@ -35,21 +35,6 @@ public class Layer extends Algorithm {
 
 
     //
-    // C++:  vector_Mat cv::dnn::Layer::finalize(vector_Mat inputs)
-    //
-
-    //javadoc: Layer::finalize(inputs)
-    public  List<Mat> finalize(List<Mat> inputs)
-    {
-        Mat inputs_mat = Converters.vector_Mat_to_Mat(inputs);
-        List<Mat> retVal = new ArrayList<Mat>();
-        Mat retValMat = new Mat(finalize_0(nativeObj, inputs_mat.nativeObj));
-        Converters.Mat_to_vector_Mat(retValMat, retVal);
-        return retVal;
-    }
-
-
-    //
     // C++:  void cv::dnn::Layer::finalize(vector_Mat inputs, vector_Mat& outputs)
     //
 
@@ -58,7 +43,7 @@ public class Layer extends Algorithm {
     {
         Mat inputs_mat = Converters.vector_Mat_to_Mat(inputs);
         Mat outputs_mat = new Mat();
-        finalize_1(nativeObj, inputs_mat.nativeObj, outputs_mat.nativeObj);
+        finalize_0(nativeObj, inputs_mat.nativeObj, outputs_mat.nativeObj);
         Converters.Mat_to_vector_Mat(outputs_mat, outputs);
         outputs_mat.release();
         return;
@@ -70,6 +55,7 @@ public class Layer extends Algorithm {
     //
 
     //javadoc: Layer::run(inputs, outputs, internals)
+    @Deprecated
     public  void run(List<Mat> inputs, List<Mat> outputs, List<Mat> internals)
     {
         Mat inputs_mat = Converters.vector_Mat_to_Mat(inputs);
@@ -164,11 +150,8 @@ public class Layer extends Algorithm {
     // C++:  int cv::dnn::Layer::outputNameToIndex(String outputName)
     private static native int outputNameToIndex_0(long nativeObj, String outputName);
 
-    // C++:  vector_Mat cv::dnn::Layer::finalize(vector_Mat inputs)
-    private static native long finalize_0(long nativeObj, long inputs_mat_nativeObj);
-
     // C++:  void cv::dnn::Layer::finalize(vector_Mat inputs, vector_Mat& outputs)
-    private static native void finalize_1(long nativeObj, long inputs_mat_nativeObj, long outputs_mat_nativeObj);
+    private static native void finalize_0(long nativeObj, long inputs_mat_nativeObj, long outputs_mat_nativeObj);
 
     // C++:  void cv::dnn::Layer::run(vector_Mat inputs, vector_Mat& outputs, vector_Mat& internals)
     private static native void run_0(long nativeObj, long inputs_mat_nativeObj, long outputs_mat_nativeObj, long internals_mat_nativeObj);

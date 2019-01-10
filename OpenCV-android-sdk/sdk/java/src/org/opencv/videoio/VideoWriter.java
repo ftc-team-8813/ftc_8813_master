@@ -81,6 +81,20 @@ public class VideoWriter {
 
 
     //
+    // C++:  String cv::VideoWriter::getBackendName()
+    //
+
+    //javadoc: VideoWriter::getBackendName()
+    public  String getBackendName()
+    {
+        
+        String retVal = getBackendName_0(nativeObj);
+        
+        return retVal;
+    }
+
+
+    //
     // C++:  bool cv::VideoWriter::isOpened()
     //
 
@@ -227,6 +241,9 @@ public class VideoWriter {
 
     // C++:   cv::VideoWriter::VideoWriter()
     private static native long VideoWriter_4();
+
+    // C++:  String cv::VideoWriter::getBackendName()
+    private static native String getBackendName_0(long nativeObj);
 
     // C++:  bool cv::VideoWriter::isOpened()
     private static native boolean isOpened_0(long nativeObj);
