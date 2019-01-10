@@ -11,6 +11,8 @@ import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfRect;
+import org.opencv.core.MatOfRect2d;
+import org.opencv.core.MatOfRotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.dnn.Net;
@@ -21,19 +23,27 @@ import org.opencv.utils.Converters;
 
 public class Dnn {
 
+    // C++: enum Backend
     public static final int
             DNN_BACKEND_DEFAULT = 0,
             DNN_BACKEND_HALIDE = 1,
             DNN_BACKEND_INFERENCE_ENGINE = 2,
             DNN_BACKEND_OPENCV = 3,
+            DNN_BACKEND_VKCOM = 4;
+
+
+    // C++: enum Target
+    public static final int
             DNN_TARGET_CPU = 0,
             DNN_TARGET_OPENCL = 1,
             DNN_TARGET_OPENCL_FP16 = 2,
-            DNN_TARGET_MYRIAD = 3;
+            DNN_TARGET_MYRIAD = 3,
+            DNN_TARGET_VULKAN = 4,
+            DNN_TARGET_FPGA = 5;
 
 
     //
-    // C++:  Mat cv::dnn::blobFromImage(Mat image, double scalefactor = 1.0, Size size = Size(), Scalar mean = Scalar(), bool swapRB = true, bool crop = true, int ddepth = CV_32F)
+    // C++:  Mat cv::dnn::blobFromImage(Mat image, double scalefactor = 1.0, Size size = Size(), Scalar mean = Scalar(), bool swapRB = false, bool crop = false, int ddepth = CV_32F)
     //
 
     //javadoc: blobFromImage(image, scalefactor, size, mean, swapRB, crop, ddepth)
@@ -101,7 +111,7 @@ public class Dnn {
 
 
     //
-    // C++:  Mat cv::dnn::blobFromImages(vector_Mat images, double scalefactor = 1.0, Size size = Size(), Scalar mean = Scalar(), bool swapRB = true, bool crop = true, int ddepth = CV_32F)
+    // C++:  Mat cv::dnn::blobFromImages(vector_Mat images, double scalefactor = 1.0, Size size = Size(), Scalar mean = Scalar(), bool swapRB = false, bool crop = false, int ddepth = CV_32F)
     //
 
     //javadoc: blobFromImages(images, scalefactor, size, mean, swapRB, crop, ddepth)
@@ -163,6 +173,20 @@ public class Dnn {
     {
         Mat images_mat = Converters.vector_Mat_to_Mat(images);
         Mat retVal = new Mat(blobFromImages_6(images_mat.nativeObj));
+        
+        return retVal;
+    }
+
+
+    //
+    // C++:  Mat cv::dnn::readTensorFromONNX(String path)
+    //
+
+    //javadoc: readTensorFromONNX(path)
+    public static Mat readTensorFromONNX(String path)
+    {
+        
+        Mat retVal = new Mat(readTensorFromONNX_0(path));
         
         return retVal;
     }
@@ -356,6 +380,20 @@ public class Dnn {
 
 
     //
+    // C++:  Net cv::dnn::readNetFromONNX(String onnxFile)
+    //
+
+    //javadoc: readNetFromONNX(onnxFile)
+    public static Net readNetFromONNX(String onnxFile)
+    {
+        
+        Net retVal = new Net(readNetFromONNX_0(onnxFile));
+        
+        return retVal;
+    }
+
+
+    //
     // C++:  Net cv::dnn::readNetFromTensorflow(String model, String config = String())
     //
 
@@ -403,14 +441,23 @@ public class Dnn {
 
 
     //
-    // C++:  Net cv::dnn::readNetFromTorch(String model, bool isBinary = true)
+    // C++:  Net cv::dnn::readNetFromTorch(String model, bool isBinary = true, bool evaluate = true)
     //
+
+    //javadoc: readNetFromTorch(model, isBinary, evaluate)
+    public static Net readNetFromTorch(String model, boolean isBinary, boolean evaluate)
+    {
+        
+        Net retVal = new Net(readNetFromTorch_0(model, isBinary, evaluate));
+        
+        return retVal;
+    }
 
     //javadoc: readNetFromTorch(model, isBinary)
     public static Net readNetFromTorch(String model, boolean isBinary)
     {
         
-        Net retVal = new Net(readNetFromTorch_0(model, isBinary));
+        Net retVal = new Net(readNetFromTorch_1(model, isBinary));
         
         return retVal;
     }
@@ -419,7 +466,7 @@ public class Dnn {
     public static Net readNetFromTorch(String model)
     {
         
-        Net retVal = new Net(readNetFromTorch_1(model));
+        Net retVal = new Net(readNetFromTorch_2(model));
         
         return retVal;
     }
@@ -464,10 +511,79 @@ public class Dnn {
 
 
     //
+    // C++:  void cv::dnn::NMSBoxes(vector_Rect2d bboxes, vector_float scores, float score_threshold, float nms_threshold, vector_int& indices, float eta = 1.f, int top_k = 0)
+    //
+
+    //javadoc: NMSBoxes(bboxes, scores, score_threshold, nms_threshold, indices, eta, top_k)
+    public static void NMSBoxes(MatOfRect2d bboxes, MatOfFloat scores, float score_threshold, float nms_threshold, MatOfInt indices, float eta, int top_k)
+    {
+        Mat bboxes_mat = bboxes;
+        Mat scores_mat = scores;
+        Mat indices_mat = indices;
+        NMSBoxes_3(bboxes_mat.nativeObj, scores_mat.nativeObj, score_threshold, nms_threshold, indices_mat.nativeObj, eta, top_k);
+        
+        return;
+    }
+
+    //javadoc: NMSBoxes(bboxes, scores, score_threshold, nms_threshold, indices, eta)
+    public static void NMSBoxes(MatOfRect2d bboxes, MatOfFloat scores, float score_threshold, float nms_threshold, MatOfInt indices, float eta)
+    {
+        Mat bboxes_mat = bboxes;
+        Mat scores_mat = scores;
+        Mat indices_mat = indices;
+        NMSBoxes_4(bboxes_mat.nativeObj, scores_mat.nativeObj, score_threshold, nms_threshold, indices_mat.nativeObj, eta);
+        
+        return;
+    }
+
+    //javadoc: NMSBoxes(bboxes, scores, score_threshold, nms_threshold, indices)
+    public static void NMSBoxes(MatOfRect2d bboxes, MatOfFloat scores, float score_threshold, float nms_threshold, MatOfInt indices)
+    {
+        Mat bboxes_mat = bboxes;
+        Mat scores_mat = scores;
+        Mat indices_mat = indices;
+        NMSBoxes_5(bboxes_mat.nativeObj, scores_mat.nativeObj, score_threshold, nms_threshold, indices_mat.nativeObj);
+        
+        return;
+    }
+
+
+    //
     // C++:  void cv::dnn::NMSBoxes(vector_RotatedRect bboxes, vector_float scores, float score_threshold, float nms_threshold, vector_int& indices, float eta = 1.f, int top_k = 0)
     //
 
-    // Unknown type 'vector_RotatedRect' (I), skipping the function
+    //javadoc: NMSBoxesRotated(bboxes, scores, score_threshold, nms_threshold, indices, eta, top_k)
+    public static void NMSBoxesRotated(MatOfRotatedRect bboxes, MatOfFloat scores, float score_threshold, float nms_threshold, MatOfInt indices, float eta, int top_k)
+    {
+        Mat bboxes_mat = bboxes;
+        Mat scores_mat = scores;
+        Mat indices_mat = indices;
+        NMSBoxesRotated_0(bboxes_mat.nativeObj, scores_mat.nativeObj, score_threshold, nms_threshold, indices_mat.nativeObj, eta, top_k);
+        
+        return;
+    }
+
+    //javadoc: NMSBoxesRotated(bboxes, scores, score_threshold, nms_threshold, indices, eta)
+    public static void NMSBoxesRotated(MatOfRotatedRect bboxes, MatOfFloat scores, float score_threshold, float nms_threshold, MatOfInt indices, float eta)
+    {
+        Mat bboxes_mat = bboxes;
+        Mat scores_mat = scores;
+        Mat indices_mat = indices;
+        NMSBoxesRotated_1(bboxes_mat.nativeObj, scores_mat.nativeObj, score_threshold, nms_threshold, indices_mat.nativeObj, eta);
+        
+        return;
+    }
+
+    //javadoc: NMSBoxesRotated(bboxes, scores, score_threshold, nms_threshold, indices)
+    public static void NMSBoxesRotated(MatOfRotatedRect bboxes, MatOfFloat scores, float score_threshold, float nms_threshold, MatOfInt indices)
+    {
+        Mat bboxes_mat = bboxes;
+        Mat scores_mat = scores;
+        Mat indices_mat = indices;
+        NMSBoxesRotated_2(bboxes_mat.nativeObj, scores_mat.nativeObj, score_threshold, nms_threshold, indices_mat.nativeObj);
+        
+        return;
+    }
 
 
     //
@@ -481,6 +597,20 @@ public class Dnn {
         imagesFromBlob_0(blob_.nativeObj, images__mat.nativeObj);
         Converters.Mat_to_vector_Mat(images__mat, images_);
         images__mat.release();
+        return;
+    }
+
+
+    //
+    // C++:  void cv::dnn::resetMyriadDevice()
+    //
+
+    //javadoc: resetMyriadDevice()
+    public static void resetMyriadDevice()
+    {
+        
+        resetMyriadDevice_0();
+        
         return;
     }
 
@@ -508,9 +638,23 @@ public class Dnn {
     }
 
 
+    //
+    // C++:  void cv::dnn::writeTextGraph(String model, String output)
+    //
+
+    //javadoc: writeTextGraph(model, output)
+    public static void writeTextGraph(String model, String output)
+    {
+        
+        writeTextGraph_0(model, output);
+        
+        return;
+    }
 
 
-    // C++:  Mat cv::dnn::blobFromImage(Mat image, double scalefactor = 1.0, Size size = Size(), Scalar mean = Scalar(), bool swapRB = true, bool crop = true, int ddepth = CV_32F)
+
+
+    // C++:  Mat cv::dnn::blobFromImage(Mat image, double scalefactor = 1.0, Size size = Size(), Scalar mean = Scalar(), bool swapRB = false, bool crop = false, int ddepth = CV_32F)
     private static native long blobFromImage_0(long image_nativeObj, double scalefactor, double size_width, double size_height, double mean_val0, double mean_val1, double mean_val2, double mean_val3, boolean swapRB, boolean crop, int ddepth);
     private static native long blobFromImage_1(long image_nativeObj, double scalefactor, double size_width, double size_height, double mean_val0, double mean_val1, double mean_val2, double mean_val3, boolean swapRB, boolean crop);
     private static native long blobFromImage_2(long image_nativeObj, double scalefactor, double size_width, double size_height, double mean_val0, double mean_val1, double mean_val2, double mean_val3, boolean swapRB);
@@ -519,7 +663,7 @@ public class Dnn {
     private static native long blobFromImage_5(long image_nativeObj, double scalefactor);
     private static native long blobFromImage_6(long image_nativeObj);
 
-    // C++:  Mat cv::dnn::blobFromImages(vector_Mat images, double scalefactor = 1.0, Size size = Size(), Scalar mean = Scalar(), bool swapRB = true, bool crop = true, int ddepth = CV_32F)
+    // C++:  Mat cv::dnn::blobFromImages(vector_Mat images, double scalefactor = 1.0, Size size = Size(), Scalar mean = Scalar(), bool swapRB = false, bool crop = false, int ddepth = CV_32F)
     private static native long blobFromImages_0(long images_mat_nativeObj, double scalefactor, double size_width, double size_height, double mean_val0, double mean_val1, double mean_val2, double mean_val3, boolean swapRB, boolean crop, int ddepth);
     private static native long blobFromImages_1(long images_mat_nativeObj, double scalefactor, double size_width, double size_height, double mean_val0, double mean_val1, double mean_val2, double mean_val3, boolean swapRB, boolean crop);
     private static native long blobFromImages_2(long images_mat_nativeObj, double scalefactor, double size_width, double size_height, double mean_val0, double mean_val1, double mean_val2, double mean_val3, boolean swapRB);
@@ -527,6 +671,9 @@ public class Dnn {
     private static native long blobFromImages_4(long images_mat_nativeObj, double scalefactor, double size_width, double size_height);
     private static native long blobFromImages_5(long images_mat_nativeObj, double scalefactor);
     private static native long blobFromImages_6(long images_mat_nativeObj);
+
+    // C++:  Mat cv::dnn::readTensorFromONNX(String path)
+    private static native long readTensorFromONNX_0(String path);
 
     // C++:  Mat cv::dnn::readTorchBlob(String filename, bool isBinary = true)
     private static native long readTorchBlob_0(String filename, boolean isBinary);
@@ -560,6 +707,9 @@ public class Dnn {
     // C++:  Net cv::dnn::readNetFromModelOptimizer(String xml, String bin)
     private static native long readNetFromModelOptimizer_0(String xml, String bin);
 
+    // C++:  Net cv::dnn::readNetFromONNX(String onnxFile)
+    private static native long readNetFromONNX_0(String onnxFile);
+
     // C++:  Net cv::dnn::readNetFromTensorflow(String model, String config = String())
     private static native long readNetFromTensorflow_0(String model, String config);
     private static native long readNetFromTensorflow_1(String model);
@@ -568,20 +718,37 @@ public class Dnn {
     private static native long readNetFromTensorflow_2(long bufferModel_mat_nativeObj, long bufferConfig_mat_nativeObj);
     private static native long readNetFromTensorflow_3(long bufferModel_mat_nativeObj);
 
-    // C++:  Net cv::dnn::readNetFromTorch(String model, bool isBinary = true)
-    private static native long readNetFromTorch_0(String model, boolean isBinary);
-    private static native long readNetFromTorch_1(String model);
+    // C++:  Net cv::dnn::readNetFromTorch(String model, bool isBinary = true, bool evaluate = true)
+    private static native long readNetFromTorch_0(String model, boolean isBinary, boolean evaluate);
+    private static native long readNetFromTorch_1(String model, boolean isBinary);
+    private static native long readNetFromTorch_2(String model);
 
     // C++:  void cv::dnn::NMSBoxes(vector_Rect bboxes, vector_float scores, float score_threshold, float nms_threshold, vector_int& indices, float eta = 1.f, int top_k = 0)
     private static native void NMSBoxes_0(long bboxes_mat_nativeObj, long scores_mat_nativeObj, float score_threshold, float nms_threshold, long indices_mat_nativeObj, float eta, int top_k);
     private static native void NMSBoxes_1(long bboxes_mat_nativeObj, long scores_mat_nativeObj, float score_threshold, float nms_threshold, long indices_mat_nativeObj, float eta);
     private static native void NMSBoxes_2(long bboxes_mat_nativeObj, long scores_mat_nativeObj, float score_threshold, float nms_threshold, long indices_mat_nativeObj);
 
+    // C++:  void cv::dnn::NMSBoxes(vector_Rect2d bboxes, vector_float scores, float score_threshold, float nms_threshold, vector_int& indices, float eta = 1.f, int top_k = 0)
+    private static native void NMSBoxes_3(long bboxes_mat_nativeObj, long scores_mat_nativeObj, float score_threshold, float nms_threshold, long indices_mat_nativeObj, float eta, int top_k);
+    private static native void NMSBoxes_4(long bboxes_mat_nativeObj, long scores_mat_nativeObj, float score_threshold, float nms_threshold, long indices_mat_nativeObj, float eta);
+    private static native void NMSBoxes_5(long bboxes_mat_nativeObj, long scores_mat_nativeObj, float score_threshold, float nms_threshold, long indices_mat_nativeObj);
+
+    // C++:  void cv::dnn::NMSBoxes(vector_RotatedRect bboxes, vector_float scores, float score_threshold, float nms_threshold, vector_int& indices, float eta = 1.f, int top_k = 0)
+    private static native void NMSBoxesRotated_0(long bboxes_mat_nativeObj, long scores_mat_nativeObj, float score_threshold, float nms_threshold, long indices_mat_nativeObj, float eta, int top_k);
+    private static native void NMSBoxesRotated_1(long bboxes_mat_nativeObj, long scores_mat_nativeObj, float score_threshold, float nms_threshold, long indices_mat_nativeObj, float eta);
+    private static native void NMSBoxesRotated_2(long bboxes_mat_nativeObj, long scores_mat_nativeObj, float score_threshold, float nms_threshold, long indices_mat_nativeObj);
+
     // C++:  void cv::dnn::imagesFromBlob(Mat blob_, vector_Mat& images_)
     private static native void imagesFromBlob_0(long blob__nativeObj, long images__mat_nativeObj);
+
+    // C++:  void cv::dnn::resetMyriadDevice()
+    private static native void resetMyriadDevice_0();
 
     // C++:  void cv::dnn::shrinkCaffeModel(String src, String dst, vector_String layersTypes = std::vector<String>())
     private static native void shrinkCaffeModel_0(String src, String dst, List<String> layersTypes);
     private static native void shrinkCaffeModel_1(String src, String dst);
+
+    // C++:  void cv::dnn::writeTextGraph(String model, String output)
+    private static native void writeTextGraph_0(String model, String output);
 
 }

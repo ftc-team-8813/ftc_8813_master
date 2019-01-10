@@ -243,6 +243,20 @@ public class Net {
 
 
     //
+    // C++:  vector_String cv::dnn::Net::getUnconnectedOutLayersNames()
+    //
+
+    //javadoc: Net::getUnconnectedOutLayersNames()
+    public  List<String> getUnconnectedOutLayersNames()
+    {
+        
+        List<String> retVal = getUnconnectedOutLayersNames_0(nativeObj);
+        
+        return retVal;
+    }
+
+
+    //
     // C++:  vector_int cv::dnn::Net::getUnconnectedOutLayers()
     //
 
@@ -265,20 +279,6 @@ public class Net {
     {
         
         connect_0(nativeObj, outPin, inpPin);
-        
-        return;
-    }
-
-
-    //
-    // C++:  void cv::dnn::Net::deleteLayer(LayerId layer)
-    //
-
-    //javadoc: Net::deleteLayer(layer)
-    public  void deleteLayer(DictValue layer)
-    {
-        
-        deleteLayer_0(nativeObj, layer.getNativeObjAddr());
         
         return;
     }
@@ -585,14 +585,14 @@ public class Net {
     // C++:  vector_String cv::dnn::Net::getLayerNames()
     private static native List<String> getLayerNames_0(long nativeObj);
 
+    // C++:  vector_String cv::dnn::Net::getUnconnectedOutLayersNames()
+    private static native List<String> getUnconnectedOutLayersNames_0(long nativeObj);
+
     // C++:  vector_int cv::dnn::Net::getUnconnectedOutLayers()
     private static native long getUnconnectedOutLayers_0(long nativeObj);
 
     // C++:  void cv::dnn::Net::connect(String outPin, String inpPin)
     private static native void connect_0(long nativeObj, String outPin, String inpPin);
-
-    // C++:  void cv::dnn::Net::deleteLayer(LayerId layer)
-    private static native void deleteLayer_0(long nativeObj, long layer_nativeObj);
 
     // C++:  void cv::dnn::Net::enableFusion(bool fusion)
     private static native void enableFusion_0(long nativeObj, boolean fusion);

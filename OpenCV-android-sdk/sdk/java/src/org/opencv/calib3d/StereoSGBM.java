@@ -16,6 +16,7 @@ public class StereoSGBM extends StereoMatcher {
     // internal usage only
     public static StereoSGBM __fromPtr__(long addr) { return new StereoSGBM(addr); }
 
+    // C++: enum <unnamed>
     public static final int
             MODE_SGBM = 0,
             MODE_HH = 1,

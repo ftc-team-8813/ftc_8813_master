@@ -3,6 +3,7 @@
 //
 package org.opencv.video;
 
+import java.lang.String;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.Mat;
@@ -16,7 +17,6 @@ import org.opencv.core.TermCriteria;
 import org.opencv.utils.Converters;
 import org.opencv.video.BackgroundSubtractorKNN;
 import org.opencv.video.BackgroundSubtractorMOG2;
-import org.opencv.video.DualTVL1OpticalFlow;
 
 // C++: class Video
 //javadoc: Video
@@ -28,6 +28,7 @@ public class Video {
             CV_LKFLOW_GET_MIN_EIGENVALS = 8;
 
 
+    // C++: enum <unnamed>
     public static final int
             OPTFLOW_USE_INITIAL_FLOW = 4,
             OPTFLOW_LK_GET_MIN_EIGENVALS = 8,
@@ -39,28 +40,14 @@ public class Video {
 
 
     //
-    // C++:  Mat cv::estimateRigidTransform(Mat src, Mat dst, bool fullAffine, int ransacMaxIters, double ransacGoodRatio, int ransacSize0)
+    // C++:  Mat cv::readOpticalFlow(String path)
     //
 
-    //javadoc: estimateRigidTransform(src, dst, fullAffine, ransacMaxIters, ransacGoodRatio, ransacSize0)
-    public static Mat estimateRigidTransform(Mat src, Mat dst, boolean fullAffine, int ransacMaxIters, double ransacGoodRatio, int ransacSize0)
+    //javadoc: readOpticalFlow(path)
+    public static Mat readOpticalFlow(String path)
     {
         
-        Mat retVal = new Mat(estimateRigidTransform_0(src.nativeObj, dst.nativeObj, fullAffine, ransacMaxIters, ransacGoodRatio, ransacSize0));
-        
-        return retVal;
-    }
-
-
-    //
-    // C++:  Mat cv::estimateRigidTransform(Mat src, Mat dst, bool fullAffine)
-    //
-
-    //javadoc: estimateRigidTransform(src, dst, fullAffine)
-    public static Mat estimateRigidTransform(Mat src, Mat dst, boolean fullAffine)
-    {
-        
-        Mat retVal = new Mat(estimateRigidTransform_1(src.nativeObj, dst.nativeObj, fullAffine));
+        Mat retVal = new Mat(readOpticalFlow_0(path));
         
         return retVal;
     }
@@ -149,20 +136,6 @@ public class Video {
 
 
     //
-    // C++:  Ptr_DualTVL1OpticalFlow cv::createOptFlow_DualTVL1()
-    //
-
-    //javadoc: createOptFlow_DualTVL1()
-    public static DualTVL1OpticalFlow createOptFlow_DualTVL1()
-    {
-        
-        DualTVL1OpticalFlow retVal = DualTVL1OpticalFlow.__fromPtr__(createOptFlow_DualTVL1_0());
-        
-        return retVal;
-    }
-
-
-    //
     // C++:  RotatedRect cv::CamShift(Mat probImage, Rect& window, TermCriteria criteria)
     //
 
@@ -172,6 +145,20 @@ public class Video {
         double[] window_out = new double[4];
         RotatedRect retVal = new RotatedRect(CamShift_0(probImage.nativeObj, window.x, window.y, window.width, window.height, window_out, criteria.type, criteria.maxCount, criteria.epsilon));
         if(window!=null){ window.x = (int)window_out[0]; window.y = (int)window_out[1]; window.width = (int)window_out[2]; window.height = (int)window_out[3]; } 
+        return retVal;
+    }
+
+
+    //
+    // C++:  bool cv::writeOpticalFlow(String path, Mat flow)
+    //
+
+    //javadoc: writeOpticalFlow(path, flow)
+    public static boolean writeOpticalFlow(String path, Mat flow)
+    {
+        
+        boolean retVal = writeOpticalFlow_0(path, flow.nativeObj);
+        
         return retVal;
     }
 
@@ -379,11 +366,8 @@ public class Video {
 
 
 
-    // C++:  Mat cv::estimateRigidTransform(Mat src, Mat dst, bool fullAffine, int ransacMaxIters, double ransacGoodRatio, int ransacSize0)
-    private static native long estimateRigidTransform_0(long src_nativeObj, long dst_nativeObj, boolean fullAffine, int ransacMaxIters, double ransacGoodRatio, int ransacSize0);
-
-    // C++:  Mat cv::estimateRigidTransform(Mat src, Mat dst, bool fullAffine)
-    private static native long estimateRigidTransform_1(long src_nativeObj, long dst_nativeObj, boolean fullAffine);
+    // C++:  Mat cv::readOpticalFlow(String path)
+    private static native long readOpticalFlow_0(String path);
 
     // C++:  Ptr_BackgroundSubtractorKNN cv::createBackgroundSubtractorKNN(int history = 500, double dist2Threshold = 400.0, bool detectShadows = true)
     private static native long createBackgroundSubtractorKNN_0(int history, double dist2Threshold, boolean detectShadows);
@@ -397,11 +381,11 @@ public class Video {
     private static native long createBackgroundSubtractorMOG2_2(int history);
     private static native long createBackgroundSubtractorMOG2_3();
 
-    // C++:  Ptr_DualTVL1OpticalFlow cv::createOptFlow_DualTVL1()
-    private static native long createOptFlow_DualTVL1_0();
-
     // C++:  RotatedRect cv::CamShift(Mat probImage, Rect& window, TermCriteria criteria)
     private static native double[] CamShift_0(long probImage_nativeObj, int window_x, int window_y, int window_width, int window_height, double[] window_out, int criteria_type, int criteria_maxCount, double criteria_epsilon);
+
+    // C++:  bool cv::writeOpticalFlow(String path, Mat flow)
+    private static native boolean writeOpticalFlow_0(String path, long flow_nativeObj);
 
     // C++:  double cv::findTransformECC(Mat templateImage, Mat inputImage, Mat& warpMatrix, int motionType = MOTION_AFFINE, TermCriteria criteria = TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 50, 0.001), Mat inputMask = Mat())
     private static native double findTransformECC_0(long templateImage_nativeObj, long inputImage_nativeObj, long warpMatrix_nativeObj, int motionType, int criteria_type, int criteria_maxCount, double criteria_epsilon, long inputMask_nativeObj);

@@ -18,11 +18,11 @@ import org.opencv.utils.Converters;
 
 public class Core {
     // these constants are wrapped inside functions to prevent inlining
-    private static String getVersion() { return "3.4.3"; }
-    private static String getNativeLibraryName() { return "opencv_java343"; }
-    private static int getVersionMajorJ() { return 3; }
-    private static int getVersionMinorJ() { return 4; }
-    private static int getVersionRevisionJ() { return 3; }
+    private static String getVersion() { return "4.0.1"; }
+    private static String getNativeLibraryName() { return "opencv_java401"; }
+    private static int getVersionMajorJ() { return 4; }
+    private static int getVersionMinorJ() { return 0; }
+    private static int getVersionRevisionJ() { return 1; }
     private static String getVersionStatusJ() { return ""; }
 
     public static final String VERSION = getVersion();
@@ -43,6 +43,17 @@ public class Core {
             CV_USRTYPE1 = 7;
 
 
+    // C++: enum DecompTypes
+    public static final int
+            DECOMP_LU = 0,
+            DECOMP_SVD = 1,
+            DECOMP_EIG = 2,
+            DECOMP_CHOLESKY = 3,
+            DECOMP_QR = 4,
+            DECOMP_NORMAL = 16;
+
+
+    // C++: enum <unnamed>
     public static final int
             SVD_MODIFY_A = 1,
             SVD_NO_UV = 2,
@@ -52,6 +63,154 @@ public class Core {
             REDUCE_AVG = 1,
             REDUCE_MAX = 2,
             REDUCE_MIN = 3,
+            RNG_UNIFORM = 0,
+            RNG_NORMAL = 1;
+
+
+    // C++: enum BorderTypes
+    public static final int
+            BORDER_CONSTANT = 0,
+            BORDER_REPLICATE = 1,
+            BORDER_REFLECT = 2,
+            BORDER_WRAP = 3,
+            BORDER_REFLECT_101 = 4,
+            BORDER_TRANSPARENT = 5,
+            BORDER_REFLECT101 = BORDER_REFLECT_101,
+            BORDER_DEFAULT = BORDER_REFLECT_101,
+            BORDER_ISOLATED = 16;
+
+
+    // C++: enum GemmFlags
+    public static final int
+            GEMM_1_T = 1,
+            GEMM_2_T = 2,
+            GEMM_3_T = 4;
+
+
+    // C++: enum KmeansFlags
+    public static final int
+            KMEANS_RANDOM_CENTERS = 0,
+            KMEANS_PP_CENTERS = 2,
+            KMEANS_USE_INITIAL_LABELS = 1;
+
+
+    // C++: enum CmpTypes
+    public static final int
+            CMP_EQ = 0,
+            CMP_GT = 1,
+            CMP_GE = 2,
+            CMP_LT = 3,
+            CMP_LE = 4,
+            CMP_NE = 5;
+
+
+    // C++: enum Flags
+    public static final int
+            PCA_DATA_AS_ROW = 0,
+            PCA_DATA_AS_COL = 1,
+            PCA_USE_AVG = 2;
+
+
+    // C++: enum DftFlags
+    public static final int
+            DFT_INVERSE = 1,
+            DFT_SCALE = 2,
+            DFT_ROWS = 4,
+            DFT_COMPLEX_OUTPUT = 16,
+            DFT_REAL_OUTPUT = 32,
+            DFT_COMPLEX_INPUT = 64,
+            DCT_INVERSE = DFT_INVERSE,
+            DCT_ROWS = DFT_ROWS;
+
+
+    // C++: enum IMPL
+    public static final int
+            IMPL_PLAIN = 0,
+            IMPL_IPP = 0+1,
+            IMPL_OPENCL = 0+2;
+
+
+    // C++: enum FLAGS
+    public static final int
+            FLAGS_NONE = 0,
+            FLAGS_MAPPING = 0x01,
+            FLAGS_EXPAND_SAME_NAMES = 0x02;
+
+
+    // C++: enum TYPE
+    public static final int
+            TYPE_GENERAL = 0,
+            TYPE_MARKER = 0+1,
+            TYPE_WRAPPER = 0+2,
+            TYPE_FUN = 0+3;
+
+
+    // C++: enum FormatType
+    public static final int
+            Formatter_FMT_DEFAULT = 0,
+            Formatter_FMT_MATLAB = 1,
+            Formatter_FMT_CSV = 2,
+            Formatter_FMT_PYTHON = 3,
+            Formatter_FMT_NUMPY = 4,
+            Formatter_FMT_C = 5;
+
+
+    // C++: enum SortFlags
+    public static final int
+            SORT_EVERY_ROW = 0,
+            SORT_EVERY_COLUMN = 1,
+            SORT_ASCENDING = 0,
+            SORT_DESCENDING = 16;
+
+
+    // C++: enum CovarFlags
+    public static final int
+            COVAR_SCRAMBLED = 0,
+            COVAR_NORMAL = 1,
+            COVAR_USE_AVG = 2,
+            COVAR_SCALE = 4,
+            COVAR_ROWS = 8,
+            COVAR_COLS = 16;
+
+
+    // C++: enum Param
+    public static final int
+            Param_INT = 0,
+            Param_BOOLEAN = 1,
+            Param_REAL = 2,
+            Param_STRING = 3,
+            Param_MAT = 4,
+            Param_MAT_VECTOR = 5,
+            Param_ALGORITHM = 6,
+            Param_FLOAT = 7,
+            Param_UNSIGNED_INT = 8,
+            Param_UINT64 = 9,
+            Param_UCHAR = 11,
+            Param_SCALAR = 12;
+
+
+    // C++: enum NormTypes
+    public static final int
+            NORM_INF = 1,
+            NORM_L1 = 2,
+            NORM_L2 = 4,
+            NORM_L2SQR = 5,
+            NORM_HAMMING = 6,
+            NORM_HAMMING2 = 7,
+            NORM_TYPE_MASK = 7,
+            NORM_RELATIVE = 8,
+            NORM_MINMAX = 32;
+
+
+    // C++: enum RotateFlags
+    public static final int
+            ROTATE_90_CLOCKWISE = 0,
+            ROTATE_180 = 1,
+            ROTATE_90_COUNTERCLOCKWISE = 2;
+
+
+    // C++: enum Code
+    public static final int
             StsOk = 0,
             StsBackTrace = -1,
             StsError = -2,
@@ -106,86 +265,7 @@ public class Core {
             OpenCLApiCallError = -220,
             OpenCLDoubleNotSupported = -221,
             OpenCLInitError = -222,
-            OpenCLNoAMDBlasFft = -223,
-            DECOMP_LU = 0,
-            DECOMP_SVD = 1,
-            DECOMP_EIG = 2,
-            DECOMP_CHOLESKY = 3,
-            DECOMP_QR = 4,
-            DECOMP_NORMAL = 16,
-            NORM_INF = 1,
-            NORM_L1 = 2,
-            NORM_L2 = 4,
-            NORM_L2SQR = 5,
-            NORM_HAMMING = 6,
-            NORM_HAMMING2 = 7,
-            NORM_TYPE_MASK = 7,
-            NORM_RELATIVE = 8,
-            NORM_MINMAX = 32,
-            CMP_EQ = 0,
-            CMP_GT = 1,
-            CMP_GE = 2,
-            CMP_LT = 3,
-            CMP_LE = 4,
-            CMP_NE = 5,
-            GEMM_1_T = 1,
-            GEMM_2_T = 2,
-            GEMM_3_T = 4,
-            DFT_INVERSE = 1,
-            DFT_SCALE = 2,
-            DFT_ROWS = 4,
-            DFT_COMPLEX_OUTPUT = 16,
-            DFT_REAL_OUTPUT = 32,
-            DFT_COMPLEX_INPUT = 64,
-            DCT_INVERSE = DFT_INVERSE,
-            DCT_ROWS = DFT_ROWS,
-            BORDER_CONSTANT = 0,
-            BORDER_REPLICATE = 1,
-            BORDER_REFLECT = 2,
-            BORDER_WRAP = 3,
-            BORDER_REFLECT_101 = 4,
-            BORDER_TRANSPARENT = 5,
-            BORDER_REFLECT101 = BORDER_REFLECT_101,
-            BORDER_DEFAULT = BORDER_REFLECT_101,
-            BORDER_ISOLATED = 16,
-            SORT_EVERY_ROW = 0,
-            SORT_EVERY_COLUMN = 1,
-            SORT_ASCENDING = 0,
-            SORT_DESCENDING = 16,
-            COVAR_SCRAMBLED = 0,
-            COVAR_NORMAL = 1,
-            COVAR_USE_AVG = 2,
-            COVAR_SCALE = 4,
-            COVAR_ROWS = 8,
-            COVAR_COLS = 16,
-            KMEANS_RANDOM_CENTERS = 0,
-            KMEANS_PP_CENTERS = 2,
-            KMEANS_USE_INITIAL_LABELS = 1,
-            LINE_4 = 4,
-            LINE_8 = 8,
-            LINE_AA = 16,
-            FONT_HERSHEY_SIMPLEX = 0,
-            FONT_HERSHEY_PLAIN = 1,
-            FONT_HERSHEY_DUPLEX = 2,
-            FONT_HERSHEY_COMPLEX = 3,
-            FONT_HERSHEY_TRIPLEX = 4,
-            FONT_HERSHEY_COMPLEX_SMALL = 5,
-            FONT_HERSHEY_SCRIPT_SIMPLEX = 6,
-            FONT_HERSHEY_SCRIPT_COMPLEX = 7,
-            FONT_ITALIC = 16,
-            ROTATE_90_CLOCKWISE = 0,
-            ROTATE_180 = 1,
-            ROTATE_90_COUNTERCLOCKWISE = 2,
-            TYPE_GENERAL = 0,
-            TYPE_MARKER = 0+1,
-            TYPE_WRAPPER = 0+2,
-            TYPE_FUN = 0+3,
-            IMPL_PLAIN = 0,
-            IMPL_IPP = 0+1,
-            IMPL_OPENCL = 0+2,
-            FLAGS_NONE = 0,
-            FLAGS_MAPPING = 0x01,
-            FLAGS_EXPAND_SAME_NAMES = 0x02;
+            OpenCLNoAMDBlasFft = -223;
 
 
     //
@@ -296,6 +376,61 @@ public class Core {
 
 
     //
+    // C++:  String cv::samples::findFile(String relative_path, bool required = true, bool silentMode = false)
+    //
+
+    //javadoc: findFile(relative_path, required, silentMode)
+    public static String findFile(String relative_path, boolean required, boolean silentMode)
+    {
+        
+        String retVal = findFile_0(relative_path, required, silentMode);
+        
+        return retVal;
+    }
+
+    //javadoc: findFile(relative_path, required)
+    public static String findFile(String relative_path, boolean required)
+    {
+        
+        String retVal = findFile_1(relative_path, required);
+        
+        return retVal;
+    }
+
+    //javadoc: findFile(relative_path)
+    public static String findFile(String relative_path)
+    {
+        
+        String retVal = findFile_2(relative_path);
+        
+        return retVal;
+    }
+
+
+    //
+    // C++:  String cv::samples::findFileOrKeep(String relative_path, bool silentMode = false)
+    //
+
+    //javadoc: findFileOrKeep(relative_path, silentMode)
+    public static String findFileOrKeep(String relative_path, boolean silentMode)
+    {
+        
+        String retVal = findFileOrKeep_0(relative_path, silentMode);
+        
+        return retVal;
+    }
+
+    //javadoc: findFileOrKeep(relative_path)
+    public static String findFileOrKeep(String relative_path)
+    {
+        
+        String retVal = findFileOrKeep_1(relative_path);
+        
+        return retVal;
+    }
+
+
+    //
     // C++:  bool cv::checkRange(Mat a, bool quiet = true,  _hidden_ * pos = 0, double minVal = -DBL_MAX, double maxVal = DBL_MAX)
     //
 
@@ -397,14 +532,14 @@ public class Core {
 
 
     //
-    // C++:  bool cv::ipp::useIPP_NE()
+    // C++:  bool cv::ipp::useIPP_NotExact()
     //
 
-    //javadoc: useIPP_NE()
-    public static boolean useIPP_NE()
+    //javadoc: useIPP_NotExact()
+    public static boolean useIPP_NotExact()
     {
         
-        boolean retVal = useIPP_NE_0();
+        boolean retVal = useIPP_NotExact_0();
         
         return retVal;
     }
@@ -425,14 +560,23 @@ public class Core {
 
 
     //
-    // C++:  double cv::PSNR(Mat src1, Mat src2)
+    // C++:  double cv::PSNR(Mat src1, Mat src2, double R = 255.)
     //
+
+    //javadoc: PSNR(src1, src2, R)
+    public static double PSNR(Mat src1, Mat src2, double R)
+    {
+        
+        double retVal = PSNR_0(src1.nativeObj, src2.nativeObj, R);
+        
+        return retVal;
+    }
 
     //javadoc: PSNR(src1, src2)
     public static double PSNR(Mat src1, Mat src2)
     {
         
-        double retVal = PSNR_0(src1.nativeObj, src2.nativeObj);
+        double retVal = PSNR_1(src1.nativeObj, src2.nativeObj);
         
         return retVal;
     }
@@ -1376,6 +1520,20 @@ public class Core {
     {
         
         copyMakeBorder_1(src.nativeObj, dst.nativeObj, top, bottom, left, right, borderType);
+        
+        return;
+    }
+
+
+    //
+    // C++:  void cv::copyTo(Mat src, Mat& dst, Mat mask)
+    //
+
+    //javadoc: copyTo(src, dst, mask)
+    public static void copyTo(Mat src, Mat dst, Mat mask)
+    {
+        
+        copyTo_0(src.nativeObj, dst.nativeObj, mask.nativeObj);
         
         return;
     }
@@ -2495,14 +2653,42 @@ public class Core {
 
 
     //
-    // C++:  void cv::ipp::setUseIPP_NE(bool flag)
+    // C++:  void cv::ipp::setUseIPP_NotExact(bool flag)
     //
 
-    //javadoc: setUseIPP_NE(flag)
-    public static void setUseIPP_NE(boolean flag)
+    //javadoc: setUseIPP_NotExact(flag)
+    public static void setUseIPP_NotExact(boolean flag)
     {
         
-        setUseIPP_NE_0(flag);
+        setUseIPP_NotExact_0(flag);
+        
+        return;
+    }
+
+
+    //
+    // C++:  void cv::samples::addSamplesDataSearchPath(String path)
+    //
+
+    //javadoc: addSamplesDataSearchPath(path)
+    public static void addSamplesDataSearchPath(String path)
+    {
+        
+        addSamplesDataSearchPath_0(path);
+        
+        return;
+    }
+
+
+    //
+    // C++:  void cv::samples::addSamplesDataSearchSubDirectory(String subdir)
+    //
+
+    //javadoc: addSamplesDataSearchSubDirectory(subdir)
+    public static void addSamplesDataSearchSubDirectory(String subdir)
+    {
+        
+        addSamplesDataSearchSubDirectory_0(subdir);
         
         return;
     }
@@ -2572,6 +2758,15 @@ public static MinMaxLocResult minMaxLoc(Mat src) {
     // C++:  String cv::ipp::getIppVersion()
     private static native String getIppVersion_0();
 
+    // C++:  String cv::samples::findFile(String relative_path, bool required = true, bool silentMode = false)
+    private static native String findFile_0(String relative_path, boolean required, boolean silentMode);
+    private static native String findFile_1(String relative_path, boolean required);
+    private static native String findFile_2(String relative_path);
+
+    // C++:  String cv::samples::findFileOrKeep(String relative_path, bool silentMode = false)
+    private static native String findFileOrKeep_0(String relative_path, boolean silentMode);
+    private static native String findFileOrKeep_1(String relative_path);
+
     // C++:  bool cv::checkRange(Mat a, bool quiet = true,  _hidden_ * pos = 0, double minVal = -DBL_MAX, double maxVal = DBL_MAX)
     private static native boolean checkRange_0(long a_nativeObj, boolean quiet, double minVal, double maxVal);
     private static native boolean checkRange_1(long a_nativeObj, boolean quiet, double minVal);
@@ -2589,14 +2784,15 @@ public static MinMaxLocResult minMaxLoc(Mat src) {
     // C++:  bool cv::ipp::useIPP()
     private static native boolean useIPP_0();
 
-    // C++:  bool cv::ipp::useIPP_NE()
-    private static native boolean useIPP_NE_0();
+    // C++:  bool cv::ipp::useIPP_NotExact()
+    private static native boolean useIPP_NotExact_0();
 
     // C++:  double cv::Mahalanobis(Mat v1, Mat v2, Mat icovar)
     private static native double Mahalanobis_0(long v1_nativeObj, long v2_nativeObj, long icovar_nativeObj);
 
-    // C++:  double cv::PSNR(Mat src1, Mat src2)
-    private static native double PSNR_0(long src1_nativeObj, long src2_nativeObj);
+    // C++:  double cv::PSNR(Mat src1, Mat src2, double R = 255.)
+    private static native double PSNR_0(long src1_nativeObj, long src2_nativeObj, double R);
+    private static native double PSNR_1(long src1_nativeObj, long src2_nativeObj);
 
     // C++:  double cv::determinant(Mat mtx)
     private static native double determinant_0(long mtx_nativeObj);
@@ -2771,6 +2967,9 @@ public static MinMaxLocResult minMaxLoc(Mat src) {
     // C++:  void cv::copyMakeBorder(Mat src, Mat& dst, int top, int bottom, int left, int right, int borderType, Scalar value = Scalar())
     private static native void copyMakeBorder_0(long src_nativeObj, long dst_nativeObj, int top, int bottom, int left, int right, int borderType, double value_val0, double value_val1, double value_val2, double value_val3);
     private static native void copyMakeBorder_1(long src_nativeObj, long dst_nativeObj, int top, int bottom, int left, int right, int borderType);
+
+    // C++:  void cv::copyTo(Mat src, Mat& dst, Mat mask)
+    private static native void copyTo_0(long src_nativeObj, long dst_nativeObj, long mask_nativeObj);
 
     // C++:  void cv::dct(Mat src, Mat& dst, int flags = 0)
     private static native void dct_0(long src_nativeObj, long dst_nativeObj, int flags);
@@ -2976,8 +3175,14 @@ public static MinMaxLocResult minMaxLoc(Mat src) {
     // C++:  void cv::ipp::setUseIPP(bool flag)
     private static native void setUseIPP_0(boolean flag);
 
-    // C++:  void cv::ipp::setUseIPP_NE(bool flag)
-    private static native void setUseIPP_NE_0(boolean flag);
+    // C++:  void cv::ipp::setUseIPP_NotExact(bool flag)
+    private static native void setUseIPP_NotExact_0(boolean flag);
+
+    // C++:  void cv::samples::addSamplesDataSearchPath(String path)
+    private static native void addSamplesDataSearchPath_0(String path);
+
+    // C++:  void cv::samples::addSamplesDataSearchSubDirectory(String subdir)
+    private static native void addSamplesDataSearchSubDirectory_0(String subdir);
 private static native double[] n_minMaxLocManual(long src_nativeObj, long mask_nativeObj);
 
 }
