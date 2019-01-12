@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskFindGold;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
+import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.sensors.vision.ShapeGoldDetector;
 
 @Autonomous(name="Autonomous")
@@ -14,25 +15,19 @@ public class MainAutonomous extends BaseAutonomous
     @Override
     public void run() throws InterruptedException
     {
-        DcMotor left = hardwareMap.dcMotor.get("left rear");
-        DcMotor right = hardwareMap.dcMotor.get("right rear");
-        DcMotor lifter = hardwareMap.dcMotor.get("lifter");
+        Robot robot = Robot.initialize(hardwareMap, config);
+        robot.initPivot();
+        robot.leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        robot.rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        DcMotor leftF = hardwareMap.dcMotor.get("left front");
-        DcMotor rightF = hardwareMap.dcMotor.get("right front");
-        leftF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        DcMotor left = robot.leftRear;
+        DcMotor right = robot.rightRear;
 
         // Initialize camera
         CameraStream stream = getCameraStream();
         ShapeGoldDetector detector = new ShapeGoldDetector();
         stream.addModifier(detector);
         stream.addListener(detector);
-        left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        right.setDirection(DcMotorSimple.Direction.REVERSE);
 
         left.setPower(-0.1);
         right.setPower(0.1);

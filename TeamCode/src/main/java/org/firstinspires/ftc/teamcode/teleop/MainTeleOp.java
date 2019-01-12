@@ -55,6 +55,8 @@ public class MainTeleOp extends OpMode
             robot.rightDunk.setPower(liftPower);
             if (Math.abs(liftPower) > 0) robot.dunk.setPosition(0.028);
         }
+        if (liftPower <= 0 && robot.liftLimit.pressed())
+            robot.dunk.setPosition(0);
 
         if (buttonHelper_1.pressing(ButtonHelper.b))
         {

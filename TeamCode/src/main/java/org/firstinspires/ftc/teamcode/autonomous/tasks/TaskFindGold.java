@@ -16,6 +16,7 @@ public class TaskFindGold implements Task, CameraStream.OutputModifier
     private ShapeGoldDetector detector;
     private DcMotor left, right;
     private Telemetry telemetry;
+    private boolean continuous = false;
 
     public TaskFindGold(DcMotor left, DcMotor right)
     {
@@ -28,6 +29,12 @@ public class TaskFindGold implements Task, CameraStream.OutputModifier
     {
         this(left, right);
         this.detector = detector;
+    }
+
+    public TaskFindGold(DcMotor left, DcMotor right, ShapeGoldDetector detector, boolean continuous)
+    {
+        this(left, right, detector);
+        this.continuous = continuous;
     }
 
     @Override
@@ -53,7 +60,7 @@ public class TaskFindGold implements Task, CameraStream.OutputModifier
         boolean seen = false;
 
         // TODO: Rotate slowly left and right so that the camera can see all of the sampling zones
-        while (!Thread.interrupted() && (seen || System.currentTimeMillis() - lostTime < 1500))
+        while (!Thread.interrupted() && (continuous || seen || System.currentTimeMillis() - lostTime < 1500))
         {
             telemetry.update();
             telemetry.clearAll();

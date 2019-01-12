@@ -48,6 +48,6 @@ public class OpenCVTest extends BaseAutonomous
         lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        new TaskFindGold(left, right, detector).runTask();
+        new TaskFindGold(left, right, detector, true).runTask();
     }
 }
