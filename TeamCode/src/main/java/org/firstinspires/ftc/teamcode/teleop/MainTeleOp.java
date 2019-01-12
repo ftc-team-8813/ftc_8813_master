@@ -35,6 +35,7 @@ public class MainTeleOp extends OpMode
         {
             e.printStackTrace();
         }
+        robot.dunk.setPosition(0);
     }
     
     @Override
@@ -47,19 +48,28 @@ public class MainTeleOp extends OpMode
         robot.rightFront.setPower(-gamepad1.right_stick_y * mult);
         robot.rightRear.setPower(-gamepad1.right_stick_y * mult);
 
-        double liftPower = -(gamepad1.right_trigger - gamepad1.left_trigger);
+        double liftPower = -(gamepad2.right_trigger - gamepad2.left_trigger);
         if (liftPower >= 0 || !robot.liftLimit.pressed())
         {
             robot.leftDunk.setPower(-liftPower);
             robot.rightDunk.setPower(liftPower);
+            if (Math.abs(liftPower) > 0) robot.dunk.setPosition(0.028);
+        }
+
+        if (buttonHelper_1.pressing(ButtonHelper.b))
+        {
+            if (robot.dunk.getPosition() == 0.2)
+                robot.dunk.setPosition(0);
+            else
+                robot.dunk.setPosition(0.2);
         }
 
         robot.intake.setPower(intake_mode * 0.5);
-        if (gamepad2.right_bumper)
+        if (gamepad1.right_bumper)
         {
             intake_mode = 1;
         }
-        else if (gamepad2.left_bumper)
+        else if (gamepad1.left_bumper)
         {
             intake_mode = -1;
         }
@@ -68,21 +78,21 @@ public class MainTeleOp extends OpMode
             intake_mode = 0;
         }
 
-        if (buttonHelper_1.pressing(ButtonHelper.dpad_up))
+        if (buttonHelper_2.pressing(ButtonHelper.dpad_up))
         {
-            robot.pivot.hold(0);
+            robot.pivot.hold(15);
         }
-        else if (buttonHelper_1.pressing(ButtonHelper.dpad_left))
+        else if (buttonHelper_2.pressing(ButtonHelper.dpad_left))
         {
-            robot.pivot.hold(Math.max(0, robot.pivot.getTargetPosition() - 5));
+            robot.pivot.hold(600);
         }
-        else if (buttonHelper_1.pressing(ButtonHelper.dpad_right))
+        else if (buttonHelper_2.pressing(ButtonHelper.dpad_right))
         {
-            robot.pivot.hold(Math.max(0, robot.pivot.getTargetPosition() + 5));
+            robot.pivot.hold(988);
         }
-        else if (buttonHelper_1.pressing(ButtonHelper.dpad_down))
+        else if (buttonHelper_2.pressing(ButtonHelper.dpad_down))
         {
-            // robot.intakeFlipper.setPosition(0.170);
+            robot.pivot.hold(1300);
         }
 
         if (buttonHelper_1.pressing(ButtonHelper.right_stick_button))

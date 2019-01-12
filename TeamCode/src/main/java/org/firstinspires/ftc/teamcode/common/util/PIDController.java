@@ -72,6 +72,11 @@ public class PIDController
         return error;
     }
 
+    public double getIntegral()
+    {
+        return integral;
+    }
+
     public double getDerivative()
     {
         return derivative;

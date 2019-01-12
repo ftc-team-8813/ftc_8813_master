@@ -27,6 +27,7 @@ public class MotorController implements Closeable
         protected Logger log;
         protected volatile boolean holding = false;
         protected volatile boolean stopNearTarget = false;
+        protected volatile boolean holdStalled = true;
         protected DcMotor motor;
         protected Runnable atTarget;
         private boolean stopping;
@@ -60,7 +61,9 @@ public class MotorController implements Closeable
                 if (holding)
                 {
                     stopping = false;
-                    if (controller.getDerivative() == 0 && Math.abs(controller.getError()) > sse)
+                    if (!holdStalled && controller.getDerivative() == 0
+                            && Math.abs(controller.getError()) > sse
+                            && Math.abs(motor.getPower()) > 0.6)
                     {
                         if (stall_begin == 0)
                         {
@@ -168,6 +171,11 @@ public class MotorController implements Closeable
         void setReverse(boolean reverse)
         {
             motor.setDirection(reverse ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
+        }
+
+        PIDController getInternalController()
+        {
+            return controller;
         }
     }
     
@@ -424,7 +432,23 @@ public class MotorController implements Closeable
         if (closed) throw new IllegalStateException("Motor controller closed");
         return controller.isHolding();
     }
-    
+
+
+    public PIDController getInternalController()
+    {
+        if (closed) throw new IllegalStateException("Motor controller closed");
+        return controller.getInternalController();
+    }
+
+    public double getOutput()
+    {
+        return controller.motor.getPower();
+    }
+
+    public void holdStalled(boolean hold)
+    {
+        controller.holdStalled = hold;
+    }
     /**
      * Close the motor controller. Attempting to access any of the methods (except
      * {@link #closed()}) after the controller has been closed will throw an IllegalStateException.

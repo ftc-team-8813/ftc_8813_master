@@ -137,9 +137,11 @@ public class Robot
             Thread.sleep(1);
         }
         intakePivot.setPower(0);
+        Thread.sleep(100);
         intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intakePivot.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        pivot.hold(0);
+        pivot.setPower(0.5);
+        pivot.hold(15);
     }
 
     ///////////////////////////////////

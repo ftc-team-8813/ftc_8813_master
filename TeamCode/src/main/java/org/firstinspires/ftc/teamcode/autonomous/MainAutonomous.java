@@ -14,9 +14,14 @@ public class MainAutonomous extends BaseAutonomous
     @Override
     public void run() throws InterruptedException
     {
-        DcMotor left = hardwareMap.dcMotor.get("left");
-        DcMotor right = hardwareMap.dcMotor.get("right");
+        DcMotor left = hardwareMap.dcMotor.get("left rear");
+        DcMotor right = hardwareMap.dcMotor.get("right rear");
         DcMotor lifter = hardwareMap.dcMotor.get("lifter");
+
+        DcMotor leftF = hardwareMap.dcMotor.get("left front");
+        DcMotor rightF = hardwareMap.dcMotor.get("right front");
+        leftF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         // Initialize camera
         CameraStream stream = getCameraStream();
