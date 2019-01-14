@@ -27,11 +27,11 @@ public class PIDController
         prevError = error;
         integral += error;
 
-        if (integral > integratorCutoff)
+        if (integral * kI > integratorCutoff)
         {
             integral = integratorCutoff;
         }
-        else if (integral < -integratorCutoff)
+        else if (integral * kI < -integratorCutoff)
         {
             integral = -integratorCutoff;
         }
