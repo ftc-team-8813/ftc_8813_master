@@ -67,7 +67,7 @@ public class DataLogger implements AutoCloseable
         }
     }
 
-    public synchronized void startLogging(final LogCallback callback) throws IOException
+    public synchronized void startLogging(final LogCallback callback)
     {
         if (logThread != null) throw new IllegalStateException("Logging thread already running!");
         logThread = new Thread(new Runnable()
@@ -101,7 +101,7 @@ public class DataLogger implements AutoCloseable
     }
 
     @Override
-    public void close() throws Exception
+    public void close() throws IOException
     {
         if (logThread != null)
         {

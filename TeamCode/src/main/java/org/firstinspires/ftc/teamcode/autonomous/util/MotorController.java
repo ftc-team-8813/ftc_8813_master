@@ -54,6 +54,21 @@ public class MotorController implements Closeable
                 motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
             controller = new PIDController(0, 0, 0);
+            try
+            {
+                datalogger = new DataLogger(
+                        new File(Config.storageDir + "pidLog_motor" + motor.getPortNumber() + ".dat"),
+                        new DataLogger.Channel("target",   0xFFFF00),
+                        new DataLogger.Channel("position", 0x00FF00),
+                        new DataLogger.Channel("error",    0xFF0000),
+                        new DataLogger.Channel("integral", 0x7F00FF),
+                        new DataLogger.Channel("deriv",    0x00FFFF),
+                        new DataLogger.Channel("output",   0xFFFFFF));
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
         }
         
         @Override
@@ -105,12 +120,48 @@ public class MotorController implements Closeable
                         controller.resetIntegrator();
                     }
                 }
+
+                double[] data = {
+                        getTarget(),
+                        getCurrentPosition(),
+                        controller.getError(),
+                        controller.getIntegral(),
+                        controller.getDerivative(),
+                        controller.getOutput()
+                };
+                try
+                {
+                    datalogger.log(data);
+                }
+                catch (IOException e)
+                {
+                    log.e(e);
+                }
+
                 if (Thread.interrupted())
                 {
                     motor.setPower(0);
                     controller.resetIntegrator();
+                    try
+                    {
+                        datalogger.close();
+                    } catch (IOException e)
+                    {
+                        log.e(e);
+                    }
                     return;
                 }
+            }
+        }
+
+        void startLogging()
+        {
+            try
+            {
+                datalogger.startClip();
+            } catch (IOException e)
+            {
+                log.e(e);
             }
         }
         
@@ -438,22 +489,47 @@ public class MotorController implements Closeable
         return controller.isHolding();
     }
 
-
+    /**
+     * Access the internal {@link PIDController}. Use this to access data for logging.
+     * @return The internal PIDController
+     */
     public PIDController getInternalController()
     {
         if (closed) throw new IllegalStateException("Motor controller closed");
         return controller.getInternalController();
     }
 
+    /**
+     * Get the current motor output. NOTE that this is different from {@link PIDController#getOutput()}
+     * because the motor controller does some adjustments (specifically, power and steady-state error).
+     * @return The current motor power
+     */
     public double getOutput()
     {
+        if (closed) throw new IllegalStateException("Motor controller closed");
         return controller.motor.getPower();
     }
 
+    /**
+     * Tell the controller whether to keep holding the motor when it appears to be stalled.
+     * @param hold If true, keep holding when stalled. Otherwise, stop after 2 seconds of stall.
+     */
     public void holdStalled(boolean hold)
     {
+        if (closed) throw new IllegalStateException("Motor controller closed");
         controller.holdStalled = hold;
     }
+
+    /**
+     * Enable motor controller logging. NOTE that a log file will be generated regardless of whether
+     * this function is called!
+     */
+    public void startLogging()
+    {
+        if (closed) throw new IllegalStateException("Motor controller closed");
+        controller.startLogging();
+    }
+
     /**
      * Close the motor controller. Attempting to access any of the methods (except
      * {@link #closed()}) after the controller has been closed will throw an IllegalStateException.
