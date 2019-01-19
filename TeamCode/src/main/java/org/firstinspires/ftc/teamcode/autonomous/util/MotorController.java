@@ -5,11 +5,14 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.DataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.PIDController;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
 
 import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * DC motor controller. Replacement for the buggy built-in REV motor controller.
@@ -34,6 +37,7 @@ public class MotorController implements Closeable
         protected PIDController controller;
         
         private long stall_begin;
+        private DataLogger datalogger;
         
         public final int sse;
         
@@ -47,7 +51,7 @@ public class MotorController implements Closeable
             if (!noReset)
             {
                 motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
             controller = new PIDController(0, 0, 0);
         }
@@ -80,14 +84,15 @@ public class MotorController implements Closeable
 
                     double speed = controller.process(getCurrentPosition());
                     speed = Utils.constrain(speed, -1, 1) * power;
-                    if (Math.abs(controller.getError()) < sse)
+                    if (Math.abs(controller.getError()) < sse && Math.abs(controller.getDerivative()) < 2)
                     {
-                        if (stopNearTarget && Math.abs(controller.getDerivative()) < 2)
+                        if (stopNearTarget)
                         {
                             stopHolding();
                             stopNearTarget = false;
                         }
                         speed = 0;
+                        controller.resetIntegrator();
                         if (atTarget != null) atTarget.run();
                     }
                     motor.setPower(speed);

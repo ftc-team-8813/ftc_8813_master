@@ -56,6 +56,7 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
             int i = 0;
             for (MatOfPoint contour : new ArrayList<>(data.contours))
             {
+                if (contour == null) continue;
                 MatOfPoint2f contour2f = new MatOfPoint2f(contour.toArray());
                 double perim = Imgproc.arcLength(contour2f, true);
                 int edgeCount = contour.height();

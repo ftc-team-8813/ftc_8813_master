@@ -29,11 +29,11 @@ public class PIDController
 
         if (integral * kI > integratorCutoff)
         {
-            integral = integratorCutoff;
+            integral = integratorCutoff / kI;
         }
         else if (integral * kI < -integratorCutoff)
         {
-            integral = -integratorCutoff;
+            integral = -integratorCutoff / kI;
         }
 
         lastOutput = error * kP + integral * kI + derivative * kD;

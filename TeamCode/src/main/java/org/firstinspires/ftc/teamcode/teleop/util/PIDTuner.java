@@ -29,7 +29,8 @@ public class PIDTuner extends OpMode
     private int changing = 0;
     private long start;
 
-    private DataOutputStream logger;
+    private Thread logThread;
+    private Logging logger;
     
     @Override
     public void init() {
@@ -40,44 +41,127 @@ public class PIDTuner extends OpMode
         }
         controller = new MotorController(hardwareMap.dcMotor.get("intake pivot"), new Config(Config.configFile));
         buttons = new ButtonHelper(gamepad1);
-        //controller.setPIDConstants(0, 0, 0);
+        controller.setPIDConstants(0, 0, 0);
         controller.setPower(0.5);
         controller.holdStalled(true);
         controller.hold(0);
 
-        File log = new File(Config.storageDir + "pidLog.txt");
-        try
+        logger = new Logging();
+        logThread = new Thread(logger);
+        logThread.setDaemon(true);
+        logThread.start();
+    }
+
+    private class Logging implements Runnable
+    {
+        public static final int WAITING = 0;
+        public static final int STARTING = 1;
+        public static final int LOGGING = 2;
+
+        private DataOutputStream logger;
+        public volatile int state;
+        public volatile double kP, kI, kD;
+
+        public Logging()
         {
-            logger = new DataOutputStream(new FileOutputStream(log));
-        } catch (FileNotFoundException e)
-        {
-            logger = null;
-        }
-        if (logger != null)
-        {
-            final String[] names = {"kP",      "kI",    "kD",    "target", "position", "error", "integral", "deriv", "output"};
-            final int[] colors = {0x7F0000, 0x007F00, 0x00007F,  0xFFFF00,  0x00FF00, 0xFF0000, 0x7F00FF,  0x00FFFF, 0xFFFFFF};
+            File log = new File(Config.storageDir + "pidLog.dat");
             try
             {
-                logger.write("LOGp".getBytes(Charset.forName("UTF-8")));
-                logger.writeInt(names.length);
-                for (int i = 0; i < names.length; i++)
+                logger = new DataOutputStream(new FileOutputStream(log));
+            } catch (FileNotFoundException e)
+            {
+                logger = null;
+            }
+            if (logger != null)
+            {
+                final String[] names = {"kP",      "kI",    "kD",    "target", "position", "error", "integral", "deriv", "output"};
+                final int[] colors = {0xAA0000, 0x00AA00, 0x0000AA,  0xFFFF00,  0x00FF00, 0xFF0000, 0x7F00FF,  0x00FFFF, 0xFFFFFF};
+                try
                 {
-                    logger.writeInt(colors[i]);
-                    logger.write(names[i].getBytes(Charset.forName("UTF-8")));
-                    logger.write(0x00); // Null termination
+                    logger.write("LOGp".getBytes(Charset.forName("UTF-8")));
+                    logger.writeInt(names.length);
+                    for (int i = 0; i < names.length; i++)
+                    {
+                        logger.writeInt(colors[i]);
+                        logger.write(names[i].getBytes(Charset.forName("UTF-8")));
+                        logger.write(0x00); // Null termination
+                    }
+                } catch (IOException e)
+                {
+                    try
+                    {
+                        logger.close();
+                    }
+                    catch (IOException e1) {}
+                    finally
+                    {
+                        logger = null;
+                    }
                 }
-            } catch (IOException e)
+            }
+        }
+
+        @Override
+        public void run()
+        {
+            while (true)
             {
                 try
                 {
-                    logger.close();
+                    switch (state)
+                    {
+                        case STARTING:
+                            logger.writeDouble(Double.NaN);
+                            start = System.nanoTime();
+                            state = LOGGING;
+                            // Drop down to LOGGING so that we have even more data points
+                        case LOGGING:
+                            log(new double[]{kP, kI, kD,
+                                    controller.getTargetPosition(), controller.getCurrentPosition(),
+                                    controller.getInternalController().getError(),
+                                    controller.getInternalController().getIntegral(),
+                                    controller.getInternalController().getDerivative(),
+                                    controller.getOutput()}, start);
+                            break;
+                    }
                 }
-                catch (IOException e1) {}
-                finally
+                catch (IOException e)
                 {
-                    logger = null;
+                    break;
                 }
+                try
+                {
+                    // Allow the CPU to rest for ~1 microsecond
+                    Thread.sleep(0, 1000);
+                }
+                catch (InterruptedException e)
+                {
+                    break;
+                }
+            }
+            try
+            {
+                logger.close();
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        private void log(double[] data, long start)
+        {
+            try
+            {
+                if (logger == null) return;
+                logger.writeLong(System.nanoTime() - start);
+                for (double d : data)
+                {
+                    logger.writeDouble(d);
+                }
+            }
+            catch (IOException e)
+            {
+                telemetry.addData("Logging error", e.getMessage());
             }
         }
     }
@@ -131,51 +215,34 @@ public class PIDTuner extends OpMode
         telemetry.addData("kD", constants[2]);
         if (gamepad1.left_bumper)
         {
-            if (buttons.pressing(ButtonHelper.left_bumper))
-            {
-                try
-                {
-                    logger.writeDouble(Double.NaN);
-                } catch (IOException e)
-                {
-                    telemetry.addData("Log error", e.getMessage());
-                }
-                start = System.nanoTime();
-            }
+            logger.kP = constants[0];
+            logger.kI = constants[1];
+            logger.kD = constants[2];
             telemetry.addData("Logging", "");
-            log(new double[]{constants[0], constants[1], constants[2],
-                    controller.getTargetPosition(), controller.getCurrentPosition(),
-                    controller.getInternalController().getError(),
-                    controller.getInternalController().getIntegral(),
-                    controller.getInternalController().getDerivative(),
-                    controller.getOutput()}, start);
+        }
+        else
+        {
+            logger.state = Logging.WAITING;
+        }
+        if (buttons.pressing(ButtonHelper.left_bumper))
+        {
+            logger.state = Logging.STARTING;
         }
     }
 
     // kP kI kD target position error integral deriv output
-    private void log(double[] data, long start)
-    {
-        try
-        {
-            if (logger == null) return;
-            logger.writeLong(System.nanoTime() - start);
-            for (double d : data)
-            {
-                logger.writeDouble(d);
-            }
-        }
-        catch (IOException e)
-        {
-            telemetry.addData("Logging error", e.getMessage());
-        }
-    }
+
     
     @Override
     public void stop() {
+
+        logThread.interrupt();
+        // Allow the interrupt to be interpreted
         try
         {
-            logger.close();
-        } catch (IOException e)
+            Thread.sleep(5);
+        }
+        catch (InterruptedException e)
         {
             e.printStackTrace();
         }
