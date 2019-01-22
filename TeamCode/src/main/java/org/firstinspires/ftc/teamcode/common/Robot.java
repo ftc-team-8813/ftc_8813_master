@@ -30,6 +30,7 @@ public class Robot
 
     // Servos
     public final Servo dunk;
+    public final Servo hook;
 
     // Sensors
     public final IMU imu;
@@ -68,6 +69,7 @@ public class Robot
 
         // Servos
         dunk = hardwareMap.servo.get("dunk");
+        hook = hardwareMap.servo.get("hook");
 
         // Sensors
         if (Persistent.get("imu") != null)
@@ -131,16 +133,18 @@ public class Robot
 
     public void initPivot() throws InterruptedException
     {
-        intakePivot.setPower(-0.25);
-        while (!pivotLimit.pressed())
+        intakePivot.setPower(-0.4);
+        int i = 0;
+        while (!pivotLimit.pressed() && i < 1000)
         {
             Thread.sleep(1);
+            i++;
         }
         intakePivot.setPower(0);
         Thread.sleep(100);
         intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        pivot.setPower(0.5);
+        pivot.setPower(0.75);
         pivot.hold(15);
     }
 

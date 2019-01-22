@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskFindGold;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
+import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.sensors.vision.ShapeGoldDetector;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -33,18 +34,19 @@ public class OpenCVTest extends BaseAutonomous
     @Override
     public void run() throws InterruptedException
     {
+        Robot robot = Robot.instance();
         CameraStream stream = getCameraStream();
         detector = new ShapeGoldDetector();
         stream.addModifier(detector);
         stream.addListener(detector);
 
-        DcMotor left = hardwareMap.dcMotor.get("left rear");
-        DcMotor right = hardwareMap.dcMotor.get("right rear");
+        DcMotor left = robot.leftRear;
+        DcMotor right = robot.rightRear;
         left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        DcMotor lf = hardwareMap.dcMotor.get("left front");
-        DcMotor rf = hardwareMap.dcMotor.get("right front");
+        DcMotor lf = robot.leftFront;
+        DcMotor rf = robot.rightFront;
         lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 

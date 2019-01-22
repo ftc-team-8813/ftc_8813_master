@@ -97,7 +97,7 @@ public class DataLogger implements AutoCloseable
 
     public synchronized void stopLogging()
     {
-        logThread.interrupt();
+        if (logThread != null) logThread.interrupt();
     }
 
     @Override

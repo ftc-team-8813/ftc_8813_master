@@ -20,6 +20,9 @@ public class MainTeleOp extends OpMode
     private boolean slow;
     private ButtonHelper buttonHelper_1;
     private ButtonHelper buttonHelper_2;
+
+    private boolean liftingDunk = false;
+
     
     @Override
     public void init()
@@ -35,7 +38,7 @@ public class MainTeleOp extends OpMode
         {
             e.printStackTrace();
         }
-        robot.dunk.setPosition(0);
+        robot.dunk.setPosition(0.1);
     }
     
     @Override
@@ -53,17 +56,35 @@ public class MainTeleOp extends OpMode
         {
             robot.leftDunk.setPower(-liftPower);
             robot.rightDunk.setPower(liftPower);
-            if (Math.abs(liftPower) > 0) robot.dunk.setPosition(0.028);
+            if (Math.abs(liftPower) > 0) liftingDunk = true;
         }
         if (liftPower <= 0 && robot.liftLimit.pressed())
-            robot.dunk.setPosition(0);
+        {
+            liftingDunk = false;
+            robot.dunk.setPosition(0.05);
+        }
 
         if (buttonHelper_1.pressing(ButtonHelper.b))
         {
-            if (robot.dunk.getPosition() == 0.2)
-                robot.dunk.setPosition(0);
+            liftingDunk = false;
+            if (robot.dunk.getPosition() > 0.4)
+                robot.dunk.setPosition(0.05);
             else
-                robot.dunk.setPosition(0.2);
+                robot.dunk.setPosition(0.75);
+        }
+
+        if (liftingDunk)
+        {
+            if (robot.dunk.getPosition() < 0.36) robot.dunk.setPosition(robot.dunk.getPosition() + 0.008);
+            else liftingDunk = false;
+        }
+
+        if (buttonHelper_2.pressing(ButtonHelper.b))
+        {
+            if (robot.hook.getPosition() > 0)
+                robot.hook.setPosition(0);
+            else
+                robot.hook.setPosition(0.258);
         }
 
         robot.intake.setPower(intake_mode * 0.5);
@@ -87,11 +108,11 @@ public class MainTeleOp extends OpMode
         }
         else if (buttonHelper_2.pressing(ButtonHelper.dpad_left))
         {
-            robot.pivot.hold(600);
+            robot.pivot.hold(800);
         }
         else if (buttonHelper_2.pressing(ButtonHelper.dpad_right))
         {
-            robot.pivot.hold(988);
+            robot.pivot.startRunToPosition(robot.pivot.getCurrentPosition() + 50);
         }
         else if (buttonHelper_2.pressing(ButtonHelper.dpad_down))
         {
@@ -106,6 +127,7 @@ public class MainTeleOp extends OpMode
         telemetry.addData("Slow", slow);
         telemetry.addData("Pivot limit switch", robot.pivotLimit.pressed() ? "Pressed" : "Released");
         telemetry.addData("Lift limit switch", robot.liftLimit.pressed() ? "Pressed" : "Released");
+        telemetry.addData("Dunk Position", robot.dunk.getPosition());
     }
 
     @Override

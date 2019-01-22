@@ -86,10 +86,10 @@ public class TaskFindGold implements Task, CameraStream.OutputModifier
 
                 // Bias
                 double l =  0.2;
-                double r = -0.2;
+                double r =  0.2;
 
                 // Turn amount
-                if (e < 0) r -= e * 0.3;
+                if (e < 0) r += e * 0.3;
                 else       l -= e * 0.3;
 
                 telemetry.addData("Left", l);

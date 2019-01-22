@@ -15,7 +15,7 @@ public class MainAutonomous extends BaseAutonomous
     @Override
     public void run() throws InterruptedException
     {
-        Robot robot = Robot.initialize(hardwareMap, config);
+        Robot robot = Robot.instance();
         robot.initPivot();
         robot.leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         robot.rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -35,11 +35,9 @@ public class MainAutonomous extends BaseAutonomous
         left.setPower(0);
         right.setPower(0);
 
-        right.setDirection(DcMotorSimple.Direction.FORWARD);
         new TaskFindGold(left, right, detector).runTask();
         telemetry.clearAll();
         telemetry.update();
-        right.setDirection(DcMotorSimple.Direction.REVERSE);
 
         left.setPower(0.5);
         right.setPower(0.5);

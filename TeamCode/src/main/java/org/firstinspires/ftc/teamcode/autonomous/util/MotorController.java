@@ -53,6 +53,7 @@ public class MotorController implements Closeable
                 motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
+            this.atTarget = atTarget;
             controller = new PIDController(0, 0, 0);
             try
             {
@@ -169,6 +170,11 @@ public class MotorController implements Closeable
         {
             controller.setTarget(target);
             log.d("Position set to %d", target);
+        }
+
+        void runAtTarget(Runnable atTarget)
+        {
+            this.atTarget = atTarget;
         }
         
         int getTarget()
