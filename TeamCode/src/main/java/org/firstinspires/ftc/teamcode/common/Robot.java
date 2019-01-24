@@ -135,7 +135,7 @@ public class Robot
     {
         intakePivot.setPower(-0.4);
         int i = 0;
-        while (!pivotLimit.pressed() && i < 1000)
+        while (!pivotLimit.pressed() && i < 6000)
         {
             Thread.sleep(1);
             i++;

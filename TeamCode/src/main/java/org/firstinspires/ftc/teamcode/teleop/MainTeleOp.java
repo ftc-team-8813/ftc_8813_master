@@ -22,6 +22,7 @@ public class MainTeleOp extends OpMode
     private ButtonHelper buttonHelper_2;
 
     private boolean liftingDunk = false;
+    private boolean pivotingDown = false;
 
     
     @Override
@@ -56,7 +57,11 @@ public class MainTeleOp extends OpMode
         {
             robot.leftDunk.setPower(-liftPower);
             robot.rightDunk.setPower(liftPower);
-            if (Math.abs(liftPower) > 0) liftingDunk = true;
+            if (Math.abs(liftPower) > 0)
+            {
+                liftingDunk = true;
+                if (robot.pivot.getTargetPosition() == 15) robot.pivot.hold(250);
+            }
         }
         if (liftPower <= 0 && robot.liftLimit.pressed())
         {
@@ -75,7 +80,7 @@ public class MainTeleOp extends OpMode
 
         if (liftingDunk)
         {
-            if (robot.dunk.getPosition() < 0.36) robot.dunk.setPosition(robot.dunk.getPosition() + 0.008);
+            if (robot.dunk.getPosition() < 0.36) robot.dunk.setPosition(robot.dunk.getPosition() + 0.01);
             else liftingDunk = false;
         }
 
@@ -112,11 +117,19 @@ public class MainTeleOp extends OpMode
         }
         else if (buttonHelper_2.pressing(ButtonHelper.dpad_right))
         {
-            robot.pivot.startRunToPosition(robot.pivot.getCurrentPosition() + 50);
+            robot.pivot.stopHolding();
+            pivotingDown = true;
         }
         else if (buttonHelper_2.pressing(ButtonHelper.dpad_down))
         {
             robot.pivot.hold(1300);
+        }
+        if (pivotingDown)
+        {
+            if (robot.pivot.isHolding()) pivotingDown = false;
+            if (robot.intakePivot.getCurrentPosition() >= 300) pivotingDown = false;
+            if (!pivotingDown) robot.intakePivot.setPower(0);
+            else robot.intakePivot.setPower(0.75);
         }
 
         if (buttonHelper_1.pressing(ButtonHelper.right_stick_button))
