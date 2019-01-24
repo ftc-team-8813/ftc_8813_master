@@ -81,7 +81,7 @@ public class TaskFindGold implements Task, CameraStream.OutputModifier
                 }
                 seen = true;
                 // Horizontal error, normalized
-                double e = (detector.getLocation().x / 640 - 0.5) * 2;
+                double e = -(detector.getLocation().y / 480 - 0.5) * 2;
                 telemetry.addData("Error", e);
 
                 // Bias
@@ -89,11 +89,12 @@ public class TaskFindGold implements Task, CameraStream.OutputModifier
                 double r =  0.2;
 
                 // Turn amount
-                if (e < 0) r += e * 0.3;
-                else       l -= e * 0.3;
+                if (e < 0) r += e * 0.4;
+                else       l -= e * 0.4;
 
                 telemetry.addData("Left", l);
                 telemetry.addData("Right", r);
+                telemetry.addData("Error", e);
 
                 left.setPower(l*2);
                 right.setPower(r*2);

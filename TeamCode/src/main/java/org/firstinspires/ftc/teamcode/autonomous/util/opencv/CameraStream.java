@@ -14,6 +14,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * CameraStream - Listen for camera input and return Mat frames when it is available. This class
@@ -29,8 +30,9 @@ public class CameraStream
     //Smurf mode -- swap red and blue color channels in the output image for EPIC results :)
     private static final boolean SMURF_MODE = false;
     
-    private volatile List<CameraListener> listeners = new ArrayList<>();
-    private volatile List<OutputModifier> modifiers = new ArrayList<>();
+    private volatile List<CameraListener> listeners = new Vector<>();
+    private volatile List<OutputModifier> modifiers = new Vector<>();
+
     
     public void addListener(CameraListener l)
     {
@@ -74,7 +76,6 @@ public class CameraStream
                 uiRunning = false;
             }
         });
-        while (uiRunning) ;
     }
     
     public static interface CameraListener
@@ -121,7 +122,8 @@ public class CameraStream
                     l.processFrame(copyFrame);
                 }
                 Mat out = frame;
-                for (OutputModifier m : modifiers)
+                OutputModifier[] currentModifiers = modifiers.toArray(new OutputModifier[0]);
+                for (OutputModifier m : currentModifiers)
                 {
                     out = m.draw(out);
                 }
