@@ -24,6 +24,8 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
     private boolean seen = false;
     private Thread workerThread;
 
+    private static final double ASPECT_TOLERANCE = 0.3;
+
     public ShapeGoldDetector()
     {
         worker = new Worker();
@@ -61,6 +63,8 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
                 double perim = Imgproc.arcLength(contour2f, true);
                 int edgeCount = contour.height();
                 boolean convex = Imgproc.isContourConvex(contour);
+                Rect rect = Imgproc.boundingRect(contour);
+                double aspectRatio = (double)rect.height / rect.width;
 
                 Scalar color = new Scalar(0, 127, 0);
                 int thickness = 2;
@@ -72,6 +76,10 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
                 if (edgeCount < 4 || edgeCount > 6)
                 {
                     color = new Scalar(0, 0, 127);
+                }
+                if (aspectRatio < 1 - ASPECT_TOLERANCE || aspectRatio > 1 + ASPECT_TOLERANCE)
+                {
+                    color = new Scalar(0, 127, 127);
                 }
                 if (i == data.contours.size()-1)
                 {
@@ -186,7 +194,11 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
 
                 MatOfPoint ipoly = new MatOfPoint(poly.toArray());
                 overlayData.contours.add(ipoly);
-                if (perim >= 100 && poly.height() >= 4 && poly.height() <= 6 && Imgproc.isContourConvex(ipoly))
+                Rect rect = Imgproc.boundingRect(ipoly);
+                double aspectRatio = (double)rect.height / rect.width;
+                if (perim >= 100 && poly.height() >= 4 && poly.height() <= 6
+                        && Imgproc.isContourConvex(ipoly)
+                        && aspectRatio >= 1 - ASPECT_TOLERANCE && aspectRatio <= 1 + ASPECT_TOLERANCE)
                 {
                     double area = Imgproc.contourArea(poly);
                     if (bestArea < area)
@@ -208,6 +220,11 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
                 overlayData.goldRect = Imgproc.boundingRect(bestContour);
                 overlayData.contours.add(bestContour);
                 overlayData.goldCenters.add(center);
+            }
+            else
+            {
+                overlayData.goldRect = null;
+                overlayData.goldCenters.clear();
             }
             mask.release();
             image.release();
