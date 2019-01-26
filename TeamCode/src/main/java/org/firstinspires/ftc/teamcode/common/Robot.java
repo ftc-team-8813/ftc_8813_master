@@ -287,8 +287,7 @@ public class Robot
         }
 
         // Measuring distance from rear motors as they have more traction
-        int startLeft = leftRear.getCurrentPosition();
-        int startRight = rightRear.getCurrentPosition();
+        // Motor controller init resets the encoders, so we can start from 0 (yay!)
 
         MotorController ml = new MotorController(leftRear, config);
         MotorController mr = new MotorController(rightRear, config);
@@ -303,8 +302,8 @@ public class Robot
         rightFront.setPower(0);
         mr.setPower(Math.abs(powerRight));
 
-        ml.startRunToPosition(startLeft + distLeft);
-        mr.startRunToPosition(startRight + distRight);
+        ml.startRunToPosition(distLeft);
+        mr.startRunToPosition(distRight);
 
         boolean leftBusy = true, rightBusy = true;
 

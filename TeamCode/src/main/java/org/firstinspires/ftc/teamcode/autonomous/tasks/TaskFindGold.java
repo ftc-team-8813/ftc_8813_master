@@ -60,7 +60,7 @@ public class TaskFindGold implements Task, CameraStream.OutputModifier
         boolean seen = false;
 
         // TODO: Rotate slowly left and right so that the camera can see all of the sampling zones
-        while (!Thread.interrupted() && (continuous || seen || System.currentTimeMillis() - lostTime < 1500))
+        while (continuous || seen || System.currentTimeMillis() - lostTime < 1500)
         {
             telemetry.update();
             telemetry.clearAll();
@@ -75,8 +75,11 @@ public class TaskFindGold implements Task, CameraStream.OutputModifier
                 {
                     left.setPower(0);
                     right.setPower(0);
-                    lostTime = System.currentTimeMillis();
-                    seen = false;
+                    if (seen)
+                    {
+                        lostTime = System.currentTimeMillis();
+                        seen = false;
+                    }
                     continue;
                 }
                 seen = true;
@@ -99,6 +102,7 @@ public class TaskFindGold implements Task, CameraStream.OutputModifier
                 left.setPower(l*2);
                 right.setPower(r*2);
             }
+            Thread.sleep(1); // Throws InterruptedException properly
         }
         stream.removeModifier(detector);
         stream.removeListener(detector);

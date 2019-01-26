@@ -392,7 +392,7 @@ public class MotorController implements Closeable
     
     /**
      * Start holding a certain position. Blocks until the motor position is within 5 encoder counts
-     * of the target position.
+     * of the target position. Keeps holding after reaching the position.
      *
      * @param position The new position to drive to
      * @throws InterruptedException  if the thread is interrupted while waiting for the motor to

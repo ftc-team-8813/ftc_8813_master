@@ -86,10 +86,10 @@ public class MainTeleOp extends OpMode
 
         if (buttonHelper_2.pressing(ButtonHelper.b))
         {
-            if (robot.hook.getPosition() > 0)
-                robot.hook.setPosition(0);
+            if (robot.hook.getPosition() > 0.3)
+                robot.hook.setPosition(0.24);
             else
-                robot.hook.setPosition(0.258);
+                robot.hook.setPosition(0.45);
         }
 
         robot.intake.setPower(intake_mode * 0.5);
