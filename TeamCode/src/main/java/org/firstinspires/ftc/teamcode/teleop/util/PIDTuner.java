@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.teleop.util;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -22,6 +23,7 @@ import java.nio.charset.Charset;
  */
 
 @TeleOp(name = "PID Tuner", group = "test")
+@Disabled
 public class PIDTuner extends OpMode
 {
     

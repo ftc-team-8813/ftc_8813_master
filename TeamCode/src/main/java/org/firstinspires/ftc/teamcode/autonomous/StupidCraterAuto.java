@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.common.Robot;
 
+@Disabled
 @Autonomous(name="Basic Crater Auto")
 public class StupidCraterAuto extends BaseAutonomous
 {

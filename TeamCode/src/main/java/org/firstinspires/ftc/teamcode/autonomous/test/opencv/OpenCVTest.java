@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous.test.opencv;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
@@ -13,6 +14,7 @@ import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+@Disabled
 @Autonomous(name="OpenCV test")
 public class OpenCVTest extends BaseAutonomous
 {

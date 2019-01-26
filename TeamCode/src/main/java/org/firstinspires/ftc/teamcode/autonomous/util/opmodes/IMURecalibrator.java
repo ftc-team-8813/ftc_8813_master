@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.autonomous.util.opmodes;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.Task;
@@ -14,6 +15,7 @@ import java.io.File;
 /**
  * Created by aidan on 3/24/18.
  */
+@Disabled
 @Autonomous(name = "IMU Recalibration", group = "util")
 public class IMURecalibrator extends BaseAutonomous
 {
