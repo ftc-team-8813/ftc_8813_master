@@ -103,34 +103,18 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 
         // Stop the intake
         robot.intake.setPower(0);
-
-        // Partially raise the intake
-        robot.pivot.hold(800);
-        Thread.sleep(500);
-
-        robot.reverse(5, 0.25);
-        int dist = (int)((Robot.RADIUS_INCH) * Math.PI * Robot.ENC_PER_INCH * 2);
-        robot.leftRear.setPower(0.12);
-        robot.rightRear.setPower(-0.12);
-        int start = robot.leftRear.getCurrentPosition();
-        while (robot.leftRear.getCurrentPosition() - start < dist) Thread.sleep(1);
-        robot.leftRear.setPower(0);
-        robot.rightRear.setPower(0);
-
-        robot.dunk.setPosition(0.75);
-        Thread.sleep(250);
-        robot.dunk.setPosition(0.15);
         Thread.sleep(500);
 
         // Raise the intake
-        robot.pivot.runToPosition(50);
+        robot.pivot.hold(50);
+        Thread.sleep(1200);
 
         // Put the mineral in the dunk bucket
         robot.intake.setPower(-0.5);
         Thread.sleep(500);
         robot.intake.setPower(0);
 
-
+        robot.forward(24, 0.5);
     }
 
     @Override
