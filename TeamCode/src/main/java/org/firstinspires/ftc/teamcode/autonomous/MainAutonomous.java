@@ -22,6 +22,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 {
 
     private VideoWriter writer;
+    private volatile boolean closed = false;
 
     @Override
     public void run() throws InterruptedException
@@ -73,24 +74,37 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 
         robot.forward(5, 0.25);
 
-        if (!detector.goldSeen())
+        while (!detector.goldSeen())
         {
-            left.setPower(0.13);
-            right.setPower(-0.13);
-            Thread.sleep(1200);
-            left.setPower(0);
-            right.setPower(0);
-            Thread.sleep(700);
-        }
+            if (!detector.goldSeen())
+            {
+                left.setPower(0.13);
+                right.setPower(-0.13);
+                Thread.sleep(1200);
+                left.setPower(0);
+                right.setPower(0);
+                Thread.sleep(700);
+            }
+            if (!detector.goldSeen())
+            {
+                // Pan counterclockwise
+                left.setPower(-0.07);
+                right.setPower(0.07);
+                long time = System.currentTimeMillis();
+                while (!detector.goldSeen() && opModeIsActive() && System.currentTimeMillis() - time < 4800) Thread.sleep(1);
+                left.setPower(0);
+                right.setPower(0);
+                Thread.sleep(500);
+            }
+            if (!detector.goldSeen())
+            {
 
-        if (!detector.goldSeen())
-        {
-            // Pan counterclockwise
-            left.setPower(-0.1);
-            right.setPower(0.1);
-            while (!detector.goldSeen() && opModeIsActive()) Thread.sleep(1);
-            left.setPower(0);
-            right.setPower(0);
+                left.setPower(0.13);
+                right.setPower(-0.13);
+                Thread.sleep(1200);
+                left.setPower(0);
+                right.setPower(0);
+            }
         }
 
         new TaskFindGold(left, right, detector).runTask();
@@ -131,15 +145,17 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
     }
 
     @Override
-    public void finish() throws InterruptedException
+    public synchronized void finish() throws InterruptedException
     {
+        closed = true;
         writer.release();
         Utils.scanFile(new File(Config.storageDir + "autonomous_capture.mp4"));
     }
 
     @Override
-    public Mat draw(Mat bgr)
+    public synchronized Mat draw(Mat bgr)
     {
+        if (closed) return bgr;
         Mat m2 = new Mat();
         Core.rotate(bgr, m2, Core.ROTATE_90_COUNTERCLOCKWISE);
         writer.write(m2);

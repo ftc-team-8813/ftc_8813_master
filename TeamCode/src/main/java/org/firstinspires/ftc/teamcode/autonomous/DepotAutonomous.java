@@ -22,6 +22,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
 {
 
     private VideoWriter writer;
+    private boolean closed = false;
 
     @Override
     public void run() throws InterruptedException
@@ -86,8 +87,8 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         if (!detector.goldSeen())
         {
             // Pan counterclockwise
-            left.setPower(-0.1);
-            right.setPower(0.1);
+            left.setPower(-0.07);
+            right.setPower(0.07);
             while (!detector.goldSeen() && opModeIsActive()) Thread.sleep(1);
             left.setPower(0);
             right.setPower(0);
@@ -152,6 +153,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
     @Override
     public void finish() throws InterruptedException
     {
+        closed = true;
         writer.release();
         Utils.scanFile(new File(Config.storageDir + "autonomous_capture.mp4"));
     }
@@ -159,6 +161,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
     @Override
     public Mat draw(Mat bgr)
     {
+        if (closed) return bgr;
         Mat m2 = new Mat();
         Core.rotate(bgr, m2, Core.ROTATE_90_COUNTERCLOCKWISE);
         writer.write(m2);
