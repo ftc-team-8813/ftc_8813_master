@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.Scheduler;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 
 /**
@@ -24,6 +25,8 @@ public class MainTeleOp extends OpMode
     private boolean liftingDunk = false;
     private boolean pivotingDown = false;
 
+    private Scheduler scheduler = new Scheduler();
+
     
     @Override
     public void init()
@@ -39,6 +42,7 @@ public class MainTeleOp extends OpMode
         {
             e.printStackTrace();
         }
+
         robot.dunk.setPosition(0.1);
     }
     
@@ -75,7 +79,17 @@ public class MainTeleOp extends OpMode
             if (robot.dunk.getPosition() > 0.4)
                 robot.dunk.setPosition(0.05);
             else
+            {
                 robot.dunk.setPosition(0.75);
+                scheduler.add("Pull Back Dunk",750, new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        robot.dunk.setPosition(0.5);
+                    }
+                });
+            }
         }
 
         if (liftingDunk)
@@ -136,6 +150,8 @@ public class MainTeleOp extends OpMode
         {
             slow = !slow;
         }
+
+        scheduler.update();
         telemetry.addData("Intake Mode", intake_mode);
         telemetry.addData("Slow", slow);
         telemetry.addData("Pivot limit switch", robot.pivotLimit.pressed() ? "Pressed" : "Released");

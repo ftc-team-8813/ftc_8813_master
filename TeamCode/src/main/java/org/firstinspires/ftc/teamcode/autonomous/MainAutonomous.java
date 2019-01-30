@@ -142,6 +142,12 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         robot.intake.setPower(0);
 
         robot.forward(24, 0.5);
+
+        // Drop the intake
+        robot.pivot.stopHolding();
+        robot.intakePivot.setPower(0.5);
+        Thread.sleep(700);
+        robot.intakePivot.setPower(0);
     }
 
     @Override
