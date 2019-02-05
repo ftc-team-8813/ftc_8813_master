@@ -5,16 +5,11 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskFindGold;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.sensors.vision.ShapeGoldDetector;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
 
-@Disabled
 @Autonomous(name="OpenCV test")
 public class OpenCVTest extends BaseAutonomous
 {
@@ -42,8 +37,8 @@ public class OpenCVTest extends BaseAutonomous
         stream.addModifier(detector);
         stream.addListener(detector);
 
-        DcMotor left = robot.leftRear;
-        DcMotor right = robot.rightRear;
+        DcMotor left = robot.leftFront;
+        DcMotor right = robot.rightFront;
         left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -52,6 +47,6 @@ public class OpenCVTest extends BaseAutonomous
         lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        new TaskFindGold(left, right, detector, true).runTask();
+        new TaskSample(detector, true).runTask();
     }
 }

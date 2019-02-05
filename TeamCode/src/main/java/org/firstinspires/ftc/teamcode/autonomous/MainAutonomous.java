@@ -2,18 +2,23 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskFindGold;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDetectGold;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDrop;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
+import org.firstinspires.ftc.teamcode.common.util.Vlogger;
 import org.firstinspires.ftc.teamcode.common.util.sensors.vision.ShapeGoldDetector;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.videoio.VideoWriter;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 
@@ -21,20 +26,29 @@ import java.io.File;
 public class MainAutonomous extends BaseAutonomous implements CameraStream.OutputModifier
 {
 
-    private VideoWriter writer;
-    private volatile boolean closed = false;
+    private Vlogger video;
+    private volatile String state;
+    private volatile long start;
+
+    @Override
+    public void initialize()
+    {
+        Robot robot = Robot.instance();
+        robot.imu.initialize(telemetry);
+        robot.imu.start();
+        video = new Vlogger("autonomous_capture.avi", 480, 640, 10.0);
+    }
 
     @Override
     public void run() throws InterruptedException
     {
-        int fourcc = VideoWriter.fourcc('M', 'J', 'P', 'G');
-        // int fourcc = -1;
-        writer = new VideoWriter(Config.storageDir + "autonomous_capture.avi", fourcc, 10.0, new Size(480, 640));
+        start = System.currentTimeMillis();
+        state = "Initializing";
         // if (!writer.isOpened()) throw new RuntimeException("Couldn't open VideoWriter; fourcc code = " + fourcc);
         Robot robot = Robot.instance();
         robot.initPivot();
-        robot.leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        robot.rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        robot.leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        robot.rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         // Initialize camera
         CameraStream stream = getCameraStream();
@@ -44,83 +58,52 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         stream.addModifier(this);
         // Initialization starts up here so that the camera gets several seconds to warm up
 
-        // Push the robot up
-        robot.pivot.hold(1600);
-        Thread.sleep(1500);
-        robot.pivot.stopHolding();
+        Thread.sleep(4000);
+        // new TaskDrop().runTask();
+
+        DcMotor left = robot.leftFront;
+        DcMotor right = robot.rightFront;
+        left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+//        state = "Back up behind crater";
+//        left.setPower(-0.1);
+//        right.setPower(-0.1);
+//        robot.pivot.stopHolding();
+//        int pivotStart = robot.intakePivot.getCurrentPosition();
+//        while (robot.intakePivot.getCurrentPosition() - pivotStart < 75) Thread.sleep(1);
+//        left.setPower(0);
+//        right.setPower(0);
+//        robot.pivot.hold(200);
+//        Thread.sleep(500);
+
+        state = "Drive forward";
+        robot.forward(5, 0.175);
         Thread.sleep(500);
-        // Drop the lift
-        robot.leftDunk.setPower(-0.75);
-        robot.rightDunk.setPower(0.75);
-        Thread.sleep(750);
-        robot.leftDunk.setPower(0);
-        robot.rightDunk.setPower(0);
-        // Unhook
-        robot.hook.setPosition(0.45);
-        // Raise the intake
-        robot.pivot.hold(250);
-        // Wait for the hook
-        Thread.sleep(2000);
 
-        robot.leftDunk.setPower(0.75);
-        robot.rightDunk.setPower(-0.75);
-        while (!robot.liftLimit.pressed()) Thread.sleep(1);
-        robot.leftDunk.setPower(0);
-        robot.rightDunk.setPower(0);
+        robot.imu.resetHeading();
 
-
-        DcMotor left = robot.leftRear;
-        DcMotor right = robot.rightRear;
-
-        robot.forward(5, 0.25);
-
-        while (!detector.goldSeen())
-        {
-            if (!detector.goldSeen())
-            {
-                left.setPower(0.13);
-                right.setPower(-0.13);
-                Thread.sleep(1200);
-                left.setPower(0);
-                right.setPower(0);
-                Thread.sleep(700);
-            }
-            if (!detector.goldSeen())
-            {
-                // Pan counterclockwise
-                left.setPower(-0.07);
-                right.setPower(0.07);
-                long time = System.currentTimeMillis();
-                while (!detector.goldSeen() && opModeIsActive() && System.currentTimeMillis() - time < 4800) Thread.sleep(1);
-                left.setPower(0);
-                right.setPower(0);
-                Thread.sleep(500);
-            }
-            if (!detector.goldSeen())
-            {
-
-                left.setPower(0.13);
-                right.setPower(-0.13);
-                Thread.sleep(1200);
-                left.setPower(0);
-                right.setPower(0);
-            }
-        }
-
-        new TaskFindGold(left, right, detector).runTask();
+        state = "Detecting Mineral";
+        new TaskDetectGold(detector).runTask();
+        state = "Sampling Mineral";
+        new TaskSample(detector).runTask();
         telemetry.clearAll();
         telemetry.update();
 
 
+        state = "Back up 15 inches";
         // Back up
         robot.reverse(15, 0.25);
 
+        state = "Drop intake";
         // Drop the intake
         robot.pivot.stopHolding();
+        Thread.sleep(15);
         robot.intakePivot.setPower(0.5);
         Thread.sleep(700);
         robot.intakePivot.setPower(0);
 
+        state = "Intake mineral";
         // Run the intake
         robot.intake.setPower(-0.5);
 
@@ -128,45 +111,59 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         robot.forward(15, 0.25);
         Thread.sleep(500);
 
+        state = "Raise intake";
         // Stop the intake
         robot.intake.setPower(0);
-        Thread.sleep(500);
 
         // Raise the intake
         robot.pivot.hold(50);
-        Thread.sleep(1200);
+        Thread.sleep(1000);
 
+        state = "Dump mineral";
         // Put the mineral in the dunk bucket
         robot.intake.setPower(-0.5);
-        Thread.sleep(500);
+        Thread.sleep(200);
         robot.intake.setPower(0);
 
+        state = "Park in crater";
         robot.forward(24, 0.5);
+        Thread.sleep(100);
 
         // Drop the intake
         robot.pivot.stopHolding();
+        Thread.sleep(15);
         robot.intakePivot.setPower(0.5);
         Thread.sleep(700);
         robot.intakePivot.setPower(0);
     }
 
     @Override
-    public synchronized void finish() throws InterruptedException
+    public synchronized void finish()
     {
-        closed = true;
-        writer.release();
+        video.close();
         Utils.scanFile(new File(Config.storageDir + "autonomous_capture.mp4"));
     }
 
     @Override
     public synchronized Mat draw(Mat bgr)
     {
-        if (closed) return bgr;
-        Mat m2 = new Mat();
-        Core.rotate(bgr, m2, Core.ROTATE_90_COUNTERCLOCKWISE);
-        writer.write(m2);
-        m2.release();
+        Mat frame = new Mat();
+        Core.rotate(bgr, frame, Core.ROTATE_90_COUNTERCLOCKWISE);
+        int y = text(frame, state, 0, 10);
+        text(frame, Utils.elapsedTime(System.currentTimeMillis() - start), 0, y);
+        video.put(frame);
+        frame.release();
         return bgr;
+    }
+
+    private int text(Mat m, String text, int x, int y)
+    {
+        int[] base = new int[1];
+        Size textSize = Imgproc.getTextSize(text, Imgproc.FONT_HERSHEY_PLAIN, 1, 1, base);
+        Rect r = new Rect(x, y, (int)textSize.width, (int)textSize.height);
+        Imgproc.rectangle(m, r, new Scalar(0, 0, 0), -1);
+        Imgproc.putText(m, text, new Point(x, y + base[0]), Imgproc.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 255));
+        return base[0] + y + 2;
     }
 
 }

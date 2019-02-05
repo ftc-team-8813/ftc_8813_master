@@ -71,8 +71,9 @@ public class Scheduler
 
     public void update()
     {
-        for (Task t : tasks)
+        for (int i = 0; i < tasks.size(); i++)
         {
+            Task t = tasks.get(i);
             log.d("Running task " + t.name);
             if (System.currentTimeMillis() >= t.start + t.delay)
             {
@@ -83,7 +84,11 @@ public class Scheduler
                     t.start = System.currentTimeMillis();
                     log.d("Repeating task in " + t.delay + "ms");
                 }
-                else tasks.remove(t);
+                else
+                {
+                    tasks.remove(t);
+                    i--;
+                }
             }
         }
     }

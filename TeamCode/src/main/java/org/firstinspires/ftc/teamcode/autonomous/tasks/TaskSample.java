@@ -5,35 +5,37 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
+import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.sensors.vision.ShapeGoldDetector;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-public class TaskFindGold implements Task, CameraStream.OutputModifier
+public class TaskSample implements Task, CameraStream.OutputModifier
 {
     private ShapeGoldDetector detector;
-    private DcMotor left, right;
+    private final DcMotor left, right;
     private Telemetry telemetry;
     private boolean continuous = false;
 
-    public TaskFindGold(DcMotor left, DcMotor right)
+    public TaskSample()
     {
-        this.left = left;
-        this.right = right;
+        Robot robot = Robot.instance();
+        left = robot.leftFront;
+        right = robot.rightFront;
         telemetry = BaseAutonomous.instance().telemetry;
     }
 
-    public TaskFindGold(DcMotor left, DcMotor right, ShapeGoldDetector detector)
+    public TaskSample(ShapeGoldDetector detector)
     {
-        this(left, right);
+        this();
         this.detector = detector;
     }
 
-    public TaskFindGold(DcMotor left, DcMotor right, ShapeGoldDetector detector, boolean continuous)
+    public TaskSample(ShapeGoldDetector detector, boolean continuous)
     {
-        this(left, right, detector);
+        this(detector);
         this.continuous = continuous;
     }
 
@@ -57,11 +59,13 @@ public class TaskFindGold implements Task, CameraStream.OutputModifier
         Thread.sleep(1000); // Wait for the camera to warm up
 
         long lostTime = System.currentTimeMillis();
+        double lpower = 0;
         boolean seen = false;
+        Robot robot = Robot.instance();
 
-        // TODO: Rotate slowly left and right so that the camera can see all of the sampling zones
         while (continuous || seen || System.currentTimeMillis() - lostTime < 1500)
         {
+            robot.imu.update();
             telemetry.update();
             telemetry.clearAll();
             telemetry.addData("Gold on-screen: ", detector.goldSeen());
@@ -73,16 +77,18 @@ public class TaskFindGold implements Task, CameraStream.OutputModifier
                 // If our phone is mounted upside down, horizontal = +Y
                 if (!detector.goldSeen())
                 {
-                    left.setPower(0);
-                    right.setPower(0);
                     if (seen)
                     {
                         lostTime = System.currentTimeMillis();
                         seen = false;
                     }
+                    lpower -= 0.01;
+                    left.setPower(lpower);
+                    right.setPower(lpower);
                     continue;
                 }
                 seen = true;
+                lpower = 0.1;
                 // Horizontal error, normalized
                 double e = -(detector.getLocation().y / 480 - 0.5) * 2;
                 telemetry.addData("Error", e);

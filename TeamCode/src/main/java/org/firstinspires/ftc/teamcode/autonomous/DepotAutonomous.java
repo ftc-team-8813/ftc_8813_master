@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskFindGold;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDetectGold;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
@@ -74,27 +74,9 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
 
         robot.forward(5, 0.25);
 
-        if (!detector.goldSeen())
-        {
-            left.setPower(0.13);
-            right.setPower(-0.13);
-            Thread.sleep(1200);
-            left.setPower(0);
-            right.setPower(0);
-            Thread.sleep(700);
-        }
+        new TaskDetectGold(detector).runTask();
 
-        if (!detector.goldSeen())
-        {
-            // Pan counterclockwise
-            left.setPower(-0.07);
-            right.setPower(0.07);
-            while (!detector.goldSeen() && opModeIsActive()) Thread.sleep(1);
-            left.setPower(0);
-            right.setPower(0);
-        }
-
-        new TaskFindGold(left, right, detector).runTask();
+        new TaskSample(detector).runTask();
         telemetry.clearAll();
         telemetry.update();
 

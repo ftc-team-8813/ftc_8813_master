@@ -78,8 +78,7 @@ public class Robot
         }
         else
         {
-            imu = null;
-            // imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+            imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
             Persistent.put("imu", imu);
         }
         pivotLimit = new Switch(hardwareMap.digitalChannel.get("pivot limit"));

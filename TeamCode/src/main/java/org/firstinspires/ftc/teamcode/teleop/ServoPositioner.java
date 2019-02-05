@@ -25,7 +25,6 @@ import static org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper.dpad_up;
  */
 
 @TeleOp(name = "Servo Positioner")
-@Disabled
 public class ServoPositioner extends OpMode
 {
     

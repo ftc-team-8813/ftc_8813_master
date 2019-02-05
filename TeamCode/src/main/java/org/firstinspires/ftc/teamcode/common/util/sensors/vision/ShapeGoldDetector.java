@@ -24,7 +24,8 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
     private boolean seen = false;
     private Thread workerThread;
 
-    private static final double ASPECT_TOLERANCE = 0.3;
+    private static final double ASPECT_TOLERANCE = 0.4;
+    private static final int MIN_Y = 100;
 
     public ShapeGoldDetector()
     {
@@ -116,6 +117,7 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
                 seen = false;
             }
         }
+        Imgproc.line(bgr, new Point(640 - MIN_Y, 0), new Point(640 - MIN_Y, 480), new Scalar(255, 255, 255), 2);
         return bgr;
     }
 
@@ -174,7 +176,7 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
             Imgproc.cvtColor(image, hsv, Imgproc.COLOR_BGR2HSV);
 
             Mat mask = new Mat();
-            Core.inRange(hsv, new Scalar(10, 120, 40), new Scalar(33, 255, 255), mask);
+            Core.inRange(hsv, new Scalar(10, 100, 40), new Scalar(33, 255, 255), mask);
 
             List<MatOfPoint> contours = new ArrayList<>();
             Mat unused = new Mat();
@@ -196,9 +198,15 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
                 overlayData.contours.add(ipoly);
                 Rect rect = Imgproc.boundingRect(ipoly);
                 double aspectRatio = (double)rect.height / rect.width;
+
+                Moments m = Imgproc.moments(ipoly);
+                Point center = new Point(m.m10 / m.m00,
+                        m.m01 / m.m00);
+
                 if (perim >= 100 && poly.height() >= 4 && poly.height() <= 6
                         && Imgproc.isContourConvex(ipoly)
-                        && aspectRatio >= 1 - ASPECT_TOLERANCE && aspectRatio <= 1 + ASPECT_TOLERANCE)
+                        && aspectRatio >= 1 - ASPECT_TOLERANCE && aspectRatio <= 1 + ASPECT_TOLERANCE
+                        && center.x < 640 -  MIN_Y)
                 {
                     double area = Imgproc.contourArea(poly);
                     if (bestArea < area)

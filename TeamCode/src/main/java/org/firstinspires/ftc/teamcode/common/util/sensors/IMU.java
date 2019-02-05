@@ -29,24 +29,38 @@ public class IMU
     private static final int STARTED = 3;
     
     //The IMU
-    private BNO055IMU imu;
+    private volatile BNO055IMU imu;
     //Its parameters
     private BNO055IMU.Parameters params;
     //The logger
     private Logger log;
     private boolean autoCalibrating;
     private Thread worker;
-    private float heading, roll, pitch;
-    private int status = PRE_INIT;
+    private volatile float heading, roll, pitch;
+    private volatile int status = PRE_INIT;
+
+    private boolean inRadians;
+
+    private float lastAngle;
+    private float angleOffset;
+    private int revolutions;
+
+    private Telemetry telemetry;
     
     public IMU(BNO055IMU imu)
     {
         this.imu = imu;
         log = new Logger("IMU Wrapper");
     }
+
+    public BNO055IMU getInternalImu()
+    {
+        return imu;
+    }
     
     public void initialize(Telemetry telemetry)
     {
+        this.telemetry = telemetry;
         //Initialize telemetry
         TelemetryWrapper.init(telemetry, 5);
         //Set up
@@ -103,8 +117,9 @@ public class IMU
         start(false);
     }
     
-    public void start(final boolean inRadians)
+    public void start(boolean inRadians)
     {
+        this.inRadians = inRadians;
         if (status < INITIALIZED)
         {
             log.f("start() called before initialize()!");
@@ -156,52 +171,46 @@ public class IMU
             status = SETUP;
             TelemetryWrapper.clear();
         }
-        worker = new Thread(new Runnable()
-        {
-            
-            private float lastAngle;
-            private int revolutions;
-            
-            @Override
-            public void run()
-            {
-                while (!Thread.interrupted())
-                {
-                    Orientation o = imu.getAngularOrientation();
-                    float h = o.firstAngle;
-                    roll = o.secondAngle;
-                    pitch = o.thirdAngle;
-                    if (inRadians)
-                    {
-                        h = (float) Math.toDegrees(h);
-                        roll = (float) Math.toDegrees(roll);
-                        pitch = (float) Math.toDegrees(pitch);
-                    }
-                    float delta = h - lastAngle;
-                    if (delta < -300)
-                    {
-                        //Looped past 180 to -179
-                        revolutions++;
-                    } else if (delta > 300)
-                    {
-                        //Looped past -179 to 180
-                        revolutions--;
-                    }
-                    lastAngle = h;
-                    heading = h + 360 * revolutions;
-                    try
-                    {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e)
-                    {
-                        break;
-                    }
-                }
-            }
-        });
-        worker.setDaemon(true);
-        worker.start();
         status = STARTED;
+    }
+
+    public void resetHeading()
+    {
+        update();
+        angleOffset = lastAngle;
+        revolutions = 0;
+    }
+
+    public void update()
+    {
+        Orientation o = imu.getAngularOrientation();
+        float h = o.firstAngle;
+        float r = o.secondAngle;
+        float p = o.thirdAngle;
+        if (inRadians)
+        {
+            h = (float) Math.toDegrees(h);
+            r = (float) Math.toDegrees(roll);
+            p = (float) Math.toDegrees(pitch);
+        }
+        roll = r;
+        pitch = p;
+        float delta = h - lastAngle;
+        if (delta < -300)
+        {
+            //Looped past 180 to -179
+            revolutions++;
+        } else if (delta > 300)
+        {
+            //Looped past -179 to 180
+            revolutions--;
+        }
+        lastAngle = h;
+        heading = h + 360 * revolutions - angleOffset;
+        telemetry.addData("Heading", heading);
+        telemetry.addData("Roll", roll);
+        telemetry.addData("Pitch", pitch);
+        telemetry.update();
     }
     
     public float getHeading()

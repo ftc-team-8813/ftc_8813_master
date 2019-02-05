@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Scheduler;
+import org.firstinspires.ftc.teamcode.common.util.Utils;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 
 /**
@@ -27,6 +28,12 @@ public class MainTeleOp extends OpMode
 
     private Scheduler scheduler = new Scheduler();
 
+    private static final double dunk_min = 0.15;
+    private static final double dunk_up = 0.36;
+    private static final double dunk_dunk = 0.7;
+
+    private long start;
+
     
     @Override
     public void init()
@@ -43,7 +50,13 @@ public class MainTeleOp extends OpMode
             e.printStackTrace();
         }
 
-        robot.dunk.setPosition(0.1);
+        robot.dunk.setPosition(dunk_min);
+    }
+
+    @Override
+    public void start()
+    {
+        start = System.currentTimeMillis();
     }
     
     @Override
@@ -64,29 +77,30 @@ public class MainTeleOp extends OpMode
             if (Math.abs(liftPower) > 0)
             {
                 liftingDunk = true;
-                if (robot.pivot.getTargetPosition() == 15) robot.pivot.hold(250);
+                if (robot.pivot.getTargetPosition() == 15 && robot.pivot.getCurrentPosition() < 250)
+                    robot.pivot.hold(250);
             }
         }
         if (liftPower <= 0 && robot.liftLimit.pressed())
         {
             liftingDunk = false;
-            robot.dunk.setPosition(0.05);
+            robot.dunk.setPosition(dunk_min);
         }
 
         if (buttonHelper_1.pressing(ButtonHelper.b))
         {
             liftingDunk = false;
-            if (robot.dunk.getPosition() > 0.4)
-                robot.dunk.setPosition(0.05);
+            if (robot.dunk.getPosition() > dunk_up + 0.1)
+                robot.dunk.setPosition(dunk_min);
             else
             {
-                robot.dunk.setPosition(0.75);
+                robot.dunk.setPosition(dunk_dunk);
                 scheduler.add("Pull Back Dunk",750, new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        robot.dunk.setPosition(0.5);
+                        robot.dunk.setPosition(dunk_up);
                     }
                 });
             }
@@ -94,14 +108,14 @@ public class MainTeleOp extends OpMode
 
         if (liftingDunk)
         {
-            if (robot.dunk.getPosition() < 0.36) robot.dunk.setPosition(robot.dunk.getPosition() + 0.01);
+            if (robot.dunk.getPosition() < dunk_up) robot.dunk.setPosition(robot.dunk.getPosition() + 0.01);
             else liftingDunk = false;
         }
 
-        if (buttonHelper_2.pressing(ButtonHelper.b))
+        if (buttonHelper_2.pressing(ButtonHelper.x))
         {
             if (robot.hook.getPosition() > 0.3)
-                robot.hook.setPosition(0.24);
+                robot.hook.setPosition(0.10);
             else
                 robot.hook.setPosition(0.45);
         }
@@ -152,6 +166,7 @@ public class MainTeleOp extends OpMode
         }
 
         scheduler.update();
+        telemetry.addData("Time", Utils.elapsedTime(System.currentTimeMillis() - start));
         telemetry.addData("Intake Mode", intake_mode);
         telemetry.addData("Slow", slow);
         telemetry.addData("Pivot limit switch", robot.pivotLimit.pressed() ? "Pressed" : "Released");
