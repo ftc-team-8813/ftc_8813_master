@@ -53,20 +53,6 @@ public class Core {
             DECOMP_NORMAL = 16;
 
 
-    // C++: enum <unnamed>
-    public static final int
-            SVD_MODIFY_A = 1,
-            SVD_NO_UV = 2,
-            SVD_FULL_UV = 4,
-            FILLED = -1,
-            REDUCE_SUM = 0,
-            REDUCE_AVG = 1,
-            REDUCE_MAX = 2,
-            REDUCE_MIN = 3,
-            RNG_UNIFORM = 0,
-            RNG_NORMAL = 1;
-
-
     // C++: enum BorderTypes
     public static final int
             BORDER_CONSTANT = 0,
@@ -92,6 +78,19 @@ public class Core {
             KMEANS_RANDOM_CENTERS = 0,
             KMEANS_PP_CENTERS = 2,
             KMEANS_USE_INITIAL_LABELS = 1;
+
+
+    // C++: enum NormTypes
+    public static final int
+            NORM_INF = 1,
+            NORM_L1 = 2,
+            NORM_L2 = 4,
+            NORM_L2SQR = 5,
+            NORM_HAMMING = 6,
+            NORM_HAMMING2 = 7,
+            NORM_TYPE_MASK = 7,
+            NORM_RELATIVE = 8,
+            NORM_MINMAX = 32;
 
 
     // C++: enum CmpTypes
@@ -189,17 +188,18 @@ public class Core {
             Param_SCALAR = 12;
 
 
-    // C++: enum NormTypes
+    // C++: enum <unnamed>
     public static final int
-            NORM_INF = 1,
-            NORM_L1 = 2,
-            NORM_L2 = 4,
-            NORM_L2SQR = 5,
-            NORM_HAMMING = 6,
-            NORM_HAMMING2 = 7,
-            NORM_TYPE_MASK = 7,
-            NORM_RELATIVE = 8,
-            NORM_MINMAX = 32;
+            SVD_MODIFY_A = 1,
+            SVD_NO_UV = 2,
+            SVD_FULL_UV = 4,
+            FILLED = -1,
+            REDUCE_SUM = 0,
+            REDUCE_AVG = 1,
+            REDUCE_MAX = 2,
+            REDUCE_MIN = 3,
+            RNG_UNIFORM = 0,
+            RNG_NORMAL = 1;
 
 
     // C++: enum RotateFlags

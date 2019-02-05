@@ -17,7 +17,7 @@ OPENCV_MK_DIR:=$(dir $(lastword $(MAKEFILE_LIST)))
 OPENCV_3RDPARTY_LIBS_DIR:=$(OPENCV_THIS_DIR)/../3rdparty/libs/$(OPENCV_TARGET_ARCH_ABI)
 OPENCV_BASEDIR:=
 OPENCV_LOCAL_C_INCLUDES:="$(LOCAL_PATH)/$(OPENCV_THIS_DIR)/include/opencv" "$(LOCAL_PATH)/$(OPENCV_THIS_DIR)/include"
-OPENCV_MODULES:=dnn ml objdetect photo stitching video calib3d features2d highgui flann videoio imgcodecs imgproc core
+OPENCV_MODULES:=stitching aruco bgsegm bioinspired ccalib dnn_objdetect dpm face fuzzy hfs img_hash line_descriptor reg rgbd saliency stereo structured_light phase_unwrapping superres optflow surface_matching tracking datasets text dnn plot videostab video xfeatures2d shape ml ximgproc xobjdetect objdetect calib3d features2d highgui videoio imgcodecs flann xphoto photo imgproc core
 OPENCV_SUB_MK:=$(call my-dir)/OpenCV-$(TARGET_ARCH_ABI).mk
 
 ifeq ($(OPENCV_LIB_TYPE),)
