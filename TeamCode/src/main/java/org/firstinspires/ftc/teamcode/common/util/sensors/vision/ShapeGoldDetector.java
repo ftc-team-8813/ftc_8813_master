@@ -8,9 +8,16 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.opencv.core.Rect2d;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
+import org.opencv.tracking.Tracker;
+import org.opencv.tracking.TrackerCSRT;
+import org.opencv.tracking.TrackerGOTURN;
+import org.opencv.tracking.TrackerKCF;
+import org.opencv.tracking.TrackerMOSSE;
+import org.opencv.tracking.TrackerMedianFlow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,9 +141,14 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
         public volatile boolean running;
         public volatile OverlayData overlayData = new OverlayData();
 
+        private Tracker tracker;
+        private Rect2d boundingBox;
+        private int fails;
+
         @Override
         public void run()
         {
+            tracker = TrackerMOSSE.create();
             int iter = 0;
             while (true)
             {
@@ -164,10 +176,40 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
         {
             if (running || mat == null) return;
             running = true;
-            process(mat.clone());
+            if (boundingBox != null) track(mat.clone());
+            else process(mat.clone());
             running = false;
             mat.release();
             mat = null;
+        }
+
+        private void track(Mat image)
+        {
+            overlayData.contours.clear();
+            overlayData.goldCenters = new ArrayList<>();
+            boolean ret = tracker.update(image, boundingBox);
+            if (!ret)
+            {
+                if (fails > 15)
+                {
+                    boundingBox = null;
+                    overlayData.goldRect = null;
+                    fails = 0;
+                }
+                else
+                {
+                    fails++;
+                }
+            }
+            else
+            {
+                fails = 0;
+                overlayData.goldRect = new Rect((int)boundingBox.x, (int)boundingBox.y,
+                                                (int)boundingBox.width, (int)boundingBox.height);
+                overlayData.goldCenters.add(
+                        new Point(boundingBox.x + boundingBox.width/2, boundingBox.y + boundingBox.height / 2));
+            }
+
         }
 
         private void process(Mat image)
@@ -226,6 +268,9 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
                         m.m01 / m.m00);
 
                 overlayData.goldRect = Imgproc.boundingRect(bestContour);
+                boundingBox = new Rect2d(overlayData.goldRect.x, overlayData.goldRect.y,
+                                        overlayData.goldRect.width, overlayData.goldRect.height);
+                tracker.init(image, boundingBox);
                 overlayData.contours.add(bestContour);
                 overlayData.goldCenters.add(center);
             }
