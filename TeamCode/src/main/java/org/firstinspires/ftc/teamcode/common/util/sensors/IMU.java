@@ -23,10 +23,10 @@ public class IMU
 {
     
     //Modes
-    private static final int PRE_INIT = 0;
-    private static final int INITIALIZED = 1;
-    private static final int SETUP = 2;
-    private static final int STARTED = 3;
+    public static final int PRE_INIT = 0;
+    public static final int INITIALIZED = 1;
+    public static final int SETUP = 2;
+    public static final int STARTED = 3;
     
     //The IMU
     private volatile BNO055IMU imu;
@@ -172,6 +172,11 @@ public class IMU
             TelemetryWrapper.clear();
         }
         status = STARTED;
+    }
+
+    public int getStatus()
+    {
+        return status;
     }
 
     public void resetHeading()

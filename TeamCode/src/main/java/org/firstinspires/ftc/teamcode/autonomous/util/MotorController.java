@@ -116,6 +116,7 @@ public class MotorController implements Closeable
                 {
                     if (!stopping)
                     {
+                        log.d("Stopping motor controller");
                         stopping = true;
                         motor.setPower(0);
                         controller.resetIntegrator();

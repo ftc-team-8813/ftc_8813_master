@@ -6,6 +6,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.util.sensors.IMU;
 import org.firstinspires.ftc.teamcode.common.util.sensors.vision.ShapeGoldDetector;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -43,7 +44,7 @@ public class TaskSample implements Task, CameraStream.OutputModifier
     public void runTask() throws InterruptedException
     {
         CameraStream stream = BaseAutonomous.instance().getCameraStream();
-        if (detector != null)
+        if (detector == null)
         {
             detector = new ShapeGoldDetector();
             stream.addModifier(detector);
@@ -65,7 +66,7 @@ public class TaskSample implements Task, CameraStream.OutputModifier
 
         while (continuous || seen || System.currentTimeMillis() - lostTime < 1500)
         {
-            robot.imu.update();
+            if (robot.imu.getStatus() == IMU.STARTED) robot.imu.update();
             telemetry.update();
             telemetry.clearAll();
             telemetry.addData("Gold on-screen: ", detector.goldSeen());
@@ -94,12 +95,12 @@ public class TaskSample implements Task, CameraStream.OutputModifier
                 telemetry.addData("Error", e);
 
                 // Bias
-                double l =  0.2;
-                double r =  0.2;
+                double l =  0.15;
+                double r =  0.15;
 
                 // Turn amount
-                if (e < 0) r += e * 0.4;
-                else       l -= e * 0.4;
+                if (e < 0) r += e * 0.3;
+                else       l -= e * 0.3;
 
                 telemetry.addData("Left", l);
                 telemetry.addData("Right", r);

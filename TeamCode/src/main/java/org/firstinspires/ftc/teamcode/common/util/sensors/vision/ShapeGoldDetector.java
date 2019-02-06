@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.common.util.sensors.vision;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
+import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
@@ -137,6 +139,7 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
     private class Worker implements Runnable
     {
 
+        private Logger log = new Logger("ShapeGoldDetector Worker");
         private volatile Mat mat;
         public volatile boolean running;
         public volatile OverlayData overlayData = new OverlayData();
@@ -176,22 +179,26 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
         {
             if (running || mat == null) return;
             running = true;
-            if (boundingBox != null) track(mat.clone());
+            if (boundingBox != null) track(getTrackingImage(mat), mat.clone());
             else process(mat.clone());
             running = false;
             mat.release();
             mat = null;
         }
 
-        private void track(Mat image)
+        private void track(Mat image, Mat color)
         {
             overlayData.contours.clear();
             overlayData.goldCenters = new ArrayList<>();
             boolean ret = tracker.update(image, boundingBox);
-            if (!ret)
+            // Tracker can get stuck on any edge
+            if (!ret || boundingBox.y + boundingBox.height > 580 || boundingBox.x < -100 || boundingBox.y < -100
+                    || boundingBox.x + boundingBox.width > 740 || !validateTrackingRect(color, boundingBox))
             {
-                if (fails > 15)
+                if (fails > 3)
                 {
+                    tracker.clear();
+                    tracker = TrackerMOSSE.create();
                     boundingBox = null;
                     overlayData.goldRect = null;
                     fails = 0;
@@ -199,6 +206,13 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
                 else
                 {
                     fails++;
+                    if (boundingBox.width != 0 && boundingBox.height != 0)
+                    {
+                        overlayData.goldRect = new Rect((int) boundingBox.x, (int) boundingBox.y,
+                                (int) boundingBox.width, (int) boundingBox.height);
+                        overlayData.goldCenters.add(
+                                new Point(boundingBox.x + boundingBox.width / 2, boundingBox.y + boundingBox.height / 2));
+                    }
                 }
             }
             else
@@ -209,7 +223,46 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
                 overlayData.goldCenters.add(
                         new Point(boundingBox.x + boundingBox.width/2, boundingBox.y + boundingBox.height / 2));
             }
+            image.release();
+            color.release();
+        }
 
+        private boolean validateTrackingRect(Mat input, Rect2d r)
+        {
+            Mat roi = input.submat(new Rect((int)Math.max(r.x, 0), (int)Math.max(r.y, 0),
+                    (int)Math.min(r.width, 639 - r.x), (int)Math.min(r.height, 479 - r.y)));
+
+            Scalar avg = Core.mean(roi);
+            // Convert color to HSV
+            Mat mean = new Mat(1, 1, CvType.CV_8UC3);
+            mean.put(0, 0, avg.val[0], avg.val[1], avg.val[2]);
+            Imgproc.cvtColor(mean, mean, Imgproc.COLOR_BGR2HSV);
+
+            avg = new Scalar(mean.get(0, 0));
+            mean.release();
+
+            boolean inRange = avg.val[0] >= 10 && avg.val[0] <= 33
+                    && avg.val[1] >= 70 && avg.val[1] <= 255
+                    && avg.val[2] >= 40 && avg.val[2] <= 255;
+
+            if (inRange)
+            {
+                System.out.format("validateTrackingRect succeeded with HSV <%.0f, %.0f, %.0f>\n", avg.val[0], avg.val[1], avg.val[2]);
+            }
+            else
+            {
+                System.out.format("validateTrackingRect failed with HSV <%.0f, %.0f, %.0f>\n", avg.val[0], avg.val[1], avg.val[2]);
+            }
+
+
+            return inRange;
+        }
+
+        private Mat getTrackingImage(Mat input)
+        {
+            Mat dst = new Mat();
+            Core.extractChannel(input, dst, 0); // Extract the blue channel for max contrast
+            return dst;
         }
 
         private void process(Mat image)
@@ -218,7 +271,7 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
             Imgproc.cvtColor(image, hsv, Imgproc.COLOR_BGR2HSV);
 
             Mat mask = new Mat();
-            Core.inRange(hsv, new Scalar(10, 100, 40), new Scalar(33, 255, 255), mask);
+            Core.inRange(hsv, new Scalar(10, 120, 40), new Scalar(33, 255, 255), mask);
 
             List<MatOfPoint> contours = new ArrayList<>();
             Mat unused = new Mat();
@@ -270,7 +323,7 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
                 overlayData.goldRect = Imgproc.boundingRect(bestContour);
                 boundingBox = new Rect2d(overlayData.goldRect.x, overlayData.goldRect.y,
                                         overlayData.goldRect.width, overlayData.goldRect.height);
-                tracker.init(image, boundingBox);
+                tracker.init(getTrackingImage(image), boundingBox);
                 overlayData.contours.add(bestContour);
                 overlayData.goldCenters.add(center);
             }

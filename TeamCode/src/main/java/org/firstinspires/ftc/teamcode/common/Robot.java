@@ -31,6 +31,7 @@ public class Robot
     // Servos
     public final Servo dunk;
     public final Servo hook;
+    public final Servo mark;
 
     // Sensors
     public final IMU imu;
@@ -70,6 +71,7 @@ public class Robot
         // Servos
         dunk = hardwareMap.servo.get("dunk");
         hook = hardwareMap.servo.get("hook");
+        mark = hardwareMap.servo.get("mark");
 
         // Sensors
         if (Persistent.get("imu") != null)

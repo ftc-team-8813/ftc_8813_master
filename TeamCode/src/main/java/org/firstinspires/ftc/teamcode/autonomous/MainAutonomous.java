@@ -5,10 +5,12 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDetectGold;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDrop;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskIntakeMineral;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
 import org.firstinspires.ftc.teamcode.common.util.Vlogger;
 import org.firstinspires.ftc.teamcode.common.util.sensors.vision.ShapeGoldDetector;
@@ -27,6 +29,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 {
 
     private Vlogger video;
+    private Logger log;
     private volatile String state;
     private volatile long start;
 
@@ -37,6 +40,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         robot.imu.initialize(telemetry);
         robot.imu.start();
         video = new Vlogger("autonomous_capture.avi", 480, 640, 10.0);
+        log = new Logger("Autonomous");
     }
 
     @Override
@@ -44,7 +48,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
     {
         start = System.currentTimeMillis();
         state = "Initializing";
-        // if (!writer.isOpened()) throw new RuntimeException("Couldn't open VideoWriter; fourcc code = " + fourcc);
+
         Robot robot = Robot.instance();
         robot.initPivot();
         robot.leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -53,29 +57,20 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         // Initialize camera
         CameraStream stream = getCameraStream();
         ShapeGoldDetector detector = new ShapeGoldDetector();
-        stream.addModifier(detector);
-        stream.addListener(detector);
-        stream.addModifier(this);
         // Initialization starts up here so that the camera gets several seconds to warm up
 
         Thread.sleep(4000);
         // new TaskDrop().runTask();
 
+        // Start detecting after the camera has warmed up
+        stream.addModifier(detector);
+        stream.addListener(detector);
+        stream.addModifier(this);
+
         DcMotor left = robot.leftFront;
         DcMotor right = robot.rightFront;
         left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-//        state = "Back up behind crater";
-//        left.setPower(-0.1);
-//        right.setPower(-0.1);
-//        robot.pivot.stopHolding();
-//        int pivotStart = robot.intakePivot.getCurrentPosition();
-//        while (robot.intakePivot.getCurrentPosition() - pivotStart < 75) Thread.sleep(1);
-//        left.setPower(0);
-//        right.setPower(0);
-//        robot.pivot.hold(200);
-//        Thread.sleep(500);
 
         state = "Drive forward";
         robot.forward(5, 0.175);
@@ -90,40 +85,8 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         telemetry.clearAll();
         telemetry.update();
 
-
-        state = "Back up 15 inches";
-        // Back up
-        robot.reverse(15, 0.25);
-
-        state = "Drop intake";
-        // Drop the intake
-        robot.pivot.stopHolding();
-        Thread.sleep(15);
-        robot.intakePivot.setPower(0.5);
-        Thread.sleep(700);
-        robot.intakePivot.setPower(0);
-
         state = "Intake mineral";
-        // Run the intake
-        robot.intake.setPower(-0.5);
-
-        // Drive forward
-        robot.forward(15, 0.25);
-        Thread.sleep(500);
-
-        state = "Raise intake";
-        // Stop the intake
-        robot.intake.setPower(0);
-
-        // Raise the intake
-        robot.pivot.hold(50);
-        Thread.sleep(1000);
-
-        state = "Dump mineral";
-        // Put the mineral in the dunk bucket
-        robot.intake.setPower(-0.5);
-        Thread.sleep(200);
-        robot.intake.setPower(0);
+        new TaskIntakeMineral().runTask();
 
         state = "Park in crater";
         robot.forward(24, 0.5);
@@ -132,16 +95,18 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         // Drop the intake
         robot.pivot.stopHolding();
         Thread.sleep(15);
+        log.d("Starting intake drop");
         robot.intakePivot.setPower(0.5);
         Thread.sleep(700);
         robot.intakePivot.setPower(0);
+
+
     }
 
     @Override
     public synchronized void finish()
     {
         video.close();
-        Utils.scanFile(new File(Config.storageDir + "autonomous_capture.mp4"));
     }
 
     @Override

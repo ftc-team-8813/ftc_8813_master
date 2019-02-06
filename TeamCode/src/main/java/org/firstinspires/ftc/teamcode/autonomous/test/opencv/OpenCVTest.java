@@ -8,13 +8,17 @@ import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.util.Vlogger;
 import org.firstinspires.ftc.teamcode.common.util.sensors.vision.ShapeGoldDetector;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
 
 @Autonomous(name="OpenCV test")
-public class OpenCVTest extends BaseAutonomous
+public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputModifier
 {
     private ShapeGoldDetector detector;
     private static final int w = 640, h = 480;
+    private Vlogger vlogger;
 
     /*
     Vision Coordinate System:
@@ -31,11 +35,13 @@ public class OpenCVTest extends BaseAutonomous
     @Override
     public void run() throws InterruptedException
     {
+        vlogger = new Vlogger("opencv_test.avi", 480, 640, 10.0);
         Robot robot = Robot.instance();
         CameraStream stream = getCameraStream();
         detector = new ShapeGoldDetector();
         stream.addModifier(detector);
         stream.addListener(detector);
+        stream.addModifier(this);
 
         DcMotor left = robot.leftFront;
         DcMotor right = robot.rightFront;
@@ -48,5 +54,21 @@ public class OpenCVTest extends BaseAutonomous
         rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         new TaskSample(detector, true).runTask();
+    }
+
+    @Override
+    public void finish()
+    {
+        vlogger.close();
+    }
+
+    @Override
+    public Mat draw(Mat bgr)
+    {
+        Mat m2 = new Mat();
+        Core.rotate(bgr, m2, Core.ROTATE_90_COUNTERCLOCKWISE);
+        vlogger.put(m2);
+        m2.release();
+        return bgr;
     }
 }

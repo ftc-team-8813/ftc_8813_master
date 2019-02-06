@@ -28,7 +28,7 @@ public class TaskDetectGold implements Task
 
         while (!detector.goldSeen())
         {
-            for (int i = 15; i <= 15; i += 15)
+            int i = 0;
             {
                 left.setPower(speed);
                 right.setPower(-speed);
@@ -39,11 +39,26 @@ public class TaskDetectGold implements Task
                 }
                 left.setPower(0);
                 right.setPower(0);
-                Thread.sleep(500);
+                Thread.sleep(750);
                 if (detector.goldSeen()) break;
             }
-            if (detector.goldSeen()) break;
-            for (int i = -15; i >= -15; i -= 15)
+
+            i = 25;
+            {
+                left.setPower(speed);
+                right.setPower(-speed);
+                while (!detector.goldSeen() && -robot.imu.getHeading() < i)
+                {
+                    robot.imu.update();
+                    Thread.sleep(1);
+                }
+                left.setPower(0);
+                right.setPower(0);
+                Thread.sleep(750);
+                if (detector.goldSeen()) break;
+            }
+
+            i = -25;
             {
                 left.setPower(-speed);
                 right.setPower(speed);
@@ -54,25 +69,9 @@ public class TaskDetectGold implements Task
                 }
                 left.setPower(0);
                 right.setPower(0);
-                Thread.sleep(500);
+                Thread.sleep(750);
                 if (detector.goldSeen()) break;
             }
-            if (detector.goldSeen()) break;
-            for (int i = 0; i <= 0; i += 15)
-            {
-                left.setPower(speed);
-                right.setPower(-speed);
-                while (!detector.goldSeen() && -robot.imu.getHeading() > i)
-                {
-                    robot.imu.update();
-                    Thread.sleep(1);
-                }
-                left.setPower(0);
-                right.setPower(0);
-                Thread.sleep(500);
-                if (detector.goldSeen()) break;
-            }
-            if (detector.goldSeen()) break;
         }
 
     }
