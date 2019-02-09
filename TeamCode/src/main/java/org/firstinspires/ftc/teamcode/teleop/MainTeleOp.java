@@ -28,10 +28,6 @@ public class MainTeleOp extends OpMode
 
     private Scheduler scheduler = new Scheduler();
 
-    private static final double dunk_min = 0.12;
-    private static final double dunk_up = 0.36;
-    private static final double dunk_dunk = 0.7;
-
     private long start;
 
     
@@ -50,7 +46,7 @@ public class MainTeleOp extends OpMode
             e.printStackTrace();
         }
 
-        robot.dunk.setPosition(dunk_min);
+        robot.dunk.setPosition(Robot.dunk_min);
     }
 
     @Override
@@ -84,23 +80,23 @@ public class MainTeleOp extends OpMode
         if (liftPower <= 0 && robot.liftLimit.pressed())
         {
             liftingDunk = false;
-            robot.dunk.setPosition(dunk_min);
+            robot.dunk.setPosition(Robot.dunk_min);
         }
 
         if (buttonHelper_1.pressing(ButtonHelper.b))
         {
             liftingDunk = false;
-            if (robot.dunk.getPosition() > dunk_up + 0.1)
-                robot.dunk.setPosition(dunk_min);
+            if (robot.dunk.getPosition() > Robot.dunk_up + 0.1)
+                robot.dunk.setPosition(Robot.dunk_min);
             else
             {
-                robot.dunk.setPosition(dunk_dunk);
+                robot.dunk.setPosition(Robot.dunk_dunk);
                 scheduler.add("Pull Back Dunk",750, new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        robot.dunk.setPosition(dunk_up);
+                        robot.dunk.setPosition(Robot.dunk_up);
                     }
                 });
             }
@@ -108,7 +104,7 @@ public class MainTeleOp extends OpMode
 
         if (liftingDunk)
         {
-            if (robot.dunk.getPosition() < dunk_up) robot.dunk.setPosition(robot.dunk.getPosition() + 0.01);
+            if (robot.dunk.getPosition() < Robot.dunk_up) robot.dunk.setPosition(robot.dunk.getPosition() + 0.01);
             else liftingDunk = false;
         }
 

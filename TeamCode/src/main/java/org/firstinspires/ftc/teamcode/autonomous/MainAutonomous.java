@@ -59,8 +59,8 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         ShapeGoldDetector detector = new ShapeGoldDetector();
         // Initialization starts up here so that the camera gets several seconds to warm up
 
-        Thread.sleep(4000);
-        // new TaskDrop().runTask();
+        // Thread.sleep(4000);
+        new TaskDrop().runTask();
 
         // Start detecting after the camera has warmed up
         stream.addModifier(detector);

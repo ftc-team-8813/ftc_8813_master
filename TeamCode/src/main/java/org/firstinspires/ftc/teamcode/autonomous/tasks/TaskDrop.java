@@ -26,6 +26,7 @@ public class TaskDrop implements Task
         robot.leftDunk.setPower(0);
         robot.rightDunk.setPower(0);
         // Unhook
+        robot.dunk.setPosition(Robot.dunk_min);
         robot.hook.setPosition(Robot.HOOK_OPEN);
         // Raise the intake
         robot.pivot.hold(250);
