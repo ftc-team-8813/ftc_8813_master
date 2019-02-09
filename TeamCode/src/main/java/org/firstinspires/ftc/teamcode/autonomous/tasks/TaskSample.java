@@ -99,8 +99,16 @@ public class TaskSample implements Task, CameraStream.OutputModifier
                 double r =  0.15;
 
                 // Turn amount
-                if (e < 0) r += e * 0.3;
-                else       l -= e * 0.3;
+                if (e < 0)
+                {
+                    r += e * 0.3;
+                    l -= e * 0.3;
+                }
+                else
+                {
+                    l -= e * 0.3;
+                    r += e * 0.3;
+                }
 
                 telemetry.addData("Left", l);
                 telemetry.addData("Right", r);

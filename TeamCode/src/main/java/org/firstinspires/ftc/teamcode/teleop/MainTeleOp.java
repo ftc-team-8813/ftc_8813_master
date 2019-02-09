@@ -28,7 +28,7 @@ public class MainTeleOp extends OpMode
 
     private Scheduler scheduler = new Scheduler();
 
-    private static final double dunk_min = 0.15;
+    private static final double dunk_min = 0.12;
     private static final double dunk_up = 0.36;
     private static final double dunk_dunk = 0.7;
 
@@ -114,10 +114,10 @@ public class MainTeleOp extends OpMode
 
         if (buttonHelper_2.pressing(ButtonHelper.x))
         {
-            if (robot.hook.getPosition() > 0.3)
-                robot.hook.setPosition(0.10);
+            if (robot.hook.getPosition() > Robot.HOOK_CLOSED)
+                robot.hook.setPosition(Robot.HOOK_CLOSED);
             else
-                robot.hook.setPosition(0.45);
+                robot.hook.setPosition(Robot.HOOK_OPEN);
         }
 
         robot.intake.setPower(intake_mode * 0.5);

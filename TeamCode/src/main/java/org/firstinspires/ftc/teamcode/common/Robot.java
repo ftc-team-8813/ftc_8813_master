@@ -40,6 +40,8 @@ public class Robot
 
     // Other
     public final Config config;
+    public static final double HOOK_CLOSED = 0.22;
+    public static final double HOOK_OPEN = 0.56;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //  Initialization and Lifecycle                                                                  //
@@ -136,7 +138,7 @@ public class Robot
     {
         intakePivot.setPower(-0.4);
         int i = 0;
-        while (!pivotLimit.pressed() && i < 6000)
+        while (!pivotLimit.pressed() && i < 5000)
         {
             Thread.sleep(1);
             i++;
