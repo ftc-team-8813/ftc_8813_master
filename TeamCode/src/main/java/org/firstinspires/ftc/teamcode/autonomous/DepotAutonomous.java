@@ -52,9 +52,6 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         // Initialize camera
         CameraStream stream = getCameraStream();
         ShapeGoldDetector detector = new ShapeGoldDetector();
-        stream.addModifier(detector);
-        stream.addListener(detector);
-        stream.addModifier(this);
         // Initialization starts up here so that the camera gets several seconds to warm up
 
         // Thread.sleep(4000);
@@ -66,6 +63,11 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         robot.forward(2, 0.2);
+        Thread.sleep(500);
+
+        stream.addModifier(detector);
+        stream.addListener(detector);
+        stream.addModifier(this);
 
         new TaskDetectGold(detector).runTask();
 
@@ -79,15 +81,15 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
 
         robot.imu.update();
         int side;
-        if (robot.imu.getHeading() >= 25) side = LEFT;
-        else if (robot.imu.getHeading() <= -25) side = RIGHT;
+        if (robot.imu.getHeading() >= 10) side = LEFT;
+        else if (robot.imu.getHeading() <= -10) side = RIGHT;
         else side = CENTER;
 
         int offset = 0;
         switch (side)
         {
             case LEFT:
-                offset = -30;
+                offset = -20;
                 break;
             case RIGHT:
                 offset = 30;
@@ -98,17 +100,26 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         }
         telemetry.addData("Side", sides[side+1]);
 
-        while (Math.abs(robot.imu.getHeading() - offset) > 2 && opModeIsActive())
+        for (int i = 0; Math.abs(robot.imu.getHeading() - offset) > 2 && opModeIsActive() && i < 50; )
         {
             if ((robot.imu.getHeading() - offset) > 0)
             {
                 left.setPower(0.05);
                 right.setPower(-0.05);
             }
-            else
+            else if ((robot.imu.getHeading() - offset) < 0)
             {
                 left.setPower(-0.05);
                 right.setPower(0.05);
+            }
+            else
+            {
+                left.setPower(0);
+                right.setPower(0);
+            }
+            if (Math.abs(robot.imu.getHeading() - offset) < 2)
+            {
+                i++;
             }
             Thread.sleep(5);
             telemetry.addData("Side", sides[side+1]);
@@ -116,9 +127,11 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         }
         left.setPower(0);
         right.setPower(0);
-        robot.forward(15, 0.2);
+        robot.forward(20, 0.2);
         Thread.sleep(500);
         robot.mark.setPosition(0.7);
+
+        robot.reverse(15, 0.2);
     }
 
     @Override

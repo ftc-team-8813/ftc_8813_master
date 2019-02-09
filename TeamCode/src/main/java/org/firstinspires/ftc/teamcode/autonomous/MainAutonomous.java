@@ -62,11 +62,6 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         // Thread.sleep(4000);
         new TaskDrop().runTask();
 
-        // Start detecting after the camera has warmed up
-        stream.addModifier(detector);
-        stream.addListener(detector);
-        stream.addModifier(this);
-
         DcMotor left = robot.leftFront;
         DcMotor right = robot.rightFront;
         left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -75,6 +70,11 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         state = "Drive forward";
         robot.forward(5, 0.175);
         Thread.sleep(500);
+
+        // Start detecting after the camera has warmed up
+        stream.addModifier(detector);
+        stream.addListener(detector);
+        stream.addModifier(this);
 
         robot.imu.resetHeading();
 
