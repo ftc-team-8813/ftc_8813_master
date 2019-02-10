@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.common.util.Utils;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 
 /**
- * Very small test TeleOp program
+ * Main driver control
  */
 @TeleOp(name="Driver Control")
 public class MainTeleOp extends OpMode
