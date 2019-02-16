@@ -28,10 +28,10 @@ public class CameraStream
     private Activity activity;
     private volatile boolean uiRunning;
     //Smurf mode -- swap red and blue color channels in the output image for EPIC results :)
-    private static final boolean SMURF_MODE = false;
+    protected static final boolean SMURF_MODE = false;
     
-    private volatile List<CameraListener> listeners = new Vector<>();
-    private volatile List<OutputModifier> modifiers = new Vector<>();
+    protected volatile List<CameraListener> listeners = new Vector<>();
+    protected volatile List<OutputModifier> modifiers = new Vector<>();
 
     
     public void addListener(CameraListener l)
@@ -137,8 +137,8 @@ public class CameraStream
             }
         });
     }
-    
-    public CameraStream()
+
+    protected void init()
     {
         Logger log = new Logger("Camera Stream Initializer");
         log.v("Adding camera view to screen");
@@ -170,5 +170,10 @@ public class CameraStream
         }
         startProcessing();
         cameraView.enableView();
+    }
+    
+    public CameraStream()
+    {
+        init();
     }
 }

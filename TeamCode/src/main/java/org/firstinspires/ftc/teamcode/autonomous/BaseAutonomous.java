@@ -5,6 +5,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
+import org.firstinspires.ftc.teamcode.autonomous.util.opencv.WebcamStream;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
@@ -92,7 +93,15 @@ public abstract class BaseAutonomous extends LinearOpMode
     public final CameraStream getCameraStream()
     {
         if (stream == null)
-            stream = new CameraStream();
+        {
+            try
+            {
+                stream = new WebcamStream();
+            } catch (IllegalStateException e)
+            {
+                stream = new CameraStream();
+            }
+        }
         return stream;
     }
 
@@ -186,7 +195,7 @@ public abstract class BaseAutonomous extends LinearOpMode
         finally
         {
             finish();
-            Robot.instance().uninitialize();
+            if (Robot.instance() != null) Robot.instance().uninitialize();
             instance = null;
             if (stream != null)
             {

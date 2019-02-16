@@ -59,7 +59,7 @@ public class OpenCVTest extends BaseAutonomous implements CameraStream.OutputMod
     @Override
     public void finish()
     {
-        vlogger.close();
+        if (vlogger != null) vlogger.close();
     }
 
     @Override
