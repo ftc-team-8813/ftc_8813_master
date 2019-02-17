@@ -3,7 +3,10 @@ package org.firstinspires.ftc.teamcode.common.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.HOUR;
@@ -42,6 +45,16 @@ public class Logger
     private static int maxLevel = Level.ALL;
     
     private String tag;
+
+    /**
+     * Initialize the logger to a default location ('logs/[date].log')
+     * @throws IOException If an I/O error occurs
+     */
+    public static void init() throws IOException
+    {
+        init(new File(Config.storageDir + "logs/" + new SimpleDateFormat
+                ("yy_MM_dd_HH_mm_ss", Locale.US).format(new Date()) + ".log"));
+    }
     
     /**
      * Initialize the logger with a new file. Closes the previous log file if one is open.

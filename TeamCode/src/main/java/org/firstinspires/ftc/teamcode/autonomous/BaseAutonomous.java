@@ -154,8 +154,7 @@ public abstract class BaseAutonomous extends LinearOpMode
         {
             //Run initialization operations here
             //Create our latest.log file
-            Logger.init(new File(Config.storageDir + "logs/" + new SimpleDateFormat
-                    ("yy_MM_dd_HH_mm_ss", Locale.US).format(new Date()) + ".log"));
+            Logger.init();
             log = new Logger("BaseAutonomous");
             //Initialize the configuration file
             config = new Config(Config.configFile);

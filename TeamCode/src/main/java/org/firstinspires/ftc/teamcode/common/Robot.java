@@ -21,7 +21,7 @@ public class Robot
     // Motors
     public final DcMotor leftFront, leftRear;
     public final DcMotor rightFront, rightRear;
-    public final DcMotor leftDunk, rightDunk;
+    public final DcMotor dunkLift, pullUp;
     public final DcMotor intake;
     public final DcMotor intakePivot;
 
@@ -36,7 +36,8 @@ public class Robot
     // Sensors
     public final IMU imu;
     public final Switch pivotLimit;
-    public final Switch liftLimit;
+    public final Switch liftLimitDown;
+    public final Switch liftLimitUp;
 
     // Other
     public final Config config;
@@ -64,10 +65,11 @@ public class Robot
         // Motors
         leftFront = hardwareMap.dcMotor.get("left front");
         leftRear = hardwareMap.dcMotor.get("left rear");
+        dunkLift = hardwareMap.dcMotor.get("dunk lift");
+        pullUp = hardwareMap.dcMotor.get("pull up");
         rightFront = hardwareMap.dcMotor.get("right front");
         rightRear = hardwareMap.dcMotor.get("right rear");
-        leftDunk = hardwareMap.dcMotor.get("left dunk");
-        rightDunk = hardwareMap.dcMotor.get("right dunk");
+
         intake = hardwareMap.dcMotor.get("intake");
         intakePivot = hardwareMap.dcMotor.get("intake pivot");
 
@@ -90,7 +92,8 @@ public class Robot
             Persistent.put("imu", imu);
         }
         pivotLimit = new Switch(hardwareMap.digitalChannel.get("pivot limit"));
-        liftLimit = new Switch(hardwareMap.digitalChannel.get("lift limit"));
+        liftLimitDown = new Switch(hardwareMap.digitalChannel.get("lower limit"));
+        liftLimitUp = new Switch(hardwareMap.digitalChannel.get("upper limit"));
 
         // Other
 
@@ -99,8 +102,8 @@ public class Robot
         if (config.getBoolean("lr_reverse", false)) leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("rf_reverse", false)) rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("rr_reverse", false)) rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
-        if (config.getBoolean("ld_reverse", false)) leftDunk.setDirection(DcMotorSimple.Direction.REVERSE);
-        if (config.getBoolean("rd_reverse", false)) rightDunk.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (config.getBoolean("pl_reverse", false)) pullUp.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (config.getBoolean("dl_reverse", false)) dunkLift.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("in_reverse", false)) intake.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("ip_reverse", false)) intakePivot.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -124,8 +127,8 @@ public class Robot
         rightFront.setPower(0);
         leftRear.setPower(0);
         rightRear.setPower(0);
-        leftDunk.setPower(0);
-        rightDunk.setPower(0);
+        dunkLift.setPower(0);
+        pullUp.setPower(0);
         intake.setPower(0);
         // Stop external threads and close open files (if any) here
         pivot.close();
@@ -140,6 +143,8 @@ public class Robot
 
     public void initPivot() throws InterruptedException
     {
+        intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intakePivot.setPower(-0.4);
         int i = 0;
         while (!pivotLimit.pressed() && i < 5000)
@@ -148,10 +153,10 @@ public class Robot
             i++;
         }
         intakePivot.setPower(0);
-        Thread.sleep(100);
         intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        pivot.setPower(0.75);
+        Thread.sleep(100);
+        pivot.setPower(0.5);
         pivot.hold(15);
     }
 
