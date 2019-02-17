@@ -38,15 +38,16 @@ public class Robot
     public final Switch pivotLimit;
     public final Switch liftLimitDown;
     public final Switch liftLimitUp;
+    public final Switch pullupLimit;
 
     // Other
     public final Config config;
-    public static final double HOOK_CLOSED = 0.22;
-    public static final double HOOK_OPEN = 0.50;
+    public static final double HOOK_CLOSED = 0.50;
+    public static final double HOOK_OPEN = 0;
 
-    public static final double dunk_min = 0.12;
-    public static final double dunk_up = 0.36;
-    public static final double dunk_dunk = 0.7;
+    public static final double dunk_min = 0.53;
+    public static final double dunk_up = 0.75;
+    public static final double dunk_dunk = 1;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //  Initialization and Lifecycle                                                                  //
@@ -81,6 +82,8 @@ public class Robot
         hook = hardwareMap.servo.get("hook");
         mark = hardwareMap.servo.get("mark");
 
+        hook.setPosition(HOOK_OPEN);
+
         // Sensors
         if (Persistent.get("imu") != null)
         {
@@ -94,6 +97,7 @@ public class Robot
         pivotLimit = new Switch(hardwareMap.digitalChannel.get("pivot limit"));
         liftLimitDown = new Switch(hardwareMap.digitalChannel.get("lower limit"));
         liftLimitUp = new Switch(hardwareMap.digitalChannel.get("upper limit"));
+        pullupLimit = new Switch(hardwareMap.digitalChannel.get("pull up limit"));
 
         // Other
 

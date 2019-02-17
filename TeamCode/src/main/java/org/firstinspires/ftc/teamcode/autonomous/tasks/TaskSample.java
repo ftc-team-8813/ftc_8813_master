@@ -19,6 +19,7 @@ public class TaskSample implements Task, CameraStream.OutputModifier
     private final DcMotor left, right;
     private Telemetry telemetry;
     private boolean continuous = false;
+    private final boolean onWebcam = true;
 
     public TaskSample()
     {
@@ -76,6 +77,7 @@ public class TaskSample implements Task, CameraStream.OutputModifier
 
 
                 // If our phone is mounted upside down, horizontal = +Y
+                // If we're on a webcam, horizontal = +X
                 if (!detector.goldSeen())
                 {
                     if (seen)
@@ -91,7 +93,15 @@ public class TaskSample implements Task, CameraStream.OutputModifier
                 seen = true;
                 lpower = 0.1;
                 // Horizontal error, normalized
-                double e = -(detector.getLocation().y / 480 - 0.5) * 2;
+                double e;
+                if (onWebcam)
+                {
+                    e = -(detector.getLocation().x / 640 - 0.5) * 2;
+                }
+                else
+                {
+                    e = -(detector.getLocation().y / 480 - 0.5) * 2;
+                }
                 telemetry.addData("Error", e);
 
                 // Bias

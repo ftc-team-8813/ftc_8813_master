@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -33,6 +34,10 @@ public class CameraStream
     protected volatile List<CameraListener> listeners = new Vector<>();
     protected volatile List<OutputModifier> modifiers = new Vector<>();
 
+    public Size getSize()
+    {
+        return new Size(480, 640);
+    }
     
     public void addListener(CameraListener l)
     {
@@ -42,6 +47,7 @@ public class CameraStream
     public void removeListener(CameraListener l)
     {
         listeners.remove(l);
+        l.stop();
     }
     
     public void addModifier(OutputModifier m)

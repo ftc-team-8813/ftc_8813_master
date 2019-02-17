@@ -75,9 +75,14 @@ public class MainTeleOp extends OpMode
         double liftPower = -(gamepad2.right_trigger - gamepad2.left_trigger);
         if (robot.liftLimitDown.pressed())
         {
+            if (liftPower > 0)
+            {
+                liftingDunk = true;
+            }
             if (liftPower >= 0)
             {
                 robot.dunkLift.setPower(liftPower);
+                if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);
             }
             else
             {
@@ -90,20 +95,24 @@ public class MainTeleOp extends OpMode
             if (liftPower <= 0)
             {
                 robot.dunkLift.setPower(liftPower);
+                if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);
             }
         }
         else
         {
             robot.dunkLift.setPower(liftPower);
+            if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);
         }
 
         if (gamepad2.left_bumper)
         {
             robot.pullUp.setPower(1);
+            if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);
         }
-        else if (gamepad2.right_bumper)
+        else if (gamepad2.right_bumper && !robot.pullupLimit.pressed())
         {
             robot.pullUp.setPower(-1);
+            if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);
         }
         else
         {
@@ -131,8 +140,10 @@ public class MainTeleOp extends OpMode
 
         if (liftingDunk)
         {
-            if (robot.dunk.getPosition() < Robot.dunk_up) robot.dunk.setPosition(robot.dunk.getPosition() + 0.01);
-            else liftingDunk = false;
+//            if (robot.dunk.getPosition() < Robot.dunk_up) robot.dunk.setPosition(robot.dunk.getPosition() + 0.01);
+//            else liftingDunk = false;
+            robot.dunk.setPosition(Robot.dunk_up);
+            liftingDunk = false;
         }
 
         if (buttonHelper_2.pressing(ButtonHelper.x))
@@ -195,6 +206,7 @@ public class MainTeleOp extends OpMode
         telemetry.addData("Pivot limit switch", robot.pivotLimit.pressed() ? "Pressed" : "Released");
         telemetry.addData("Lower limit switch", robot.liftLimitDown.pressed() ? "Pressed" : "Released");
         telemetry.addData("Upper limit switch", robot.liftLimitUp.pressed() ? "Pressed" : "Released");
+        telemetry.addData("Pullup limit switch", robot.pullupLimit.pressed() ? "Pressed" : "Released");
         telemetry.addData("Dunk Position", robot.dunk.getPosition());
     }
 

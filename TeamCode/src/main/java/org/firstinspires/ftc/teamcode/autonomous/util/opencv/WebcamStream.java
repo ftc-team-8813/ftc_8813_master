@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.autonomous.test.opencv.WebcamTest;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
@@ -26,6 +27,12 @@ public class WebcamStream extends CameraStream
     public WebcamStream()
     {
         super();
+    }
+
+    @Override
+    public Size getSize()
+    {
+        return new Size(640, 480);
     }
 
     @Override

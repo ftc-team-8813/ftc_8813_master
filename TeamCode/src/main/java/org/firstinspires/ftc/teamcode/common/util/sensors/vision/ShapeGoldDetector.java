@@ -25,8 +25,47 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Shape-based mineral detector and tracker.
+ * <h3>1: How it works</h3>
+ * The detector uses several criteria to detect gold minerals:
+ * <ol>
+ *     <li>Color: The detector first creates a binary image from the input frame, selecting areas that
+ *         are yellow. It then uses findContours() to find the edges of all of these areas.</li>
+ *     <li>Perimeter: If the area is really small, it is most probably noise.</li>
+ *     <li>Edge count: Uses contour approximation to approximate the polygonal shape of the area. If
+ *         this results in a shape that is between 4 (cube straight on) and 6 (cube at an angle) edges,
+ *         it is probably a cube; otherwise, it probably isn't. This has a tendency to fail if the cube
+ *         is too far away, has too much pure-white glare, or is obstructed in some other way.</li>
+ *     <li>Convexity: If the polygon is not convex, it probably isn't a cube (but it might just be
+ *         obstructed).</li>
+ *     <li>Aspect ratio: If the area is too wide or tall, it definitely isn't a cube.</li>
+ *     <li>Upper limit: If there is not</li>
+ * </ol>
+ * After an object has been detected, the program switches to using OpenCV's {@link TrackerMOSSE MOSSE tracker}.
+ * That can track the mineral much more quickly and efficiently than repeating the detection process. Once the tracker
+ * cannot find the mineral any more (or the area being tracked is not yellow; the tracker can get confused), the
+ * program switches back to detection.
+ * <br>
+ * <br>
+ * The detection runs in a separate thread so as to not bog down the camera thread and drop frames.
+ * This causes some visual discrepancy between the detection output lines and the frame they are
+ * overlaid on, but otherwise it should not cause any issues.
+ * <h3>2: Usage</h3>
+ * The ShapeGoldDetector is very easy to use. Simply add it as a listener and modifier to the CameraStream:
+ * <pre><code>
+ *     stream.addListener(detector);
+ *     stream.addModifier(detector);
+ * </code></pre>
+ * Then it will automatically start looking for minerals in the camera stream. The location of the block
+ * and whether it can be seen can be easily accessed through the {@link #getLocation()} and {@link #goldSeen()}
+ * functions. The detector will automatically be stopped when the camera stream closes.
+ *
+ */
 public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStream.OutputModifier
 {
+
+    private final boolean onWebcam;
 
     private Worker worker;
     private Point lastGoldCenter;
@@ -36,8 +75,21 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
     private static final double ASPECT_TOLERANCE = 0.4;
     private static final int MIN_Y = 100;
 
+    /**
+     * Construct a ShapeGoldDetector. Assumes that it is running on a webcam by default.
+     */
     public ShapeGoldDetector()
     {
+        this(true);
+    }
+
+    /**
+     * Construct a ShapeGoldDetector.
+     * @param onWebcam Set to false if the camera stream is coming from the phone
+     */
+    public ShapeGoldDetector(boolean onWebcam)
+    {
+        this.onWebcam = onWebcam;
         worker = new Worker();
         workerThread = new Thread(worker, "ShapeGoldDetector Worker");
         workerThread.start();
@@ -49,11 +101,19 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
         worker.setFrame(bgr);
     }
 
+    /**
+     * Get the location where the mineral was last seen.
+     * @return The location of the mineral. Can be null if the mineral has not been seen yet.
+     */
     public Point getLocation()
     {
         return lastGoldCenter;
     }
 
+    /**
+     * Get the current detection status.
+     * @return true if the mineral is detected and being tracked; false otherwise.
+     */
     public boolean goldSeen()
     {
         return seen;
@@ -78,6 +138,13 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
 
                 Scalar color = new Scalar(0, 127, 0);
                 int thickness = 2;
+
+                // COLOR CODING:
+                // Thin -- Too small
+                // Red -- Wrong number of edges (green otherwise)
+                // Yellow -- Bad aspect ratio
+                // Dark -- Concave
+                // Teal -- Selected
 
                 if (perim < 100)
                 {
@@ -126,7 +193,14 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
                 seen = false;
             }
         }
-        Imgproc.line(bgr, new Point(640 - MIN_Y, 0), new Point(640 - MIN_Y, 480), new Scalar(255, 255, 255), 2);
+        if (onWebcam)
+        {
+            Imgproc.line(bgr, new Point(0, MIN_Y), new Point(640, MIN_Y), new Scalar(255, 255, 255), 2);
+        }
+        else
+        {
+            Imgproc.line(bgr, new Point(640 - MIN_Y, 0), new Point(640 - MIN_Y, 480), new Scalar(255, 255, 255), 2);
+        }
         return bgr;
     }
 
@@ -197,8 +271,10 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
             {
                 if (fails > 3)
                 {
+                    // Reload the tracker to reset it, otherwise it will refuse to detect
                     tracker.clear();
                     tracker = TrackerMOSSE.create();
+
                     boundingBox = null;
                     overlayData.goldRect = null;
                     fails = 0;
@@ -241,9 +317,10 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
             avg = new Scalar(mean.get(0, 0));
             mean.release();
 
+            // Check if the colors are within range
             boolean inRange = avg.val[0] >= 10 && avg.val[0] <= 33
-                    && avg.val[1] >= 70 && avg.val[1] <= 255
-                    && avg.val[2] >= 40 && avg.val[2] <= 255;
+                            && avg.val[1] >= 70 && avg.val[1] <= 255
+                            && avg.val[2] >= 40 && avg.val[2] <= 255;
 
             if (inRange)
             {
@@ -301,7 +378,7 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
                 if (perim >= 100 && poly.height() >= 4 && poly.height() <= 6
                         && Imgproc.isContourConvex(ipoly)
                         && aspectRatio >= 1 - ASPECT_TOLERANCE && aspectRatio <= 1 + ASPECT_TOLERANCE
-                        && center.x < 640 -  MIN_Y)
+                        && ((onWebcam && center.y > MIN_Y) || (!onWebcam && center.x < 640 -  MIN_Y)))
                 {
                     double area = Imgproc.contourArea(poly);
                     if (bestArea < area)

@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDrop;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskIntakeMineral;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
+import org.firstinspires.ftc.teamcode.autonomous.util.opencv.WebcamStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
@@ -38,7 +39,9 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         robot.imu.start();
 
         robot.initPivot();
-        vlogger = new Vlogger("autonomous_capture.avi", 480, 640, 10.0);
+        CameraStream stream = getCameraStream();
+        vlogger = new Vlogger("autonomous_capture.avi",
+                (int)stream.getSize().width, (int)stream.getSize().height, 10.0);
         robot.mark.setPosition(0);
     }
 
@@ -54,8 +57,8 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         ShapeGoldDetector detector = new ShapeGoldDetector();
         // Initialization starts up here so that the camera gets several seconds to warm up
 
-        // Thread.sleep(4000);
-        new TaskDrop().runTask();
+        Thread.sleep(4000);
+        // new TaskDrop().runTask();
 
         DcMotor left = robot.leftRear;
         DcMotor right = robot.rightRear;
@@ -144,7 +147,10 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
     public Mat draw(Mat bgr)
     {
         Mat m2 = new Mat();
-        Core.rotate(bgr, m2, Core.ROTATE_90_COUNTERCLOCKWISE);
+        if (getCameraStream() instanceof WebcamStream)
+            bgr.copyTo(m2);
+        else
+            Core.rotate(bgr, m2, Core.ROTATE_90_COUNTERCLOCKWISE);
         vlogger.put(m2);
         m2.release();
         return bgr;
