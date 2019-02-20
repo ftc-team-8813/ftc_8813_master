@@ -39,6 +39,7 @@ public class Logger
     }
     
     private static PrintStream writer;
+    private static File file;
     private static boolean open = false;
     private static long start;
     private static boolean started = false;
@@ -64,6 +65,7 @@ public class Logger
      */
     public static void init(File file) throws IOException
     {
+        Logger.file = file;
         started = false;
         close();
         file.getParentFile().mkdirs();
@@ -80,6 +82,11 @@ public class Logger
         {
             writer.close();
             writer = null;
+        }
+        if (file != null)
+        {
+            Utils.scanFile(file);
+            file = null;
         }
     }
     
@@ -181,12 +188,12 @@ public class Logger
         //                     year  mo   dy  hour min  sec tg lv
         if (started)
         {
-            long secs = (System.currentTimeMillis() - start) / 1000;
-            return String.format("%04d/%02d/%02d %02d:%02d:%02d [%ds] %s/%s: ",
+            double secs = (System.currentTimeMillis() - start) / 1000.0;
+            return String.format(Locale.US, "%04d/%02d/%02d %02d:%02d:%02d [%2.3fs] %s/%s: ",
                     c.get(YEAR), c.get(MONTH) + 1, c.get(DAY_OF_MONTH), c.get(HOUR), c.get(MINUTE),
                     c.get(SECOND), secs, tag, lvl);
         }
-        return String.format("%04d/%02d/%02d %02d:%02d:%02d %s/%s: ",
+        return String.format(Locale.US, "%04d/%02d/%02d %02d:%02d:%02d %s/%s: ",
                 c.get(YEAR), c.get(MONTH) + 1, c.get(DAY_OF_MONTH), c.get(HOUR), c.get(MINUTE),
                 c.get(SECOND), tag, lvl);
     }

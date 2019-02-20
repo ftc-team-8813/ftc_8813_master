@@ -3,15 +3,14 @@ package org.firstinspires.ftc.teamcode.common;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Persistent;
-import org.firstinspires.ftc.teamcode.common.util.sensors.IMU;
-import org.firstinspires.ftc.teamcode.common.util.sensors.Switch;
+import org.firstinspires.ftc.teamcode.common.sensors.IMU;
+import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 
 /**
  * Robot -- a container for all of the robot hardware interfaces

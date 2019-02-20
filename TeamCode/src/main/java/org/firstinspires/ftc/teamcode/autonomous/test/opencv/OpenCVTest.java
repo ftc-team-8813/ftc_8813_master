@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous.test.opencv;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
@@ -9,7 +8,7 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Vlogger;
-import org.firstinspires.ftc.teamcode.common.util.sensors.vision.ShapeGoldDetector;
+import org.firstinspires.ftc.teamcode.common.sensors.vision.ShapeGoldDetector;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 

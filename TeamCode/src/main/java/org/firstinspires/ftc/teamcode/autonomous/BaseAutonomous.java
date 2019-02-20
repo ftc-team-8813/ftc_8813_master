@@ -207,6 +207,7 @@ public abstract class BaseAutonomous extends LinearOpMode
                 //(RuntimeException and Error) or InterruptedException, which it is declared to be
                 //able to throw.
                 log.e(exc);
+                Logger.close();
                 if (exc instanceof Error) throw (Error) exc;
                 else if (exc instanceof RuntimeException) throw (RuntimeException) exc;
                 else if (exc instanceof IOException) log.e(exc);

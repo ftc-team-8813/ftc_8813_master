@@ -4,17 +4,19 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
-import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.common.Robot;
-import org.firstinspires.ftc.teamcode.common.util.sensors.vision.ShapeGoldDetector;
+import org.firstinspires.ftc.teamcode.common.sensors.vision.ShapeGoldDetector;
+import org.firstinspires.ftc.teamcode.common.util.Profiler;
 
 public class TaskDetectGold implements Task
 {
     private final ShapeGoldDetector detector;
+    private Profiler profiler;
 
-    public TaskDetectGold(ShapeGoldDetector detector)
+    public TaskDetectGold(ShapeGoldDetector detector, Profiler profiler)
     {
         this.detector = detector;
+        this.profiler = profiler;
     }
 
     @Override
@@ -24,12 +26,15 @@ public class TaskDetectGold implements Task
         Robot robot = Robot.instance();
         DcMotor left = robot.leftFront;
         DcMotor right = robot.rightFront;
-        double speed = 0.1;
+        double speed = 0.2;
 
+        int counter = 0;
         while (!detector.goldSeen())
         {
+            profiler.start("iter" + counter);
             int i = 0;
             {
+                profiler.start("straight");
                 left.setPower(speed);
                 right.setPower(-speed);
                 while (!detector.goldSeen() && -robot.imu.getHeading() < i)
@@ -39,12 +44,19 @@ public class TaskDetectGold implements Task
                 }
                 left.setPower(0);
                 right.setPower(0);
-                Thread.sleep(750);
-                if (detector.goldSeen()) break;
+                Thread.sleep(250);
+                profiler.end();
+                if (detector.goldSeen())
+                {
+                    profiler.end();
+                    break;
+                }
+
             }
 
             i = 25;
             {
+                profiler.start("right");
                 left.setPower(speed);
                 right.setPower(-speed);
                 while (!detector.goldSeen() && -robot.imu.getHeading() < i)
@@ -55,11 +67,17 @@ public class TaskDetectGold implements Task
                 left.setPower(0);
                 right.setPower(0);
                 Thread.sleep(750);
-                if (detector.goldSeen()) break;
+                profiler.end();
+                if (detector.goldSeen())
+                {
+                    profiler.end();
+                    break;
+                }
             }
 
             i = -25;
             {
+                profiler.start("left");
                 left.setPower(-speed);
                 right.setPower(speed);
                 while (!detector.goldSeen() && -robot.imu.getHeading() > i)
@@ -70,9 +88,15 @@ public class TaskDetectGold implements Task
                 left.setPower(0);
                 right.setPower(0);
                 Thread.sleep(750);
-                if (detector.goldSeen()) break;
+                profiler.end();
+                if (detector.goldSeen())
+                {
+                    profiler.end();
+                    break;
+                }
             }
+            profiler.end();
+            counter++;
         }
-
     }
 }

@@ -6,8 +6,10 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
-import org.firstinspires.ftc.teamcode.common.util.sensors.IMU;
-import org.firstinspires.ftc.teamcode.common.util.sensors.vision.ShapeGoldDetector;
+import org.firstinspires.ftc.teamcode.common.sensors.IMU;
+import org.firstinspires.ftc.teamcode.common.sensors.vision.ShapeGoldDetector;
+import org.firstinspires.ftc.teamcode.common.util.Logger;
+import org.firstinspires.ftc.teamcode.common.util.Profiler;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -19,7 +21,8 @@ public class TaskSample implements Task, CameraStream.OutputModifier
     private final DcMotor left, right;
     private Telemetry telemetry;
     private boolean continuous = false;
-    private final boolean onWebcam = true;
+    private static final boolean onWebcam = true;
+    private Logger log = new Logger("TaskSample");
 
     public TaskSample()
     {
@@ -65,7 +68,8 @@ public class TaskSample implements Task, CameraStream.OutputModifier
         boolean seen = false;
         Robot robot = Robot.instance();
 
-        while (continuous || seen || System.currentTimeMillis() - lostTime < 1500)
+        log.v("Attempting to sample");
+        while (continuous || seen || System.currentTimeMillis() - lostTime < 2000)
         {
             if (robot.imu.getStatus() == IMU.STARTED) robot.imu.update();
             telemetry.update();
@@ -75,7 +79,6 @@ public class TaskSample implements Task, CameraStream.OutputModifier
             {
                 telemetry.addData("Location", detector.getLocation());
 
-
                 // If our phone is mounted upside down, horizontal = +Y
                 // If we're on a webcam, horizontal = +X
                 if (!detector.goldSeen())
@@ -83,6 +86,7 @@ public class TaskSample implements Task, CameraStream.OutputModifier
                     if (seen)
                     {
                         lostTime = System.currentTimeMillis();
+                        log.v("Mineral lost");
                         seen = false;
                     }
                     lpower -= 0.01;
@@ -90,6 +94,7 @@ public class TaskSample implements Task, CameraStream.OutputModifier
                     right.setPower(lpower);
                     continue;
                 }
+                if (!seen) log.v("Mineral found!");
                 seen = true;
                 lpower = 0.1;
                 // Horizontal error, normalized
@@ -111,18 +116,19 @@ public class TaskSample implements Task, CameraStream.OutputModifier
                 // Turn amount
                 if (e < 0)
                 {
-                    r += e * 0.3;
-                    l -= e * 0.3;
+                    r += e * 0.2;
+                    l -= e * 0.2;
                 }
                 else
                 {
-                    l -= e * 0.3;
-                    r += e * 0.3;
+                    l -= e * 0.2;
+                    r += e * 0.2;
                 }
 
                 telemetry.addData("Left", l);
                 telemetry.addData("Right", r);
                 telemetry.addData("Error", e);
+                log.v("Error: %.4f; Left: %.4f, Right: %.4f", e, l, r);
 
                 left.setPower(l*2);
                 right.setPower(r*2);

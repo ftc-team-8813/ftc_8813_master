@@ -86,6 +86,7 @@ public class MainTeleOp extends OpMode
             }
             else
             {
+                // TODO only set dunk position on rising edge
                 robot.dunk.setPosition(Robot.dunk_min);
                 liftingDunk = false;
             }
@@ -148,7 +149,7 @@ public class MainTeleOp extends OpMode
 
         if (buttonHelper_2.pressing(ButtonHelper.x))
         {
-            if (robot.hook.getPosition() > Robot.HOOK_CLOSED)
+            if (robot.hook.getPosition() < Robot.HOOK_CLOSED)
                 robot.hook.setPosition(Robot.HOOK_CLOSED);
             else
                 robot.hook.setPosition(Robot.HOOK_OPEN);

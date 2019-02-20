@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.common.util.sensors.vision;
+package org.firstinspires.ftc.teamcode.common.sensors.vision;
 
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
@@ -12,14 +12,11 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Rect2d;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 import org.opencv.tracking.Tracker;
-import org.opencv.tracking.TrackerCSRT;
-import org.opencv.tracking.TrackerGOTURN;
-import org.opencv.tracking.TrackerKCF;
 import org.opencv.tracking.TrackerMOSSE;
-import org.opencv.tracking.TrackerMedianFlow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -309,7 +306,8 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
                     (int)Math.min(r.width, 639 - r.x), (int)Math.min(r.height, 479 - r.y)));
 
             Scalar avg = Core.mean(roi);
-            // Convert color to HSV
+            // Convert color to HSV by putting it into a Mat and then converting its color space
+            // since we're lazy
             Mat mean = new Mat(1, 1, CvType.CV_8UC3);
             mean.put(0, 0, avg.val[0], avg.val[1], avg.val[2]);
             Imgproc.cvtColor(mean, mean, Imgproc.COLOR_BGR2HSV);
@@ -321,16 +319,6 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
             boolean inRange = avg.val[0] >= 10 && avg.val[0] <= 33
                             && avg.val[1] >= 70 && avg.val[1] <= 255
                             && avg.val[2] >= 40 && avg.val[2] <= 255;
-
-            if (inRange)
-            {
-                System.out.format("validateTrackingRect succeeded with HSV <%.0f, %.0f, %.0f>\n", avg.val[0], avg.val[1], avg.val[2]);
-            }
-            else
-            {
-                System.out.format("validateTrackingRect failed with HSV <%.0f, %.0f, %.0f>\n", avg.val[0], avg.val[1], avg.val[2]);
-            }
-
 
             return inRange;
         }
@@ -344,8 +332,10 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
 
         private void process(Mat image)
         {
+            Mat blurry = new Mat();
+            Imgproc.blur(image, blurry, new Size(4, 4));
             Mat hsv = new Mat();
-            Imgproc.cvtColor(image, hsv, Imgproc.COLOR_BGR2HSV);
+            Imgproc.cvtColor(blurry, hsv, Imgproc.COLOR_BGR2HSV);
 
             Mat mask = new Mat();
             Core.inRange(hsv, new Scalar(10, 120, 40), new Scalar(33, 255, 255), mask);
@@ -411,6 +401,7 @@ public class ShapeGoldDetector implements CameraStream.CameraListener, CameraStr
             }
             mask.release();
             image.release();
+            blurry.release();
         }
     }
 
