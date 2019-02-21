@@ -61,15 +61,14 @@ public class TaskSample implements Task, CameraStream.OutputModifier
         left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        Thread.sleep(1000); // Wait for the camera to warm up
-
         long lostTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         double lpower = 0;
         boolean seen = false;
         Robot robot = Robot.instance();
 
         log.v("Attempting to sample");
-        while (continuous || seen || System.currentTimeMillis() - lostTime < 2000)
+        while ((continuous || seen || System.currentTimeMillis() - lostTime < 2000) && System.currentTimeMillis() - startTime < 10000)
         {
             if (robot.imu.getStatus() == IMU.STARTED) robot.imu.update();
             telemetry.update();
@@ -86,7 +85,7 @@ public class TaskSample implements Task, CameraStream.OutputModifier
                     if (seen)
                     {
                         lostTime = System.currentTimeMillis();
-                        log.v("Mineral lost");
+                        log.v("Mineral lost; y=%d", (int)detector.getLocation().y);
                         seen = false;
                     }
                     lpower -= 0.01;

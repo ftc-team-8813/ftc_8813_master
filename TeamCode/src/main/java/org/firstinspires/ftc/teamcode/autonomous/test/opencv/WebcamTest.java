@@ -6,6 +6,7 @@ import android.graphics.ImageFormat;
 import android.widget.ImageView;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Autonomous(name="Webcam Test")
+@Disabled
 public class WebcamTest extends LinearOpMode
 {
     private Webcam camera;

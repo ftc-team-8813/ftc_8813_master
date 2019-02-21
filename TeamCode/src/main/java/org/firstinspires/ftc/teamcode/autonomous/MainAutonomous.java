@@ -49,7 +49,8 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
     public void initialize() throws InterruptedException
     {
         Robot robot = Robot.instance();
-        robot.hook.setPosition(Robot.HOOK_CLOSED);
+        if (DROP) robot.hook.setPosition(Robot.HOOK_CLOSED);
+        else robot.hook.setPosition(Robot.HOOK_OPEN);
         robot.imu.initialize(telemetry);
         robot.imu.start();
         CameraStream stream = getCameraStream();
@@ -57,6 +58,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
                 (int)stream.getSize().width, (int)stream.getSize().height, 10.0);
         log = new Logger("Crater Autonomous");
         robot.initPivotAuto();
+        robot.mark.setPosition(0.1);
     }
 
     private String getVlogName()
@@ -86,6 +88,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         profiler.start("drop");
         if (DROP) new TaskDrop().runTask();
         else Thread.sleep(4000);
+        robot.imu.resetHeading();
         profiler.end();
 
         DcMotor left = robot.leftFront;
@@ -122,25 +125,74 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         new TaskIntakeMineral(profiler).runTask();
         profiler.end();
 
+        state = "Drive to depot";
+        profiler.start("depot");
+        profiler.start("back up");
+        robot.reverse(10, 0.3);
+        profiler.end();
+        profiler.start("turn");
+        if (side == RIGHT) turnTo(75);
+        else turnTo(70);
+        profiler.end();
+
+        profiler.start("drive");
+        if (side == LEFT) robot.leftFront.setPower(0.45);
+        else robot.leftFront.setPower(0.5);
+        robot.rightFront.setPower(0.7);
+
+        if (side == LEFT) Thread.sleep(1500);
+        else if (side == RIGHT) Thread.sleep(1000);
+        else Thread.sleep(2000);
+
+        if (side == LEFT) robot.forward(45, 0.4);
+        else robot.forward(45, 0.4);
+        Thread.sleep(500); // Allow it to coast
+        profiler.end();
+
+        profiler.start("drop");
+        robot.mark.setPosition(0.7);
+        Thread.sleep(500);
+        profiler.end();
+        profiler.end(); // depot
+
         state = "Park in crater";
         profiler.start("park");
-        profiler.start("forward");
-        robot.forward(24, 0.5);
-        Thread.sleep(100);
+        robot.reverse(150, 0.6);
         profiler.end();
-
-        // Drop the intake
-        profiler.start("drop");
-        robot.pivot.stopHolding();
-        Thread.sleep(15);
-        log.d("Starting intake drop");
-        robot.intakePivot.setPower(0.5);
-        Thread.sleep(400);
-        robot.intakePivot.setPower(0);
-        profiler.end();
-        profiler.end(); // park
         profiler.end(); // run
 
+    }
+
+    private void turnTo(int offset) throws InterruptedException
+    {
+        log.d("Turning to %d degrees", offset);
+        Robot robot = Robot.instance();
+        DcMotor left = robot.leftFront;
+        DcMotor right = robot.rightFront;
+        double speed = 0.18;
+        double kP = 0.15;
+        int deadband = 7;
+        for (int i = 0; (Math.abs(robot.imu.getHeading() - offset) > deadband || i < 20) && opModeIsActive(); )
+        {
+            double error = (robot.imu.getHeading() - offset);
+            if (Math.abs(error) >= deadband)
+            {
+                left.setPower(speed * Math.min(1, error * kP));
+                right.setPower(-speed * Math.min(1, error * kP));
+                i = 0;
+            }
+            else
+            {
+                left.setPower(0);
+                right.setPower(0);
+                i++;
+            }
+            Thread.sleep(5);
+            robot.imu.update();
+            log.v("Heading: %.4f", robot.imu.getHeading());
+        }
+        left.setPower(0);
+        right.setPower(0);
     }
 
     @Override

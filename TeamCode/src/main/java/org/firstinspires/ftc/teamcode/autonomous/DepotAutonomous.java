@@ -49,7 +49,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         CameraStream stream = getCameraStream();
         vlogger = new Vlogger(getVlogName(),
                 (int)stream.getSize().width, (int)stream.getSize().height, 10.0);
-        robot.mark.setPosition(0.2);
+        robot.mark.setPosition(0.1);
     }
 
     private String getVlogName()
