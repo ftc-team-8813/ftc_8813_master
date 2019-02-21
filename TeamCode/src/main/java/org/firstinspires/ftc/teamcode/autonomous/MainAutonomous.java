@@ -4,11 +4,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDetectGold;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDrop;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskIntakeMineral;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.WebcamStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Profiler;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
@@ -33,7 +35,15 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
     private volatile String state;
     private volatile long start;
 
+    private static final int LEFT = -1;
+    private static final int CENTER = 0;
+    private static final int RIGHT = 1;
+
+    private int side;
+
     private Profiler profiler = new Profiler();
+
+    public static final boolean DROP = false;
 
     @Override
     public void initialize() throws InterruptedException
@@ -45,14 +55,14 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         CameraStream stream = getCameraStream();
         video = new Vlogger(getVlogName(),
                 (int)stream.getSize().width, (int)stream.getSize().height, 10.0);
-        log = new Logger("Autonomous");
-        robot.initPivot();
+        log = new Logger("Crater Autonomous");
+        robot.initPivotAuto();
     }
 
     private String getVlogName()
     {
         int i;
-        for (i = 0; new File("autonomous_capture" + i + ".avi").exists(); i++);
+        for (i = 0; new File(Config.storageDir + "autonomous_capture" + i + ".avi").exists(); i++);
         return "autonomous_capture" + i + ".avi";
     }
 
@@ -74,20 +84,14 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         profiler.end();
 
         profiler.start("drop");
-        Thread.sleep(4000);
-        // new TaskDrop().runTask();
+        if (DROP) new TaskDrop().runTask();
+        else Thread.sleep(4000);
         profiler.end();
 
         DcMotor left = robot.leftFront;
         DcMotor right = robot.rightFront;
         left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        profiler.start("back up");
-        state = "Drive backward";
-        robot.reverse(2, 0.175);
-        Thread.sleep(500);
-        profiler.end();
 
         // Start detecting after the camera has warmed up
         stream.addModifier(detector);
@@ -108,6 +112,11 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         telemetry.clearAll();
         telemetry.update();
 
+        robot.imu.update();
+        if (robot.imu.getHeading() >= 25) side = LEFT;
+        else if (robot.imu.getHeading() <= -30) side = RIGHT;
+        else side = CENTER;
+
         state = "Intake mineral";
         profiler.start("intake");
         new TaskIntakeMineral(profiler).runTask();
@@ -126,12 +135,11 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         Thread.sleep(15);
         log.d("Starting intake drop");
         robot.intakePivot.setPower(0.5);
-        Thread.sleep(700);
+        Thread.sleep(400);
         robot.intakePivot.setPower(0);
         profiler.end();
         profiler.end(); // park
         profiler.end(); // run
-
 
     }
 
@@ -139,6 +147,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
     public synchronized void finish()
     {
         video.close();
+        log.d("Crater autonomous finished -- mineral=%s, drop=%s", side, Boolean.toString(DROP));
         profiler.finish();
     }
 

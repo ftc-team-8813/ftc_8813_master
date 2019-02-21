@@ -105,12 +105,12 @@ public class MainTeleOp extends OpMode
             if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);
         }
 
-        if (gamepad2.left_bumper)
+        if (gamepad2.left_bumper && !robot.pullupLimit.pressed())
         {
             robot.pullUp.setPower(1);
             if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);
         }
-        else if (gamepad2.right_bumper && !robot.pullupLimit.pressed())
+        else if (gamepad2.right_bumper)
         {
             robot.pullUp.setPower(-1);
             if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);

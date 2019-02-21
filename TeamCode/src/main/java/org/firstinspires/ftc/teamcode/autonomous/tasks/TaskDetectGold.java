@@ -27,6 +27,7 @@ public class TaskDetectGold implements Task
         DcMotor left = robot.leftFront;
         DcMotor right = robot.rightFront;
         double speed = 0.2;
+        robot.reverse(1, 0.2);
 
         int counter = 0;
         while (!detector.goldSeen())

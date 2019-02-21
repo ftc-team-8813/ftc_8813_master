@@ -16,8 +16,11 @@ import org.opencv.android.OpenCVLoader;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.Vector;
 
 /**
  * Base autonomous OpMode. Sub-OpModes that are going to be used for the games must extend this.
@@ -72,6 +75,7 @@ public abstract class BaseAutonomous extends LinearOpMode
     
     
     private CameraStream stream;
+    private Logger log;
     public Config config;
     
     /**
@@ -109,11 +113,17 @@ public abstract class BaseAutonomous extends LinearOpMode
     // watches the running status of the OpMode and interrupts it when a stop is requested.
     private class Interrupter implements Runnable
     {
-        private Thread toInterrupt;
+        private List<Thread> toInterrupt;
 
         Interrupter(Thread toInterrupt)
         {
-            this.toInterrupt = toInterrupt;
+            this.toInterrupt = new Vector<>();
+            this.toInterrupt.add(toInterrupt);
+        }
+
+        void addThread(Thread t)
+        {
+            toInterrupt.add(t);
         }
 
         @Override
@@ -130,8 +140,21 @@ public abstract class BaseAutonomous extends LinearOpMode
                     break;
                 }
             }
-            toInterrupt.interrupt();
+            for (Thread t : toInterrupt.toArray(new Thread[0])) t.interrupt();
         }
+    }
+
+    private Interrupter interrupter;
+
+    public final void addThread(Thread t)
+    {
+        if (interrupter == null)
+        {
+            if (log == null) return;
+            log.w("Trying to add thread to interrupt while autonomous is not running");
+            return;
+        }
+        interrupter.addThread(t);
     }
     
     /**
@@ -146,7 +169,7 @@ public abstract class BaseAutonomous extends LinearOpMode
     @Override
     public final void runOpMode() throws InterruptedException
     {
-        Logger log = null;
+        log = null;
         //Catch any InterruptedExceptions or other unchecked exceptions so that we can unset the
         //instance in case of an error.
         Throwable exc = null;
@@ -158,6 +181,12 @@ public abstract class BaseAutonomous extends LinearOpMode
             log = new Logger("BaseAutonomous");
             //Initialize the configuration file
             config = new Config(Config.configFile);
+
+            // Start the interrupter thread
+            interrupter = new Interrupter(Thread.currentThread());
+            Thread interrupterThread = new Thread(interrupter, "BaseAutonomous interrupter");
+            interrupterThread.setDaemon(true);
+            interrupterThread.start();
             
             //Clear the persistent objects since this would be a new round in competition
             Persistent.clear();
@@ -174,11 +203,6 @@ public abstract class BaseAutonomous extends LinearOpMode
             //be incredibly annoying. We could also simply override start(), but we also want to
             //initialize stuff, so it makes it simpler to use one method.
             waitForStart();
-
-            // Start the interrupter thread
-            Thread interrupterThread = new Thread(new Interrupter(Thread.currentThread()), "BaseAutonomous interrupter");
-            interrupterThread.setDaemon(true);
-            interrupterThread.start();
 
             if (!opModeIsActive()) return;
             Logger.startTimer();

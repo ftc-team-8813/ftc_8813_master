@@ -163,6 +163,15 @@ public class Robot
         pivot.hold(15);
     }
 
+    public void initPivotAuto() throws InterruptedException
+    {
+        intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        Thread.sleep(100);
+        pivot.setPower(0.5);
+        pivot.hold(15);
+    }
+
     ///////////////////////////////////
     // Autonomous utilities
 

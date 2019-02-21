@@ -11,6 +11,7 @@ public class Vlogger
     private VideoWriter writer;
     private volatile boolean closed;
     private String filename;
+    private Logger log = new Logger("Vlogger");
 
 
     public Vlogger(String filename, int width, int height, double fps)
@@ -30,6 +31,7 @@ public class Vlogger
     {
         closed = true;
         writer.release();
+        log.d("Video saved to %s", filename);
         Utils.scanFile(new File(Config.storageDir + filename));
     }
 }

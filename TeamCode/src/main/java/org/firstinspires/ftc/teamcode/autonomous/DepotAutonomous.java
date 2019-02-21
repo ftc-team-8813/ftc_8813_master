@@ -4,11 +4,14 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDetectGold;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDrop;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskIntakeMineral;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
 import org.firstinspires.ftc.teamcode.autonomous.util.opencv.WebcamStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Profiler;
 import org.firstinspires.ftc.teamcode.common.util.Vlogger;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.ShapeGoldDetector;
@@ -25,9 +28,14 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
     private static final int CENTER = 0;
     private static final int RIGHT = 1;
 
+    private int side;
+
     private static final String[] sides = {"Left", "Center", "Right"};
 
     private Profiler profiler = new Profiler();
+    private Logger log = new Logger("Depot Autonomous");
+
+    public static final boolean DROP = false;
 
     @Override
     public void initialize() throws InterruptedException
@@ -37,17 +45,17 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         robot.imu.initialize(telemetry);
         robot.imu.start();
 
-        robot.initPivot();
+        robot.initPivotAuto();
         CameraStream stream = getCameraStream();
         vlogger = new Vlogger(getVlogName(),
                 (int)stream.getSize().width, (int)stream.getSize().height, 10.0);
-        robot.mark.setPosition(0);
+        robot.mark.setPosition(0.2);
     }
 
     private String getVlogName()
     {
         int i;
-        for (i = 0; new File("autonomous_capture" + i + ".avi").exists(); i++);
+        for (i = 0; new File(Config.storageDir + "autonomous_capture" + i + ".avi").exists(); i++);
         return "autonomous_capture" + i + ".avi";
     }
 
@@ -66,19 +74,15 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         profiler.end();
 
         profiler.start("drop");
-        Thread.sleep(4000);
-        // new TaskDrop().runTask();
+        if (DROP) new TaskDrop().runTask();
+        else Thread.sleep(4000);
+        robot.imu.resetHeading();
         profiler.end();
 
         DcMotor left = robot.leftRear;
         DcMotor right = robot.rightRear;
         left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        profiler.start("back up");
-        robot.reverse(2, 0.2);
-        Thread.sleep(500);
-        profiler.end();
 
         stream.addModifier(detector);
         stream.addListener(detector);
@@ -100,20 +104,19 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
 
         profiler.start("drop marker");
         profiler.start("forward");
-        robot.forward(25, 0.3);
+        robot.forward(35, 0.3);
         profiler.end();
 
         robot.imu.update();
-        int side;
-        if (robot.imu.getHeading() >= 10) side = LEFT;
-        else if (robot.imu.getHeading() <= -10) side = RIGHT;
+        if (robot.imu.getHeading() >= 25) side = LEFT;
+        else if (robot.imu.getHeading() <= -30) side = RIGHT;
         else side = CENTER;
 
         int offset = 0;
         switch (side)
         {
             case LEFT:
-                offset = -20;
+                offset = -15;
                 break;
             case RIGHT:
                 offset = 30;
@@ -138,7 +141,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         profiler.start("park");
 
         profiler.start("turn 2");
-        turnTo(47);
+        turnTo(52);
         profiler.end();
 
         profiler.start("back up 2");
@@ -190,6 +193,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
     public void finish() throws InterruptedException
     {
         vlogger.close();
+        log.d("Depot Autonomous finished -- mineral=%s, drop=%s", sides[side+1], Boolean.toString(DROP));
         profiler.finish();
     }
 
