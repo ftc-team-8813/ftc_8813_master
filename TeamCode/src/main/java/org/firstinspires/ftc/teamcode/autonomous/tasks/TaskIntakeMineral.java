@@ -29,6 +29,7 @@ public class TaskIntakeMineral implements Task
         robot.intakePivot.setPower(0.5);
         Thread.sleep(200);
         robot.intakePivot.setPower(0);
+        Thread.sleep(500);
         profiler.end();
 
         // Run the intake

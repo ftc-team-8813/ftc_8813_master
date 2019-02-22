@@ -73,6 +73,11 @@ public class MainTeleOp extends OpMode
         robot.rightRear.setPower(-gamepad1.right_stick_y * mult);
 
         double liftPower = -(gamepad2.right_trigger - gamepad2.left_trigger);
+        if (robot.liftLimitDown.pressing() && liftPower < 0)
+        {
+            robot.dunk.setPosition(Robot.dunk_min);
+            liftingDunk = false;
+        }
         if (robot.liftLimitDown.pressed())
         {
             if (liftPower > 0)
@@ -82,13 +87,7 @@ public class MainTeleOp extends OpMode
             if (liftPower >= 0)
             {
                 robot.dunkLift.setPower(liftPower);
-                if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);
-            }
-            else
-            {
-                // TODO only set dunk position on rising edge
-                robot.dunk.setPosition(Robot.dunk_min);
-                liftingDunk = false;
+                if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
             }
         }
         else if (robot.liftLimitUp.pressed())
@@ -96,24 +95,24 @@ public class MainTeleOp extends OpMode
             if (liftPower <= 0)
             {
                 robot.dunkLift.setPower(liftPower);
-                if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);
+                if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
             }
         }
         else
         {
             robot.dunkLift.setPower(liftPower);
-            if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);
+            if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
         }
 
         if (gamepad2.left_bumper && !robot.pullupLimit.pressed())
         {
             robot.pullUp.setPower(1);
-            if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);
+            if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
         }
         else if (gamepad2.right_bumper)
         {
             robot.pullUp.setPower(-1);
-            if (robot.pivot.getCurrentPosition() < 200) robot.pivot.hold(200);
+            if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
         }
         else
         {

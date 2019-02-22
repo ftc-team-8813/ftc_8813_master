@@ -38,6 +38,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
     private static final int LEFT = -1;
     private static final int CENTER = 0;
     private static final int RIGHT = 1;
+    private static final String[] sides = {"Left", "Center", "Right"};
 
     private int side;
 
@@ -58,7 +59,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
                 (int)stream.getSize().width, (int)stream.getSize().height, 10.0);
         log = new Logger("Crater Autonomous");
         robot.initPivotAuto();
-        robot.mark.setPosition(0.1);
+        robot.mark.setPosition(0.9);
     }
 
     private String getVlogName()
@@ -117,8 +118,9 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 
         robot.imu.update();
         if (robot.imu.getHeading() >= 25) side = LEFT;
-        else if (robot.imu.getHeading() <= -30) side = RIGHT;
+        else if (robot.imu.getHeading() <= -25) side = RIGHT;
         else side = CENTER;
+        telemetry.addData("Side", sides[side+1]).setRetained(true);
 
         state = "Intake mineral";
         profiler.start("intake");
@@ -131,7 +133,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         robot.reverse(10, 0.3);
         profiler.end();
         profiler.start("turn");
-        if (side == RIGHT) turnTo(75);
+        if (side == RIGHT) turnTo(70);
         else turnTo(70);
         profiler.end();
 
@@ -141,7 +143,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         robot.rightFront.setPower(0.7);
 
         if (side == LEFT) Thread.sleep(1500);
-        else if (side == RIGHT) Thread.sleep(1000);
+        else if (side == RIGHT) Thread.sleep(1500);
         else Thread.sleep(2000);
 
         if (side == LEFT) robot.forward(45, 0.4);
@@ -150,7 +152,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         profiler.end();
 
         profiler.start("drop");
-        robot.mark.setPosition(0.7);
+        robot.mark.setPosition(0.2);
         Thread.sleep(500);
         profiler.end();
         profiler.end(); // depot
@@ -199,7 +201,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
     public synchronized void finish()
     {
         video.close();
-        log.d("Crater autonomous finished -- mineral=%s, drop=%s", side, Boolean.toString(DROP));
+        log.d("Crater autonomous finished -- mineral=%s, drop=%s", sides[side+1], Boolean.toString(DROP));
         profiler.finish();
     }
 
