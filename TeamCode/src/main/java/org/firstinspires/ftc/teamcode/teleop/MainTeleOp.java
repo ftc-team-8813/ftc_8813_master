@@ -27,8 +27,14 @@ public class MainTeleOp extends OpMode
     private ButtonHelper buttonHelper_2;
 
     private boolean liftingDunk = false;
+    private boolean droppingDunk = false;
+    private boolean dunkDown = false;
     private boolean pivotingDown = false;
     private int limit_press_count = 0;
+
+    private static final double dunk_nearly_down = 0.57;
+
+    private static final int intake_out = 300;
 
     private Scheduler scheduler = new Scheduler();
     private Logger log;
@@ -74,17 +80,20 @@ public class MainTeleOp extends OpMode
         robot.rightRear.setPower(-gamepad1.right_stick_y * mult);
 
         double liftPower = -(gamepad2.right_trigger - gamepad2.left_trigger);
-        if (robot.liftLimitDown.pressing() && liftPower < 0)
+        if (robot.liftLimitDown.pressed() && !dunkDown)
         {
-            robot.dunk.setPosition(Robot.dunk_min);
+            droppingDunk = true;
             liftingDunk = false;
+            dunkDown = true;
         }
         if (robot.liftLimitDown.pressed())
         {
             if (liftPower > 0)
             {
                 liftingDunk = true;
-                if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
+                droppingDunk = false;
+                dunkDown = false;
+                if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
             }
             if (liftPower >= 0)
             {
@@ -99,13 +108,13 @@ public class MainTeleOp extends OpMode
             }
             if (liftPower < 0)
             {
-                if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
+                if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
             }
         }
         else
         {
             robot.dunkLift.setPower(liftPower);
-            if (liftPower != 0 && robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
+            if (liftPower != 0 && robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
         }
 
         if (robot.pullupLimit.pressed()) limit_press_count++;
@@ -114,12 +123,12 @@ public class MainTeleOp extends OpMode
         if (gamepad2.left_bumper && (!robot.pullupLimit.pressed() || limit_press_count < 50))
         {
             robot.pullUp.setPower(1);
-            if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
+            if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
         }
         else if (gamepad2.right_bumper)
         {
             robot.pullUp.setPower(-1);
-            if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
+            if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
         }
         else
         {
@@ -129,8 +138,9 @@ public class MainTeleOp extends OpMode
         if (buttonHelper_1.pressing(ButtonHelper.b))
         {
             liftingDunk = false;
-            if (robot.dunk.getPosition() > Robot.dunk_up + 0.1)
-                robot.dunk.setPosition(Robot.dunk_min);
+            droppingDunk = false;
+            if (robot.dunk.getPosition() < Robot.dunk_up - 0.1)
+                robot.dunk.setPosition(Robot.dunk_up);
             else
             {
                 robot.dunk.setPosition(Robot.dunk_dunk);
@@ -147,10 +157,16 @@ public class MainTeleOp extends OpMode
 
         if (liftingDunk)
         {
-//            if (robot.dunk.getPosition() < Robot.dunk_up) robot.dunk.setPosition(robot.dunk.getPosition() + 0.01);
-//            else liftingDunk = false;
-            robot.dunk.setPosition(Robot.dunk_up);
-            liftingDunk = false;
+            if (robot.dunk.getPosition() > Robot.dunk_up) robot.dunk.setPosition(robot.dunk.getPosition() - 0.03);
+            else liftingDunk = false;
+//            robot.dunk.setPosition(Robot.dunk_up);
+//            liftingDunk = false;
+        }
+        else if (droppingDunk)
+        {
+            if (robot.dunk.getPosition() < dunk_nearly_down) robot.dunk.setPosition(dunk_nearly_down);
+            else if (robot.dunk.getPosition() < Robot.dunk_min) robot.dunk.setPosition(robot.dunk.getPosition() + 0.05);
+            else droppingDunk = false;
         }
 
         if (buttonHelper_2.pressing(ButtonHelper.x))

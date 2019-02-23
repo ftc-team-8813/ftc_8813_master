@@ -46,7 +46,7 @@ public class TaskIntakeMineral implements Task
 
         profiler.start("raise");
         // Raise the intake
-        robot.pivot.hold(5);
+        robot.pivot.hold(-10);
         Thread.sleep(1000);
         profiler.end();
 

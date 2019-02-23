@@ -59,7 +59,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
                 (int)stream.getSize().width, (int)stream.getSize().height, 10.0);
         log = new Logger("Crater Autonomous");
         robot.initPivotAuto();
-        robot.mark.setPosition(0.9);
+        robot.mark.setPosition(0.91);
     }
 
     private String getVlogName()
@@ -152,7 +152,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         profiler.end();
 
         profiler.start("drop");
-        robot.mark.setPosition(0.2);
+        robot.mark.setPosition(0);
         Thread.sleep(500);
         profiler.end();
         profiler.end(); // depot

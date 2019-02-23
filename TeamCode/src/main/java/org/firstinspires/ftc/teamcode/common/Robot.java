@@ -44,9 +44,9 @@ public class Robot
     public static final double HOOK_CLOSED = 0.50;
     public static final double HOOK_OPEN = 0;
 
-    public static final double dunk_min = 0.53;
-    public static final double dunk_up = 0.75;
-    public static final double dunk_dunk = 1;
+    public static final double dunk_min = 0.749;
+    public static final double dunk_up = 0.524;
+    public static final double dunk_dunk = 0.026;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //  Initialization and Lifecycle                                                                  //

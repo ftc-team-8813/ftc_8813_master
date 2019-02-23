@@ -35,6 +35,8 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
     private Profiler profiler = new Profiler();
     private Logger log = new Logger("Depot Autonomous");
 
+    public static final boolean OTHER_CRATER = true;
+
     public static final boolean DROP = true;
 
     @Override
@@ -49,7 +51,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         CameraStream stream = getCameraStream();
         vlogger = new Vlogger(getVlogName(),
                 (int)stream.getSize().width, (int)stream.getSize().height, 10.0);
-        robot.mark.setPosition(0.9);
+        robot.mark.setPosition(0.7);
     }
 
     private String getVlogName()
@@ -108,7 +110,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         profiler.end();
 
         robot.imu.update();
-        if (robot.imu.getHeading() >= 25) side = LEFT;
+        if (robot.imu.getHeading() >= 15) side = LEFT;
         else if (robot.imu.getHeading() <= -30) side = RIGHT;
         else side = CENTER;
 
@@ -134,14 +136,15 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         robot.forward(35, 0.4);
         Thread.sleep(200);
         profiler.end();
-        robot.mark.setPosition(0.2);
+        robot.mark.setPosition(0);
 
         profiler.end(); // drop marker
 
         profiler.start("park");
 
         profiler.start("turn 2");
-        turnTo(52);
+        if (OTHER_CRATER) turnTo(-52);
+        else turnTo(52);
         profiler.end();
 
         profiler.start("back up 2");
