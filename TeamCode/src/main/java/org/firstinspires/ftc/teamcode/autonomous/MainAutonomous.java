@@ -44,7 +44,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 
     private Profiler profiler = new Profiler();
 
-    public static final boolean DROP = false;
+    public static final boolean DROP = true;
 
     @Override
     public void initialize() throws InterruptedException

@@ -28,6 +28,7 @@ public class MainTeleOp extends OpMode
 
     private boolean liftingDunk = false;
     private boolean pivotingDown = false;
+    private int limit_press_count = 0;
 
     private Scheduler scheduler = new Scheduler();
     private Logger log;
@@ -83,11 +84,11 @@ public class MainTeleOp extends OpMode
             if (liftPower > 0)
             {
                 liftingDunk = true;
+                if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
             }
             if (liftPower >= 0)
             {
                 robot.dunkLift.setPower(liftPower);
-                if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
             }
         }
         else if (robot.liftLimitUp.pressed())
@@ -95,16 +96,22 @@ public class MainTeleOp extends OpMode
             if (liftPower <= 0)
             {
                 robot.dunkLift.setPower(liftPower);
+            }
+            if (liftPower < 0)
+            {
                 if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
             }
         }
         else
         {
             robot.dunkLift.setPower(liftPower);
-            if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
+            if (liftPower != 0 && robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
         }
 
-        if (gamepad2.left_bumper && !robot.pullupLimit.pressed())
+        if (robot.pullupLimit.pressed()) limit_press_count++;
+        else limit_press_count = 0;
+
+        if (gamepad2.left_bumper && (!robot.pullupLimit.pressed() || limit_press_count < 50))
         {
             robot.pullUp.setPower(1);
             if (robot.pivot.getCurrentPosition() < 250) robot.pivot.hold(250);
@@ -189,7 +196,7 @@ public class MainTeleOp extends OpMode
         if (pivotingDown)
         {
             if (robot.pivot.isHolding()) pivotingDown = false;
-            if (robot.intakePivot.getCurrentPosition() >= 300) pivotingDown = false;
+            if (robot.intakePivot.getCurrentPosition() >= 400) pivotingDown = false;
             if (!pivotingDown) robot.intakePivot.setPower(0);
             else robot.intakePivot.setPower(0.75);
         }
