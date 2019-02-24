@@ -35,7 +35,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
     private Profiler profiler = new Profiler();
     private Logger log = new Logger("Depot Autonomous");
 
-    public static final boolean OTHER_CRATER = true;
+    protected boolean OTHER_CRATER = false;
 
     public static final boolean DROP = true;
 

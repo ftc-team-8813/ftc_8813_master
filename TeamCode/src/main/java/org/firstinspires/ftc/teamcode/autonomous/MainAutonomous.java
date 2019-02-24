@@ -139,6 +139,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 
         profiler.start("drive");
         if (side == LEFT) robot.leftFront.setPower(0.45);
+        else if (side == RIGHT) robot.leftFront.setPower(0.55);
         else robot.leftFront.setPower(0.5);
         robot.rightFront.setPower(0.7);
 

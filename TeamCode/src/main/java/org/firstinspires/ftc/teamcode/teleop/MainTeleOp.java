@@ -80,11 +80,18 @@ public class MainTeleOp extends OpMode
         robot.rightRear.setPower(-gamepad1.right_stick_y * mult);
 
         double liftPower = -(gamepad2.right_trigger - gamepad2.left_trigger);
-        if (robot.liftLimitDown.pressed() && !dunkDown)
+        if (robot.liftLimitDown.pressed())
         {
-            droppingDunk = true;
-            liftingDunk = false;
-            dunkDown = true;
+            if (!dunkDown)
+            {
+                droppingDunk = true;
+                liftingDunk = false;
+                dunkDown = true;
+            }
+        }
+        else
+        {
+            dunkDown = false;
         }
         if (robot.liftLimitDown.pressed())
         {
@@ -92,7 +99,6 @@ public class MainTeleOp extends OpMode
             {
                 liftingDunk = true;
                 droppingDunk = false;
-                dunkDown = false;
                 if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
             }
             if (liftPower >= 0)
@@ -207,7 +213,7 @@ public class MainTeleOp extends OpMode
         }
         else if (buttonHelper_2.pressing(ButtonHelper.dpad_down))
         {
-            robot.pivot.hold(1300);
+            robot.pivot.hold(1600);
         }
         if (pivotingDown)
         {
