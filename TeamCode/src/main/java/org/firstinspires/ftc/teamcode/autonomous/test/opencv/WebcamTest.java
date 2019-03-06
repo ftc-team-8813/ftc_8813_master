@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-import org.firstinspires.ftc.teamcode.autonomous.util.opencv.Webcam;
+import org.firstinspires.ftc.teamcode.common.sensors.vision.Webcam;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 

@@ -1,10 +1,9 @@
-package org.firstinspires.ftc.teamcode.autonomous.util.opencv;
+package org.firstinspires.ftc.teamcode.common.sensors.vision;
 
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 
 import com.qualcomm.robotcore.util.ThreadPool;
-import com.vuforia.Frame;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.android.util.Size;
@@ -110,16 +109,18 @@ public class Webcam
     public void startStreaming(FrameCallback callback)
     {
         if (size == null) throw new IllegalStateException("Please set the format first!");
+        this.frameCallback = callback;
         status = Status.STREAMING;
         try
         {
-            camera.createCaptureSession(Continuation.create(executor, new CaptureStatusCallback(callback)));
+            camera.createCaptureSession(Continuation.create(executor, new CaptureStatusCallback()));
         } catch (CameraException e)
         {
             log.e("Error creating capture session");
             log.e(e);
             camera.close();
             status = Status.ERROR;
+            frameCallback.onClose(status);
         }
     }
 
@@ -129,6 +130,7 @@ public class Webcam
         {
             camera.close();
             status = Status.CLOSED;
+            if (frameCallback != null) frameCallback.onClose(status);
         }
     }
 
@@ -144,12 +146,6 @@ public class Webcam
 
     private class CaptureStatusCallback extends CameraCaptureSession.StateCallbackDefault
     {
-        private FrameCallback frameCallback;
-
-        public CaptureStatusCallback(FrameCallback frameCallback)
-        {
-            this.frameCallback = frameCallback;
-        }
 
         @Override
         public void onConfigured(@NonNull CameraCaptureSession session)
@@ -159,7 +155,7 @@ public class Webcam
                 CameraCaptureRequest request = camera.createCaptureRequest(format, size, characteristics.getMaxFramesPerSecond(format, size));
 
                 CameraCaptureSequenceId sequenceId = session.startCapture(request,
-                        new CaptureCallback(request, frameCallback),
+                        new CaptureCallback(request),
                         Continuation.create(executor, new CameraCaptureSession.StatusCallback()
                         {
                             @Override
@@ -174,6 +170,7 @@ public class Webcam
                 log.e(e);
                 camera.close();
                 status = Status.ERROR;
+                frameCallback.onClose(status);
             }
         }
 
@@ -187,24 +184,25 @@ public class Webcam
     public static interface FrameCallback
     {
         public void onFrame(Bitmap frame);
+        public void onClose(Status status);
     }
+
+    private FrameCallback frameCallback;
 
     private class CaptureCallback implements CameraCaptureSession.CaptureCallback
     {
         private Bitmap bitmap;
-        private FrameCallback callback;
 
-        public CaptureCallback(CameraCaptureRequest request, FrameCallback callback)
+        public CaptureCallback(CameraCaptureRequest request)
         {
             bitmap = request.createEmptyBitmap();
-            this.callback = callback;
         }
 
         @Override
         public void onNewFrame(@NonNull CameraCaptureSession session, @NonNull CameraCaptureRequest request, @NonNull CameraFrame cameraFrame)
         {
             cameraFrame.copyToBitmap(bitmap);
-            callback.onFrame(bitmap);
+            frameCallback.onFrame(bitmap);
         }
     }
 
@@ -235,6 +233,7 @@ public class Webcam
         {
             log.d("Camera closed");
             if (status != Status.ERROR) status = Status.CLOSED;
+            frameCallback.onClose(status);
         }
 
         @Override
@@ -249,6 +248,7 @@ public class Webcam
                 status = Status.ERROR;
             }
             camera.close();
+            frameCallback.onClose(status);
         }
     }
 }

@@ -7,14 +7,14 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDetectGold;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDrop;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskIntakeMineral;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
-import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
-import org.firstinspires.ftc.teamcode.autonomous.util.opencv.WebcamStream;
+import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
+import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Profiler;
 import org.firstinspires.ftc.teamcode.common.util.Vlogger;
-import org.firstinspires.ftc.teamcode.common.sensors.vision.ShapeGoldDetector;
+import org.firstinspires.ftc.teamcode.autonomous.util.opencv.ShapeGoldDetector;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 

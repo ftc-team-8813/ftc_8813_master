@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.common.Robot;
-import org.firstinspires.ftc.teamcode.common.sensors.vision.ShapeGoldDetector;
+import org.firstinspires.ftc.teamcode.autonomous.util.opencv.ShapeGoldDetector;
 import org.firstinspires.ftc.teamcode.common.util.Profiler;
 
 public class TaskDetectGold implements Task

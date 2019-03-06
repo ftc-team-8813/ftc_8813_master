@@ -4,12 +4,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
-import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
+import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
-import org.firstinspires.ftc.teamcode.common.sensors.vision.ShapeGoldDetector;
+import org.firstinspires.ftc.teamcode.autonomous.util.opencv.ShapeGoldDetector;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
-import org.firstinspires.ftc.teamcode.common.util.Profiler;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;

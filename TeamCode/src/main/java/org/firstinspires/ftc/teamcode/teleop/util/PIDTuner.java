@@ -4,19 +4,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
+import org.firstinspires.ftc.teamcode.common.util.MotorController;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
-import org.firstinspires.ftc.teamcode.common.util.Utils;
 
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.Charset;
 
 /**
  * PIDTuner - OpMode to adjust PID constants for the MotorController.
@@ -50,23 +44,16 @@ public class PIDTuner extends OpMode
         controller.holdStalled(true);
         controller.hold(0);
 
-        try
-        {
-            dataLogger = new DataLogger(new File(Config.storageDir + "pidLog.dat"),
-                    new DataLogger.Channel("kP",       0xAA0000),
-                    new DataLogger.Channel("kI",       0x00AA00),
-                    new DataLogger.Channel("kD",       0x0000AA),
-                    new DataLogger.Channel("target",   0xFFFF00),
-                    new DataLogger.Channel("position", 0x00FF00),
-                    new DataLogger.Channel("error",    0xFF0000),
-                    new DataLogger.Channel("integral", 0x7F00FF),
-                    new DataLogger.Channel("deriv",    0x00FFFF),
-                    new DataLogger.Channel("output",   0xFFFFFF));
-
-        } catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+        dataLogger = new DataLogger(new File(Config.storageDir + "pidLog.dat"),
+                new DataLogger.Channel("kP",       0xAA0000),
+                new DataLogger.Channel("kI",       0x00AA00),
+                new DataLogger.Channel("kD",       0x0000AA),
+                new DataLogger.Channel("target",   0xFFFF00),
+                new DataLogger.Channel("position", 0x00FF00),
+                new DataLogger.Channel("error",    0xFF0000),
+                new DataLogger.Channel("integral", 0x7F00FF),
+                new DataLogger.Channel("deriv",    0x00FFFF),
+                new DataLogger.Channel("output",   0xFFFFFF));
     }
 //    log(new double[]{kP, kI, kD,
 //            controller.getTargetPosition(), controller.getCurrentPosition(),
@@ -156,15 +143,9 @@ public class PIDTuner extends OpMode
 
     
     @Override
-    public void stop() {
-
-        try
-        {
-            dataLogger.close();
-        } catch (IOException e)
-        {
-            log.e(e);
-        }
+    public void stop()
+    {
+        dataLogger.close();
         // Allow the interrupt to be interpreted
         controller.close();
         Logger.close();

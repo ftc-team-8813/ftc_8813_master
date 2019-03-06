@@ -4,8 +4,8 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
-import org.firstinspires.ftc.teamcode.autonomous.util.opencv.WebcamStream;
+import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
+import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
 import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
@@ -13,13 +13,8 @@ import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Persistent;
 import org.opencv.android.OpenCVLoader;
 
-import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Vector;
 
 /**

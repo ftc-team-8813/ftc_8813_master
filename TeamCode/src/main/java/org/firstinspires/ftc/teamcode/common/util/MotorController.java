@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous.util;
+package org.firstinspires.ftc.teamcode.common.util;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -55,21 +55,14 @@ public class MotorController implements Closeable
             }
             this.atTarget = atTarget;
             controller = new PIDController(0, 0, 0);
-            try
-            {
-                datalogger = new DataLogger(
-                        new File(Config.storageDir + "pidLog_motor" + motor.getPortNumber() + ".dat"),
-                        new DataLogger.Channel("target",   0xFFFF00),
-                        new DataLogger.Channel("position", 0x00FF00),
-                        new DataLogger.Channel("error",    0xFF0000),
-                        new DataLogger.Channel("integral", 0x7F00FF),
-                        new DataLogger.Channel("deriv",    0x00FFFF),
-                        new DataLogger.Channel("output",   0xFFFFFF));
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
+            datalogger = new DataLogger(
+                    new File(Config.storageDir + "pidLog_motor" + motor.getPortNumber() + ".dat"),
+                    new DataLogger.Channel("target",   0xFFFF00),
+                    new DataLogger.Channel("position", 0x00FF00),
+                    new DataLogger.Channel("error",    0xFF0000),
+                    new DataLogger.Channel("integral", 0x7F00FF),
+                    new DataLogger.Channel("deriv",    0x00FFFF),
+                    new DataLogger.Channel("output",   0xFFFFFF));
         }
         
         @Override
@@ -131,26 +124,13 @@ public class MotorController implements Closeable
                         controller.getDerivative(),
                         controller.getOutput()
                 };
-                try
-                {
-                    datalogger.log(data);
-                }
-                catch (IOException e)
-                {
-                    log.e(e);
-                }
+                datalogger.log(data);
 
                 if (Thread.interrupted())
                 {
                     motor.setPower(0);
                     controller.resetIntegrator();
-                    try
-                    {
-                        datalogger.close();
-                    } catch (IOException e)
-                    {
-                        log.e(e);
-                    }
+                    datalogger.close();
                     return;
                 }
             }
@@ -158,13 +138,7 @@ public class MotorController implements Closeable
 
         void startLogging()
         {
-            try
-            {
-                datalogger.startClip();
-            } catch (IOException e)
-            {
-                log.e(e);
-            }
+            datalogger.startClip();
         }
         
         void setTarget(int target)
@@ -194,7 +168,7 @@ public class MotorController implements Closeable
             holding = false;
             log.d("Stop holding position");
         }
-        
+
         boolean isHolding()
         {
             return holding;

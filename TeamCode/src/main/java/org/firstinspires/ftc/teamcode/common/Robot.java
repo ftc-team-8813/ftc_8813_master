@@ -6,11 +6,15 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.autonomous.util.MotorController;
+import org.firstinspires.ftc.teamcode.common.util.MotorController;
 import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.DataLogger;
+import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Persistent;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
+
+import java.io.File;
 
 /**
  * Robot -- a container for all of the robot hardware interfaces
@@ -47,6 +51,11 @@ public class Robot
     public static final double dunk_min = 0.749;
     public static final double dunk_up = 0.524;
     public static final double dunk_dunk = 0.026;
+
+    // Internal
+    private final Logger log = new Logger("Robot");
+
+    private DataLogger turnLogger;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //  Initialization and Lifecycle                                                                  //
@@ -99,6 +108,10 @@ public class Robot
         pullupLimit = new Switch(hardwareMap.digitalChannel.get("pull up limit"));
 
         // Other
+        turnLogger =
+                new DataLogger(new File(Config.storageDir + "turnLog.bin"),
+                        new DataLogger.Channel("Motor power", 0xFFFF00),
+                        new DataLogger.Channel("Heading error", 0xFF0000));
 
         // Reverse motors as necessary
         if (config.getBoolean("lf_reverse", false)) leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -135,6 +148,7 @@ public class Robot
         intake.setPower(0);
         // Stop external threads and close open files (if any) here
         pivot.close();
+        turnLogger.close();
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,7 +164,7 @@ public class Robot
         intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intakePivot.setPower(-0.4);
         int i = 0;
-        while (!pivotLimit.pressed() && i < 5000)
+        while (!pivotLimit.pressed() && i < 2000)
         {
             Thread.sleep(1);
             i++;
@@ -163,11 +177,10 @@ public class Robot
         pivot.hold(15);
     }
 
-    public void initPivotAuto() throws InterruptedException
+    public void initPivotAuto()
     {
         intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        Thread.sleep(100);
         pivot.setPower(0.5);
         pivot.hold(15);
     }
@@ -215,26 +228,42 @@ public class Robot
         forward(-distance, power);
     }
 
-    /**
-     * Turns the robot in an arc. Like all other driving functions, this function blocks (waits) until the
-     * motors are stopped.
-     * <p></p>
-     * <p>To do a point turn (one wheel forward, one wheel backwards), set {@code radius} to 0</p>
-     * <p>To do a wheel turn (one wheel forward, one wheel stopped), set {@code radius} to {@link Robot#RADIUS_INCH Robot.RADIUS_INCH }</p>
-     * <p>To turn counterclockwise, set {@code radius} negative (or {@code angle} negative for point turns)</p>
-     * <p><b>Note:</b> Turning in an arc is very inaccurate at the moment, as the faster wheel will drive the slower wheel, increasing
-     *   the turn radius and reducing the actual turn angle. Avoid using arc turns when accuracy is needed.</p>
-     * @param angle The angle (in radians; 180 degrees = PI radians) to turn
-     * @param radius The turn radius (in inches)
-     * @param power How fast to turn (-1 - 1; negative power has the same effect as negative angle)
-     * @throws InterruptedException If the thread is interrupted (i.e. the user pressed STOP on the
-     *                              driver station or the autonomous 30 seconds timed out)
-     */
-    public void turn(double angle, double radius, double power) throws InterruptedException
+    public void turn(double angle, double power) throws InterruptedException
     {
-        int distLeft = (int)((radius + RADIUS_INCH) * angle * ENC_PER_INCH * 2);
-        int distRight = (int)((radius - RADIUS_INCH) * angle * ENC_PER_INCH * 2);
-        turnEnc(distLeft, distRight, power);
+        imu.update();
+        turnTo(imu.getHeading() + angle, power);
+    }
+
+    public void turnTo(double angle, double power) throws InterruptedException
+    {
+        log.d("Turning to %d degrees", angle);
+        turnLogger.startClip();
+        Robot robot = Robot.instance();
+        DcMotor left = robot.leftFront;
+        DcMotor right = robot.rightFront;
+        double kP = 0.15;
+        int deadband = 3;
+        for (int i = 0; (Math.abs(robot.imu.getHeading() - angle) > deadband || i < 20);)
+        {
+            double error = (robot.imu.getHeading() - angle);
+            if (Math.abs(error) >= deadband)
+            {
+                left.setPower(power * Math.min(1, error * kP));
+                right.setPower(-power * Math.min(1, error * kP));
+                i = 0;
+            }
+            else
+            {
+                left.setPower(0);
+                right.setPower(0);
+                i++;
+            }
+            Thread.sleep(5);
+            turnLogger.log(new double[] {left.getPower(), error});
+            robot.imu.update();
+        }
+        left.setPower(0);
+        right.setPower(0);
     }
 
     // Driving (encoder ticks)
@@ -273,95 +302,5 @@ public class Robot
 
 
     }
-
-    // TODO needs testing
-
-    /**
-     * Turn a certain number of encoder ticks. More specifically, this function moves the left side
-     * and right side different distances simultaneously. Like all other driving functions, this
-     * function blocks (waits) until the motors are stopped.
-     * @param distLeft How far to drive the left side (in encoder ticks)
-     * @param distRight How far to drive the right side (in encoder ticks)
-     * @param power How fast to drive (-1 - 1; negative power DOES reverse the motors)
-     * @throws InterruptedException If the thread is interrupted (i.e. the user pressed STOP on the
-     *                              driver station or the autonomous 30 seconds timed out)
-     */
-    public void turnEnc(int distLeft, int distRight, double power) throws InterruptedException
-    {
-        if (distLeft == 0 && distRight == 0) return; // Avoid division by zero
-        // Ensure we're in the correct mode
-        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        double powerLeft, powerRight;
-
-        // Optimize power so that both sides reach their destination at about the same time
-        // to avoid strange turn behavior
-        if (Math.abs(distLeft) >= Math.abs(distRight))
-        {
-            powerLeft = power * Math.signum(distLeft);
-            powerRight = powerLeft * ((double)distRight / (double)distLeft);
-        }
-        else
-        {
-            powerRight = power * Math.signum(distRight);
-            powerLeft = powerRight * ((double)distLeft / (double)distRight);
-        }
-
-        // Measuring distance from rear motors as they have more traction
-        // Motor controller init resets the encoders, so we can start from 0 (yay!)
-
-        MotorController ml = new MotorController(leftRear, config);
-        MotorController mr = new MotorController(rightRear, config);
-
-        // Turn off front wheel braking to improve performance since we're just dragging them
-        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
-        leftFront.setPower(0);
-        ml.setPower(Math.abs(powerLeft));
-
-        rightFront.setPower(0);
-        mr.setPower(Math.abs(powerRight));
-
-        ml.startRunToPosition(distLeft);
-        mr.startRunToPosition(distRight);
-
-        boolean leftBusy = true, rightBusy = true;
-
-        while (leftBusy || rightBusy)
-        {
-            try
-            {
-                if (!ml.isHolding())
-                {
-                    leftBusy = false;
-                    ml.hold(ml.getCurrentPosition());
-                }
-                if (!mr.isHolding())
-                {
-                    rightBusy = false;
-                    mr.hold(mr.getCurrentPosition());
-                }
-                Thread.sleep(5);
-            }
-            catch (InterruptedException e)
-            {
-                leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                ml.close();
-                mr.close();
-                throw e;
-            }
-        }
-
-        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        ml.close();
-        mr.close();
-    }
-
 
 }

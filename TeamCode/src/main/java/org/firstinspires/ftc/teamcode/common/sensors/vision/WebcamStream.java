@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous.util.opencv;
+package org.firstinspires.ftc.teamcode.common.sensors.vision;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -8,7 +8,6 @@ import android.widget.ImageView;
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-import org.firstinspires.ftc.teamcode.autonomous.test.opencv.WebcamTest;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
@@ -50,7 +49,13 @@ public class WebcamStream extends CameraStream
             }
         }
         camera = new Webcam(webcams.get(0));
-        camera.open(60);
+        boolean opened = camera.open(60);
+        for (int i = 0; i < 5 && !opened; i++)
+        {
+            log.w("Failed to open camera; trying again (attempt=%d)", i);
+            opened = camera.open(10);
+        }
+        if (!opened) throw new IllegalStateException("Unable to open camera; please restart the robot");
         try
         {
             Thread.sleep(5);
@@ -120,11 +125,13 @@ public class WebcamStream extends CameraStream
                 activity.cameraMonitorLayout.removeView(view);
             }
         });
+        view.onRemove();
     }
 
     private class FrameView extends ImageView implements Webcam.FrameCallback
     {
         private Activity activity;
+        private boolean closed = false;
 
         public FrameView(Activity context)
         {
@@ -167,6 +174,25 @@ public class WebcamStream extends CameraStream
                     setImageBitmap(outFrame);
                 }
             });
+        }
+
+        void onRemove()
+        {
+            for (CameraListener l : listeners)
+            {
+                l.stop();
+            }
+        }
+
+        @Override
+        public void onClose(Webcam.Status status)
+        {
+            if (!closed)
+            {
+                log.w("Camera closed!");
+                closed = true;
+                stop();
+            }
         }
     }
 }

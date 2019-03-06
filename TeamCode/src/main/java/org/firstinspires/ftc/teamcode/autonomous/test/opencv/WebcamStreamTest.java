@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.autonomous.test.opencv;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.autonomous.util.opencv.WebcamStream;
-import org.firstinspires.ftc.teamcode.common.sensors.vision.ShapeGoldDetector;
+import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
+import org.firstinspires.ftc.teamcode.autonomous.util.opencv.ShapeGoldDetector;
 import org.opencv.android.OpenCVLoader;
 
 @Autonomous(name="Webcam Stream Test")

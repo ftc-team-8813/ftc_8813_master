@@ -7,15 +7,15 @@ import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDetectGold;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDrop;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskIntakeMineral;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
-import org.firstinspires.ftc.teamcode.autonomous.util.opencv.CameraStream;
-import org.firstinspires.ftc.teamcode.autonomous.util.opencv.WebcamStream;
+import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
+import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Profiler;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
 import org.firstinspires.ftc.teamcode.common.util.Vlogger;
-import org.firstinspires.ftc.teamcode.common.sensors.vision.ShapeGoldDetector;
+import org.firstinspires.ftc.teamcode.autonomous.util.opencv.ShapeGoldDetector;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -120,7 +120,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         if (robot.imu.getHeading() >= 25) side = LEFT;
         else if (robot.imu.getHeading() <= -25) side = RIGHT;
         else side = CENTER;
-        telemetry.addData("Side", sides[side+1]).setRetained(true);
+        telemetry.addData("Side", sides[side + 1]).setRetained(true);
 
         state = "Intake mineral";
         profiler.start("intake");
@@ -133,8 +133,8 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         robot.reverse(10, 0.3);
         profiler.end();
         profiler.start("turn");
-        if (side == RIGHT) turnTo(70);
-        else turnTo(70);
+        if (side == RIGHT) robot.turnTo(70, 0.18);
+        else robot.turnTo(70, 0.18);
         profiler.end();
 
         profiler.start("drive");
@@ -164,38 +164,6 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         profiler.end();
         profiler.end(); // run
 
-    }
-
-    private void turnTo(int offset) throws InterruptedException
-    {
-        log.d("Turning to %d degrees", offset);
-        Robot robot = Robot.instance();
-        DcMotor left = robot.leftFront;
-        DcMotor right = robot.rightFront;
-        double speed = 0.18;
-        double kP = 0.15;
-        int deadband = 7;
-        for (int i = 0; (Math.abs(robot.imu.getHeading() - offset) > deadband || i < 20) && opModeIsActive(); )
-        {
-            double error = (robot.imu.getHeading() - offset);
-            if (Math.abs(error) >= deadband)
-            {
-                left.setPower(speed * Math.min(1, error * kP));
-                right.setPower(-speed * Math.min(1, error * kP));
-                i = 0;
-            }
-            else
-            {
-                left.setPower(0);
-                right.setPower(0);
-                i++;
-            }
-            Thread.sleep(5);
-            robot.imu.update();
-            log.v("Heading: %.4f", robot.imu.getHeading());
-        }
-        left.setPower(0);
-        right.setPower(0);
     }
 
     @Override

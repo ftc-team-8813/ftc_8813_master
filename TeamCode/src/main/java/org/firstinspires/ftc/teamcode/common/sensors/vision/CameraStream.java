@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous.util.opencv;
+package org.firstinspires.ftc.teamcode.common.sensors.vision;
 
 import android.app.Activity;
 import android.view.View;

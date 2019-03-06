@@ -129,6 +129,26 @@ public class Logger
             writer.println(base + String.format(fmt, args));
         }
     }
+
+    public synchronized void log(int level, Throwable t)
+    {
+        if (writer == null)
+        {
+            try
+            {
+                init(new File(Config.storageDir + "latest.log"));
+            } catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        if (level <= maxLevel)
+        {
+            String base = base(level);
+            writer.print(base);
+            t.printStackTrace(writer);
+        }
+    }
     
     public synchronized void v(String fmt, Object... args)
     {
@@ -154,26 +174,24 @@ public class Logger
     {
         log(1, fmt, args);
     }
-    
-    public synchronized void e(Throwable t)
+
+    public synchronized void f(String fmt, Object... args)
     {
-        if (writer == null)
-        {
-            try
-            {
-                init(new File(Config.storageDir + "latest.log"));
-            } catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-        if (1 <= maxLevel)
-        {
-            String base = base(1);
-            writer.print(base);
-            t.printStackTrace(writer);
-        }
+        log(0, fmt, args);
     }
+    
+    public synchronized void v(Throwable t) { log(99, t); }
+
+    public synchronized void d(Throwable t) { log(4, t); }
+
+    public synchronized void i(Throwable t) { log(3, t); }
+
+    public synchronized void w(Throwable t) { log(2, t); }
+
+    public synchronized void e(Throwable t) { log(1, t); }
+
+    public synchronized void f(Throwable t) { log(0, t); }
+
     
     private String base(int level)
     {
@@ -196,10 +214,5 @@ public class Logger
         return String.format(Locale.US, "%04d/%02d/%02d %02d:%02d:%02d %s/%s: ",
                 c.get(YEAR), c.get(MONTH) + 1, c.get(DAY_OF_MONTH), c.get(HOUR), c.get(MINUTE),
                 c.get(SECOND), tag, lvl);
-    }
-    
-    public synchronized void f(String fmt, Object... args)
-    {
-        log(0, fmt, args);
     }
 }

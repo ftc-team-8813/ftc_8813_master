@@ -14,6 +14,9 @@ public class DataLogger implements AutoCloseable
     private int numChannels;
     private long clipStart;
     private volatile Thread logThread;
+    private volatile boolean error = false;
+
+    private Logger log = new Logger("DataLogger");
 
     public static class Channel
     {
@@ -32,11 +35,20 @@ public class DataLogger implements AutoCloseable
         public void putData(double[] array);
     }
 
-    public DataLogger(File f, Channel... channels) throws IOException
+    public DataLogger(File f, Channel... channels)
     {
-        logger = new DataOutputStream(new FileOutputStream(f));
-        numChannels = channels.length;
-        writeHeader(channels);
+        try
+        {
+            logger = new DataOutputStream(new FileOutputStream(f));
+            numChannels = channels.length;
+            writeHeader(channels);
+        }
+        catch (IOException e)
+        {
+            log.w("Error opening datalogger stream");
+            log.w(e);
+            error = true;
+        }
     }
 
     private void writeHeader(Channel[] channels) throws IOException
@@ -51,25 +63,46 @@ public class DataLogger implements AutoCloseable
         }
     }
 
-    public synchronized void startClip() throws IOException
+    public synchronized void startClip()
     {
-        logger.writeDouble(Double.NaN);
-        clipStart = System.nanoTime();
+        if (error) return;
+        try
+        {
+            logger.writeDouble(Double.NaN);
+            clipStart = System.nanoTime();
+        }
+        catch (IOException e)
+        {
+            log.w("Unable to write timestamp");
+            log.w(e);
+            error = true;
+        }
     }
 
-    public synchronized void log(double[] data) throws IOException
+    public synchronized void log(double[] data)
     {
+        if (error) return;
         if (clipStart == 0) return;
-        logger.writeLong(System.nanoTime() - clipStart);
-        for (double d : data)
+        try
         {
-            logger.writeDouble(d);
+            logger.writeLong(System.nanoTime() - clipStart);
+            for (double d : data)
+            {
+                logger.writeDouble(d);
+            }
+        }
+        catch (IOException e)
+        {
+            log.w("Unable to write data");
+            log.w(e);
+            error = true;
         }
     }
 
     public synchronized void startLogging(final LogCallback callback)
     {
         if (logThread != null) throw new IllegalStateException("Logging thread already running!");
+        if (error) return;
         logThread = new Thread(new Runnable()
         {
             @Override
@@ -79,13 +112,7 @@ public class DataLogger implements AutoCloseable
                 {
                     double[] channels = new double[numChannels];
                     callback.putData(channels);
-                    try
-                    {
-                        log(channels);
-                    } catch (IOException e)
-                    {
-                        break;
-                    }
+                    log(channels);
                     Thread.yield();
                 }
                 logThread = null;
@@ -101,7 +128,7 @@ public class DataLogger implements AutoCloseable
     }
 
     @Override
-    public void close() throws IOException
+    public void close()
     {
         if (logThread != null)
         {
@@ -112,6 +139,19 @@ public class DataLogger implements AutoCloseable
             }
             catch (InterruptedException e) { }
         }
-        logger.close();
+        try
+        {
+            logger.close();
+        }
+        catch (IOException e)
+        {
+            log.w("Unable to close logger");
+            log.w(e);
+        }
+    }
+
+    public boolean error()
+    {
+        return error;
     }
 }
