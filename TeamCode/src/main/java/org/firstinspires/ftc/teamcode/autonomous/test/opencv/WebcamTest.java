@@ -117,5 +117,11 @@ public class WebcamTest extends LinearOpMode
                 }
             });
         }
+
+        @Override
+        public void onClose(Webcam.Status status)
+        {
+            removeFrameView();
+        }
     }
 }

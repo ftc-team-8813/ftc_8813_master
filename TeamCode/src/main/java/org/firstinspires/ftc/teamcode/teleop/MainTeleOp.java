@@ -183,7 +183,7 @@ public class MainTeleOp extends OpMode
                 robot.hook.setPosition(Robot.HOOK_OPEN);
         }
 
-        robot.intake.setPower(intake_mode * 0.5);
+        robot.intake.setPower(intake_mode);
         if (gamepad1.right_bumper)
         {
             intake_mode = 1;
