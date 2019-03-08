@@ -43,7 +43,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
     public void initialize() throws InterruptedException
     {
         Robot robot = Robot.instance();
-        robot.hook.setPosition(Robot.HOOK_CLOSED);
+        robot.hook.setPosition(robot.HOOK_CLOSED);
         robot.imu.initialize(telemetry);
         robot.imu.start();
 

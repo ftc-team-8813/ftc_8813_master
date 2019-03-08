@@ -60,7 +60,7 @@ public class MainTeleOp extends OpMode
             e.printStackTrace();
         }
 
-        robot.dunk.setPosition(Robot.dunk_min);
+        robot.dunk.setPosition(robot.dunk_min);
     }
 
     @Override
@@ -145,17 +145,17 @@ public class MainTeleOp extends OpMode
         {
             liftingDunk = false;
             droppingDunk = false;
-            if (robot.dunk.getPosition() < Robot.dunk_up - 0.1)
-                robot.dunk.setPosition(Robot.dunk_up);
+            if (robot.dunk.getPosition() < robot.dunk_up - 0.1)
+                robot.dunk.setPosition(robot.dunk_up);
             else
             {
-                robot.dunk.setPosition(Robot.dunk_dunk);
+                robot.dunk.setPosition(robot.dunk_dunk);
                 scheduler.add("Pull Back Dunk",750, new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        robot.dunk.setPosition(Robot.dunk_up);
+                        robot.dunk.setPosition(robot.dunk_up);
                     }
                 });
             }
@@ -163,7 +163,7 @@ public class MainTeleOp extends OpMode
 
         if (liftingDunk)
         {
-            if (robot.dunk.getPosition() > Robot.dunk_up) robot.dunk.setPosition(robot.dunk.getPosition() - 0.03);
+            if (robot.dunk.getPosition() > robot.dunk_up) robot.dunk.setPosition(robot.dunk.getPosition() - 0.03);
             else liftingDunk = false;
 //            robot.dunk.setPosition(Robot.dunk_up);
 //            liftingDunk = false;
@@ -171,16 +171,16 @@ public class MainTeleOp extends OpMode
         else if (droppingDunk)
         {
             if (robot.dunk.getPosition() < dunk_nearly_down) robot.dunk.setPosition(dunk_nearly_down);
-            else if (robot.dunk.getPosition() < Robot.dunk_min) robot.dunk.setPosition(robot.dunk.getPosition() + 0.05);
+            else if (robot.dunk.getPosition() < robot.dunk_min) robot.dunk.setPosition(robot.dunk.getPosition() + 0.05);
             else droppingDunk = false;
         }
 
         if (buttonHelper_2.pressing(ButtonHelper.x))
         {
-            if (robot.hook.getPosition() < Robot.HOOK_CLOSED)
-                robot.hook.setPosition(Robot.HOOK_CLOSED);
+            if (robot.hook.getPosition() < robot.HOOK_CLOSED)
+                robot.hook.setPosition(robot.HOOK_CLOSED);
             else
-                robot.hook.setPosition(Robot.HOOK_OPEN);
+                robot.hook.setPosition(robot.HOOK_OPEN);
         }
 
         robot.intake.setPower(intake_mode);

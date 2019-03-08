@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.common.util.DataStorage;
 import org.firstinspires.ftc.teamcode.common.util.MotorController;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataLogger;
@@ -45,12 +46,15 @@ public class Robot
 
     // Other
     public final Config config;
-    public static final double HOOK_CLOSED = 0.50;
-    public static final double HOOK_OPEN = 0;
+    public final double HOOK_CLOSED;
+    public final double HOOK_OPEN;
 
-    public static final double dunk_min = 0.749;
-    public static final double dunk_up = 0.524;
-    public static final double dunk_dunk = 0.026;
+    public final double dunk_min;
+    public final double dunk_up;
+    public final double dunk_dunk;
+
+    public final double mark_in;
+    public final double mark_out;
 
     // Internal
     private final Logger log = new Logger("Robot");
@@ -89,6 +93,17 @@ public class Robot
         dunk = hardwareMap.servo.get("dunk");
         hook = hardwareMap.servo.get("hook");
         mark = hardwareMap.servo.get("mark");
+
+        DataStorage dataStorage = new DataStorage(new File(Config.storageDir + "servo_positions.txt"));
+        dunk_min  = dataStorage.getDouble("dunk.Down", 0);
+        dunk_up   = dataStorage.getDouble("dunk.Up",   0);
+        dunk_dunk = dataStorage.getDouble("dunk.Dunk", 0);
+
+        HOOK_CLOSED = dataStorage.getDouble("hook.Closed", 0);
+        HOOK_OPEN   = dataStorage.getDouble("hook.Open",   0);
+
+        mark_in = dataStorage.getDouble("mark.In", 0);
+        mark_out = dataStorage.getDouble("mark.Out", 0);
 
         hook.setPosition(HOOK_OPEN);
 

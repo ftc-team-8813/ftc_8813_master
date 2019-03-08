@@ -18,7 +18,7 @@ public class TaskDrop implements Task
         Thread.sleep(300);
         robot.pullUp.setPower(0);
         Thread.sleep(2500);
-        robot.hook.setPosition(Robot.HOOK_OPEN);
+        robot.hook.setPosition(robot.HOOK_OPEN);
         Thread.sleep(350);
         Thread respooler = new Thread(new Respooler(), "Pullup Respooler Thread");
         respooler.setDaemon(true);

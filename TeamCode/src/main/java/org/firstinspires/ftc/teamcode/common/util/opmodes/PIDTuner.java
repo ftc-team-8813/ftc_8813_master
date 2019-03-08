@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.teleop.util;
+package org.firstinspires.ftc.teamcode.common.util.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.common.util.MotorController;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
+import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 
 import java.io.File;
 import java.io.IOException;

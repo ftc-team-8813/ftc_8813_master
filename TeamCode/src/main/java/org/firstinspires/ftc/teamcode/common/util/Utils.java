@@ -4,9 +4,15 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.util.Log;
 
+import com.qualcomm.robotcore.hardware.HardwareDevice;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
 import java.io.File;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Utils - Utility methods
@@ -14,6 +20,24 @@ import java.io.File;
 
 public class Utils
 {
+
+    /**
+     * Get a list of hardware device names in a certain class, i.e. hardwareMap.servo
+     * @param mapping The device class to use (hardwareMap.[device class])
+     * @return A list of hardware device names
+     */
+    public static <T extends HardwareDevice> String[] allDeviceNames(HardwareMap.DeviceMapping<T> mapping)
+    {
+        Set<Map.Entry<String, T>> set = mapping.entrySet();
+        String[] out = new String[set.size()];
+        Map.Entry[] entries = set.toArray(new Map.Entry[0]);
+        for (int i = 0; i < set.size(); i++)
+        {
+            out[i] = (String)entries[i].getKey();
+        }
+        return out;
+    }
+
     /**
      * Return a time in elapsed-time format (hh:mm:ss:hundredths)
      *
@@ -26,7 +50,7 @@ public class Utils
         int seconds = (int) ((millis / 1000) % 60);
         int minutes = (int) ((millis / 60000) % 60);
         int hours = (int) ((millis / 3600000));
-        return String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, hundredths);
+        return String.format(Locale.US, "%02d:%02d:%02d.%03d", hours, minutes, seconds, hundredths);
     }
     
     /**
@@ -56,7 +80,7 @@ public class Utils
      */
     public static String shorten(double r)
     {
-        return String.format("%.4f", r);
+        return String.format(Locale.US, "%.4f", r);
     }
     
     /**

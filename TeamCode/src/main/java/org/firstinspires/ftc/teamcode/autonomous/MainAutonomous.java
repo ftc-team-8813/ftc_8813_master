@@ -50,8 +50,8 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
     public void initialize() throws InterruptedException
     {
         Robot robot = Robot.instance();
-        if (DROP) robot.hook.setPosition(Robot.HOOK_CLOSED);
-        else robot.hook.setPosition(Robot.HOOK_OPEN);
+        if (DROP) robot.hook.setPosition(robot.HOOK_CLOSED);
+        else robot.hook.setPosition(robot.HOOK_OPEN);
         robot.imu.initialize(telemetry);
         robot.imu.start();
         CameraStream stream = getCameraStream();
