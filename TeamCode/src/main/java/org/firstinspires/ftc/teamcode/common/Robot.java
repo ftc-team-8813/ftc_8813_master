@@ -94,7 +94,7 @@ public class Robot
         hook = hardwareMap.servo.get("hook");
         mark = hardwareMap.servo.get("mark");
 
-        DataStorage dataStorage = new DataStorage(new File(Config.storageDir + "servo_positions.txt"));
+        DataStorage dataStorage = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
         dunk_min  = dataStorage.getDouble("dunk.Down", 0);
         dunk_up   = dataStorage.getDouble("dunk.Up",   0);
         dunk_dunk = dataStorage.getDouble("dunk.Dunk", 0);

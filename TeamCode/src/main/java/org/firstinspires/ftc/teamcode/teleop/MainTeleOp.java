@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
-import android.widget.Button;
-
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -32,7 +30,7 @@ public class MainTeleOp extends OpMode
     private boolean pivotingDown = false;
     private int limit_press_count = 0;
 
-    private static final double dunk_nearly_down = 0.57;
+    private double dunk_nearly_down;
 
     private static final int intake_out = 300;
 
@@ -48,6 +46,7 @@ public class MainTeleOp extends OpMode
         try { Logger.init(); } catch (IOException e) { throw new RuntimeException(e); }
         log = new Logger("Driver Control");
         robot = Robot.initialize(hardwareMap, new Config(Config.configFile));
+        dunk_nearly_down = robot.dunk_up;
         buttonHelper_1 = new ButtonHelper(gamepad1);
         buttonHelper_2 = new ButtonHelper(gamepad2);
         slow = false;
@@ -68,18 +67,24 @@ public class MainTeleOp extends OpMode
     {
         start = System.currentTimeMillis();
     }
-    
-    @Override
-    public void loop()
-    {
-        double mult = 0.75;
-        if (slow) mult = 0.375;
-        robot.leftFront.setPower(-gamepad1.left_stick_y * mult);
-        robot.leftRear.setPower(-gamepad1.left_stick_y * mult);
-        robot.rightFront.setPower(-gamepad1.right_stick_y * mult);
-        robot.rightRear.setPower(-gamepad1.right_stick_y * mult);
 
-        double liftPower = -(gamepad2.right_trigger - gamepad2.left_trigger);
+    private void driveWheels(double leftPower, double rightPower, int slowButton)
+    {
+        double mult = 1;
+        if (slow) mult = 0.375;
+        robot.leftFront.setPower(leftPower * mult);
+        robot.leftRear.setPower(leftPower * mult);
+        robot.rightFront.setPower(rightPower * mult);
+        robot.rightRear.setPower(rightPower * mult);
+
+        if (buttonHelper_1.pressing(slowButton))
+        {
+            slow = !slow;
+        }
+    }
+
+    private void dunkLogic(double liftPower)
+    {
         if (robot.liftLimitDown.pressed())
         {
             if (!dunkDown)
@@ -122,16 +127,36 @@ public class MainTeleOp extends OpMode
             robot.dunkLift.setPower(liftPower);
             if (liftPower != 0 && robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
         }
+    }
 
+    private void slowDunk()
+    {
+        if (liftingDunk)
+        {
+            if (robot.dunk.getPosition() > robot.dunk_up) robot.dunk.setPosition(robot.dunk.getPosition() - 0.03);
+            else liftingDunk = false;
+//            robot.dunk.setPosition(Robot.dunk_up);
+//            liftingDunk = false;
+        }
+        else if (droppingDunk)
+        {
+            if (robot.dunk.getPosition() < dunk_nearly_down) robot.dunk.setPosition(dunk_nearly_down);
+            else if (robot.dunk.getPosition() < robot.dunk_min) robot.dunk.setPosition(robot.dunk.getPosition() + 0.05);
+            else droppingDunk = false;
+        }
+    }
+
+    private void drivePullup(int downButton, int upButton)
+    {
         if (robot.pullupLimit.pressed()) limit_press_count++;
         else limit_press_count = 0;
 
-        if (gamepad2.left_bumper && (!robot.pullupLimit.pressed() || limit_press_count < 50))
+        if (buttonHelper_1.pressed(downButton) && (!robot.pullupLimit.pressed() || limit_press_count < 50))
         {
             robot.pullUp.setPower(1);
             if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
         }
-        else if (gamepad2.right_bumper)
+        else if (buttonHelper_1.pressed(upButton))
         {
             robot.pullUp.setPower(-1);
             if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
@@ -140,7 +165,10 @@ public class MainTeleOp extends OpMode
         {
             robot.pullUp.setPower(0);
         }
+    }
 
+    private void dunk(int dunkButton)
+    {
         if (buttonHelper_1.pressing(ButtonHelper.b))
         {
             liftingDunk = false;
@@ -160,21 +188,10 @@ public class MainTeleOp extends OpMode
                 });
             }
         }
+    }
 
-        if (liftingDunk)
-        {
-            if (robot.dunk.getPosition() > robot.dunk_up) robot.dunk.setPosition(robot.dunk.getPosition() - 0.03);
-            else liftingDunk = false;
-//            robot.dunk.setPosition(Robot.dunk_up);
-//            liftingDunk = false;
-        }
-        else if (droppingDunk)
-        {
-            if (robot.dunk.getPosition() < dunk_nearly_down) robot.dunk.setPosition(dunk_nearly_down);
-            else if (robot.dunk.getPosition() < robot.dunk_min) robot.dunk.setPosition(robot.dunk.getPosition() + 0.05);
-            else droppingDunk = false;
-        }
-
+    private void hook(int hookButton)
+    {
         if (buttonHelper_2.pressing(ButtonHelper.x))
         {
             if (robot.hook.getPosition() < robot.HOOK_CLOSED)
@@ -182,13 +199,16 @@ public class MainTeleOp extends OpMode
             else
                 robot.hook.setPosition(robot.HOOK_OPEN);
         }
+    }
 
+    private void driveIntake(int fwdButton, int revButton)
+    {
         robot.intake.setPower(intake_mode);
-        if (gamepad1.right_bumper)
+        if (buttonHelper_1.pressed(fwdButton))
         {
             intake_mode = 1;
         }
-        else if (gamepad1.left_bumper)
+        else if (buttonHelper_1.pressed(revButton))
         {
             intake_mode = -1;
         }
@@ -196,6 +216,10 @@ public class MainTeleOp extends OpMode
         {
             intake_mode = 0;
         }
+    }
+
+    private void runPivot()
+    {
 
         if (buttonHelper_2.pressing(ButtonHelper.dpad_up))
         {
@@ -222,11 +246,20 @@ public class MainTeleOp extends OpMode
             if (!pivotingDown) robot.intakePivot.setPower(0);
             else robot.intakePivot.setPower(0.75);
         }
+    }
+    
+    @Override
+    public void loop()
+    {
+        driveWheels(-gamepad1.left_stick_y, -gamepad1.right_stick_y, ButtonHelper.right_bumper);
+        dunkLogic(-(gamepad2.right_trigger - gamepad2.left_trigger));
+        drivePullup(ButtonHelper.left_bumper, ButtonHelper.right_bumper);
+        dunk(ButtonHelper.b);
+        hook(ButtonHelper.x);
+        driveIntake(ButtonHelper.left_bumper, ButtonHelper.right_bumper);
+        runPivot();
 
-        if (buttonHelper_1.pressing(ButtonHelper.right_stick_button))
-        {
-            slow = !slow;
-        }
+        slowDunk();
 
         scheduler.update();
         telemetry.addData("Time", Utils.elapsedTime(System.currentTimeMillis() - start));
@@ -237,6 +270,7 @@ public class MainTeleOp extends OpMode
         telemetry.addData("Upper limit switch", robot.liftLimitUp.pressed() ? "Pressed" : "Released");
         telemetry.addData("Pullup limit switch", robot.pullupLimit.pressed() ? "Pressed" : "Released");
         telemetry.addData("Dunk Position", robot.dunk.getPosition());
+        telemetry.addData("Lifting Dunk: " + liftingDunk + ", dropping dunk", droppingDunk);
     }
 
     @Override
