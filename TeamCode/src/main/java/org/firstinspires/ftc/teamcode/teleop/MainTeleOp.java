@@ -151,12 +151,12 @@ public class MainTeleOp extends OpMode
         if (robot.pullupLimit.pressed()) limit_press_count++;
         else limit_press_count = 0;
 
-        if (buttonHelper_1.pressed(downButton) && (!robot.pullupLimit.pressed() || limit_press_count < 50))
+        if (buttonHelper_2.pressed(downButton) && (!robot.pullupLimit.pressed() || limit_press_count < 50))
         {
             robot.pullUp.setPower(1);
             if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
         }
-        else if (buttonHelper_1.pressed(upButton))
+        else if (buttonHelper_2.pressed(upButton))
         {
             robot.pullUp.setPower(-1);
             if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
