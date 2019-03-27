@@ -71,7 +71,7 @@ public class MainTeleOp extends OpMode
     private void driveWheels(double leftPower, double rightPower, int slowButton)
     {
         double mult = 1;
-        if (slow) mult = 0.375;
+        if (slow) mult = 0.4;
         robot.leftFront.setPower(leftPower * mult);
         robot.leftRear.setPower(leftPower * mult);
         robot.rightFront.setPower(rightPower * mult);
@@ -251,7 +251,7 @@ public class MainTeleOp extends OpMode
     @Override
     public void loop()
     {
-        driveWheels(-gamepad1.left_stick_y, -gamepad1.right_stick_y, ButtonHelper.right_bumper);
+        driveWheels(-gamepad1.left_stick_y, -gamepad1.right_stick_y, ButtonHelper.right_stick_button);
         dunkLogic(-(gamepad2.right_trigger - gamepad2.left_trigger));
         drivePullup(ButtonHelper.left_bumper, ButtonHelper.right_bumper);
         dunk(ButtonHelper.b);
