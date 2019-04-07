@@ -50,14 +50,8 @@ public class MainTeleOp extends OpMode
         buttonHelper_1 = new ButtonHelper(gamepad1);
         buttonHelper_2 = new ButtonHelper(gamepad2);
         slow = false;
-        robot.pivot.startLogging();
-        try
-        {
-            robot.initPivot();
-        }  catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
+        // robot.pivot.startLogging();
+        robot.intakePivot.setPosition(robot.pivot_up);
 
         robot.dunk.setPosition(robot.dunk_min);
     }
@@ -104,7 +98,6 @@ public class MainTeleOp extends OpMode
             {
                 liftingDunk = true;
                 droppingDunk = false;
-                if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
             }
             if (liftPower >= 0)
             {
@@ -117,15 +110,10 @@ public class MainTeleOp extends OpMode
             {
                 robot.dunkLift.setPower(liftPower);
             }
-            if (liftPower < 0)
-            {
-                if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
-            }
         }
         else
         {
             robot.dunkLift.setPower(liftPower);
-            if (liftPower != 0 && robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
         }
     }
 
@@ -154,12 +142,10 @@ public class MainTeleOp extends OpMode
         if (buttonHelper_2.pressed(downButton) && (!robot.pullupLimit.pressed() || limit_press_count < 50))
         {
             robot.pullUp.setPower(1);
-            if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
         }
         else if (buttonHelper_2.pressed(upButton))
         {
             robot.pullUp.setPower(-1);
-            if (robot.pivot.getCurrentPosition() < intake_out) robot.pivot.hold(intake_out);
         }
         else
         {
@@ -220,32 +206,33 @@ public class MainTeleOp extends OpMode
 
     private void runPivot()
     {
+        // FIXME add positions
 
-        if (buttonHelper_2.pressing(ButtonHelper.dpad_up))
-        {
-            robot.pivot.hold(15);
-            // TODO run rollers when at target
-        }
-        else if (buttonHelper_2.pressing(ButtonHelper.dpad_left))
-        {
-            robot.pivot.hold(800);
-        }
-        else if (buttonHelper_2.pressing(ButtonHelper.dpad_right))
-        {
-            robot.pivot.stopHolding();
-            pivotingDown = true;
-        }
-        else if (buttonHelper_2.pressing(ButtonHelper.dpad_down))
-        {
-            robot.pivot.hold(1600);
-        }
-        if (pivotingDown)
-        {
-            if (robot.pivot.isHolding()) pivotingDown = false;
-            if (robot.intakePivot.getCurrentPosition() >= 400) pivotingDown = false;
-            if (!pivotingDown) robot.intakePivot.setPower(0);
-            else robot.intakePivot.setPower(0.75);
-        }
+//        if (buttonHelper_2.pressing(ButtonHelper.dpad_up))
+//        {
+//            robot.pivot.hold(15);
+//            // TODO run rollers when at target
+//        }
+//        else if (buttonHelper_2.pressing(ButtonHelper.dpad_left))
+//        {
+//            robot.pivot.hold(800);
+//        }
+//        else if (buttonHelper_2.pressing(ButtonHelper.dpad_right))
+//        {
+//            robot.pivot.stopHolding();
+//            pivotingDown = true;
+//        }
+//        else if (buttonHelper_2.pressing(ButtonHelper.dpad_down))
+//        {
+//            robot.pivot.hold(1600);
+//        }
+//        if (pivotingDown)
+//        {
+//            if (robot.pivot.isHolding()) pivotingDown = false;
+//            if (robot.intakePivot.getCurrentPosition() >= 400) pivotingDown = false;
+//            if (!pivotingDown) robot.intakePivot.setPower(0);
+//            else robot.intakePivot.setPower(0.75);
+//        }
     }
     
     @Override
@@ -265,7 +252,7 @@ public class MainTeleOp extends OpMode
         telemetry.addData("Time", Utils.elapsedTime(System.currentTimeMillis() - start));
         telemetry.addData("Intake Mode", intake_mode);
         telemetry.addData("Slow", slow);
-        telemetry.addData("Pivot limit switch", robot.pivotLimit.pressed() ? "Pressed" : "Released");
+        telemetry.addData("Intake extension limit switch", robot.intakeLimit.pressed() ? "Pressed" : "Released");
         telemetry.addData("Lower limit switch", robot.liftLimitDown.pressed() ? "Pressed" : "Released");
         telemetry.addData("Upper limit switch", robot.liftLimitUp.pressed() ? "Pressed" : "Released");
         telemetry.addData("Pullup limit switch", robot.pullupLimit.pressed() ? "Pressed" : "Released");

@@ -72,6 +72,7 @@ public class ButtonHelper
     
     public boolean pressing(int idx)
     {
+        if (idx < 0 || idx >= buttons.length) return false;
         boolean held = buttons[idx];
         buttons[idx] = pressed(idx);
         return !held && pressed(idx);

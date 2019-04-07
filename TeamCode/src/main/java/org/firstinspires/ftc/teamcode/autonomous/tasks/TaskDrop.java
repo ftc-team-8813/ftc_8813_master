@@ -13,7 +13,7 @@ public class TaskDrop implements Task
     public void runTask() throws InterruptedException
     {
         Robot robot = Robot.instance();
-        robot.pivot.hold(500);
+        // robot.pivot.hold(500); // FIXME
         robot.pullUp.setPower(-1);
         Thread.sleep(300);
         robot.pullUp.setPower(0);

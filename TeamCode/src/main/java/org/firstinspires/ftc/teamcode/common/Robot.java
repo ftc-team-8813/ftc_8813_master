@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.common;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.common.sensors.RangeSensor;
 import org.firstinspires.ftc.teamcode.common.util.DataStorage;
 import org.firstinspires.ftc.teamcode.common.util.MotorController;
 import org.firstinspires.ftc.teamcode.common.util.Config;
@@ -26,23 +29,29 @@ public class Robot
     public final DcMotor leftFront, leftRear;
     public final DcMotor rightFront, rightRear;
     public final DcMotor dunkLift, pullUp;
-    public final DcMotor intake;
-    public final DcMotor intakePivot;
+    public final DcMotor intakeExt;
 
     // PID controllers
-    public final MotorController pivot;
+    public final MotorController dunkLiftController;
+    public final MotorController intakeExtController;
 
     // Servos
     public final Servo dunk;
     public final Servo hook;
     public final Servo mark;
+    public final Servo intakePivot;
+    public final CRServo intake;
 
     // Sensors
     public final IMU imu;
-    public final Switch pivotLimit;
+
+    public final Switch intakeLimit;
     public final Switch liftLimitDown;
     public final Switch liftLimitUp;
     public final Switch pullupLimit;
+
+    public final RangeSensor leftRange;
+    public final RangeSensor rightRange;
 
     // Other
     public final Config config;
@@ -55,6 +64,9 @@ public class Robot
 
     public final double mark_in;
     public final double mark_out;
+
+    public final double pivot_up;
+    public final double pivot_down;
 
     // Internal
     private final Logger log = new Logger("Robot");
@@ -83,16 +95,25 @@ public class Robot
         rightFront = hardwareMap.dcMotor.get("right front");
         rightRear = hardwareMap.dcMotor.get("right rear");
 
-        intake = hardwareMap.dcMotor.get("intake");
-        intakePivot = hardwareMap.dcMotor.get("intake pivot");
+        intakeExt = hardwareMap.dcMotor.get("intake extension");
 
         // Motor controllers
-        pivot = new MotorController(intakePivot, config);
+        double[] dunkLiftConstants = config.getDoubleArray("dunk_lift_constants");
+        dunkLiftController = new MotorController.MotorControllerFactory(dunkLift)
+                                .setConstants(dunkLiftConstants)
+                                .create();
+
+        double[] intakeExtConstants = config.getDoubleArray("intake_ext_constants");
+        intakeExtController = new MotorController.MotorControllerFactory(intakeExt)
+                                .setConstants(intakeExtConstants)
+                                .create();
 
         // Servos
         dunk = hardwareMap.servo.get("dunk");
         hook = hardwareMap.servo.get("hook");
         mark = hardwareMap.servo.get("mark");
+        intakePivot = hardwareMap.servo.get("intake pivot");
+        intake = hardwareMap.crservo.get("intake");
 
         DataStorage dataStorage = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
         dunk_min  = dataStorage.getDouble("dunk.Down", 0);
@@ -104,6 +125,9 @@ public class Robot
 
         mark_in = dataStorage.getDouble("mark.In", 0);
         mark_out = dataStorage.getDouble("mark.Out", 0);
+
+        pivot_down = dataStorage.getDouble("pivot.Down", 0);
+        pivot_up = dataStorage.getDouble("pivot.Up", 0);
 
         hook.setPosition(HOOK_OPEN);
 
@@ -117,10 +141,13 @@ public class Robot
             imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
             Persistent.put("imu", imu);
         }
-        pivotLimit = new Switch(hardwareMap.digitalChannel.get("pivot limit"));
+        intakeLimit = new Switch(hardwareMap.digitalChannel.get("intake limit"));
         liftLimitDown = new Switch(hardwareMap.digitalChannel.get("lower limit"));
         liftLimitUp = new Switch(hardwareMap.digitalChannel.get("upper limit"));
         pullupLimit = new Switch(hardwareMap.digitalChannel.get("pull up limit"));
+
+        leftRange = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "left range"));
+        rightRange = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "right range"));
 
         // Other
         turnLogger =
@@ -136,8 +163,6 @@ public class Robot
         if (config.getBoolean("pl_reverse", false)) pullUp.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("dl_reverse", false)) dunkLift.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("in_reverse", false)) intake.setDirection(DcMotorSimple.Direction.REVERSE);
-        if (config.getBoolean("ip_reverse", false)) intakePivot.setDirection(DcMotorSimple.Direction.REVERSE);
-
     }
 
     public static Robot initialize(HardwareMap hardwareMap, Config config)
@@ -162,7 +187,8 @@ public class Robot
         pullUp.setPower(0);
         intake.setPower(0);
         // Stop external threads and close open files (if any) here
-        pivot.close();
+        dunkLiftController.close();
+        intakeExtController.close();
         turnLogger.close();
     }
 
@@ -173,31 +199,34 @@ public class Robot
     ///////////////////////////////////
     // Intake pivot calibration and control
 
+    @Deprecated
     public void initPivot() throws InterruptedException
     {
-        intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        intakePivot.setPower(-0.4);
-        int i = 0;
-        while (!pivotLimit.pressed() && i < 2000)
-        {
-            Thread.sleep(1);
-            i++;
-        }
-        intakePivot.setPower(0);
-        intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        Thread.sleep(100);
-        pivot.setPower(0.5);
-        pivot.hold(15);
+        log.w("Calling deprecated function initPivot()");
+//        intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        intakePivot.setPower(-0.4);
+//        int i = 0;
+//        while (!pivotLimit.pressed() && i < 2000)
+//        {
+//            Thread.sleep(1);
+//            i++;
+//        }
+//        intakePivot.setPower(0);
+//        intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        Thread.sleep(100);
+//        pivot.setPower(0.5);
+//        pivot.hold(15);
     }
 
     public void initPivotAuto()
     {
-        intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        pivot.setPower(0.5);
-        pivot.hold(15);
+        log.w("Calling deprecated function initPivotAuto()");
+//        intakePivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        pivot.setPower(0.5);
+//        pivot.hold(15);
     }
 
     ///////////////////////////////////

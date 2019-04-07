@@ -4,10 +4,12 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.common.util.Chooser;
 import org.firstinspires.ftc.teamcode.common.util.MotorController;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
+import org.firstinspires.ftc.teamcode.common.util.Utils;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 
 import java.io.File;
@@ -18,7 +20,6 @@ import java.io.IOException;
  */
 
 @TeleOp(name = "PID Tuner", group = "test")
-@Disabled
 public class PIDTuner extends OpMode
 {
     
@@ -29,6 +30,8 @@ public class PIDTuner extends OpMode
 
     private DataLogger dataLogger;
     private Logger log;
+
+    private Chooser chooser;
     
     @Override
     public void init() {
@@ -38,12 +41,8 @@ public class PIDTuner extends OpMode
             throw new RuntimeException(e);
         }
         log = new Logger("PID Tuner");
-        controller = new MotorController(hardwareMap.dcMotor.get("intake pivot"), new Config(Config.configFile));
         buttons = new ButtonHelper(gamepad1);
-        controller.setPIDConstants(0, 0, 0);
-        controller.setPower(0.5);
-        controller.holdStalled(true);
-        controller.hold(0);
+
 
         dataLogger = new DataLogger(new File(Config.storageDir + "pidLog.dat"),
                 new DataLogger.Channel("kP",       0xAA0000),
@@ -56,6 +55,31 @@ public class PIDTuner extends OpMode
                 new DataLogger.Channel("deriv",    0x00FFFF),
                 new DataLogger.Channel("output",   0xFFFFFF));
     }
+
+    @Override
+    public void init_loop()
+    {
+        if (chooser == null)
+        {
+            String[] motors = Utils.allDeviceNames(hardwareMap.dcMotor);
+            chooser = new Chooser("Choose a motor and then press PLAY", motors, gamepad1, telemetry);
+            chooser.setEnterButton(-1);
+        }
+        chooser.update();
+    }
+
+    @Override
+    public void start()
+    {
+        chooser.choose();
+        controller = new MotorController.MotorControllerFactory(hardwareMap.dcMotor.get((String)chooser.getSelected())).create();
+        controller.setPIDConstants(0, 0, 0);
+        controller.setPower(0.5);
+        controller.holdStalled(true);
+        controller.hold(0);
+    }
+
+
 //    log(new double[]{kP, kI, kD,
 //            controller.getTargetPosition(), controller.getCurrentPosition(),
 //            controller.getInternalController().getError(),
@@ -65,7 +89,7 @@ public class PIDTuner extends OpMode
     
     @Override
     public void loop() {
-        controller.hold(controller.getTargetPosition() - (int)(gamepad1.left_stick_y*50));
+        controller.hold(controller.getTargetPosition() - (int)(gamepad1.left_stick_y*10));
         if (buttons.pressing(ButtonHelper.dpad_up)) {
             changing++;
             changing %= 3;
@@ -138,6 +162,14 @@ public class PIDTuner extends OpMode
                 }
             });
         }
+        try
+        {
+            Thread.sleep(5);
+        }
+        catch (InterruptedException e)
+        {
+            requestOpModeStop();
+        }
     }
 
     // kP kI kD target position error integral deriv output
@@ -146,6 +178,9 @@ public class PIDTuner extends OpMode
     @Override
     public void stop()
     {
+        log.i("Final PID constants:");
+        double[] cons = controller.getPIDConstants();
+        log.i("kP: %.6f, kI: %.6f, kD: %.6f", cons[0], cons[1], cons[2]);
         dataLogger.close();
         // Allow the interrupt to be interpreted
         controller.close();

@@ -3,16 +3,8 @@ package org.firstinspires.ftc.teamcode.common.util;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
-import org.firstinspires.ftc.teamcode.common.util.Config;
-import org.firstinspires.ftc.teamcode.common.util.DataLogger;
-import org.firstinspires.ftc.teamcode.common.util.Logger;
-import org.firstinspires.ftc.teamcode.common.util.PIDController;
-import org.firstinspires.ftc.teamcode.common.util.Utils;
-
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 
 /**
  * DC motor controller. Replacement for the buggy built-in REV motor controller.
@@ -39,12 +31,11 @@ public class MotorController implements Closeable
         private long stall_begin;
         private DataLogger datalogger;
         
-        public final int sse;
+        public final int deadband;
         
-        ParallelController(DcMotor motor, Runnable atTarget, int steady_state_error, boolean
-                noReset)
+        ParallelController(DcMotor motor, int deadband, boolean noReset)
         {
-            this.sse = steady_state_error;
+            this.deadband = deadband;
             log = new Logger("Motor " + motor.getPortNumber() + " Controller");
             log.d("Initializing!");
             this.motor = motor;
@@ -53,7 +44,6 @@ public class MotorController implements Closeable
                 motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
-            this.atTarget = atTarget;
             controller = new PIDController(0, 0, 0);
             datalogger = new DataLogger(
                     new File(Config.storageDir + "pidLog_motor" + motor.getPortNumber() + ".dat"),
@@ -75,7 +65,7 @@ public class MotorController implements Closeable
                 {
                     stopping = false;
                     if (!holdStalled && controller.getDerivative() == 0
-                            && Math.abs(controller.getError()) > sse
+                            && Math.abs(controller.getError()) > deadband
                             && Math.abs(motor.getPower()) > 0.6)
                     {
                         if (stall_begin == 0)
@@ -93,7 +83,7 @@ public class MotorController implements Closeable
 
                     double speed = controller.process(getCurrentPosition());
                     speed = Utils.constrain(speed, -1, 1) * power;
-                    if (Math.abs(controller.getError()) < sse && Math.abs(controller.getDerivative()) < 2)
+                    if (Math.abs(controller.getError()) < deadband && Math.abs(controller.getDerivative()) < 2)
                     {
                         if (stopNearTarget)
                         {
@@ -223,81 +213,55 @@ public class MotorController implements Closeable
     /* Whether or not the controller has been closed */
     private boolean closed = false;
     
-    protected MotorController(ParallelController controller, Config conf, String constants)
+    private MotorController(ParallelController controller, double[] constants)
     {
         this.controller = controller;
-        if (conf != null) this.controller.setPIDConstants(conf.getDoubleArray(constants));
-        thread = new Thread(this.controller, "Motor " + controller.motor + " controller " +
-                "thread");
+        controller.setPIDConstants(constants);
+        // Create the motor controller thread
+        thread = new Thread(controller, "Motor " + controller.motor.getPortNumber() + " controller thread");
         thread.start();
     }
-    
-    /**
-     * Create a motor controller to control the specified motor. Runs atTarget when the motor
-     * reaches its target position (e.g. to stop the motor controller). Uses the specified Config to load
-     * PID constants.
-     *
-     * @param motor    The motor to control
-     * @param conf     The Config to get PID constants from
-     * @param atTarget The Runnable to run repeatedly when the motor is at its target position
-     * @param noReset  If true, does not reset the motor encoder.
-     */
-    public MotorController(DcMotor motor, Config conf, Runnable atTarget, boolean noReset)
+
+    public static class MotorControllerFactory
     {
-        this(new ParallelController(motor, atTarget, conf.getInt("steady_state_error", 0), noReset),
-                conf, "pid_constants");
-    }
-    
-    /**
-     * Create a motor controller to control the specified motor. Runs atTarget when the motor
-     * reaches its target position (e.g. to stop the motor controller). Uses the specified Config to load
-     * PID constants.
-     *
-     * @param motor    The motor to control
-     * @param conf     The Config to get PID constants from
-     * @param atTarget The Runnable to run repeatedly when the motor is at its target position
-     */
-    public MotorController(DcMotor motor, Config conf, Runnable atTarget)
-    {
-        this(motor, conf, atTarget, false);
-    }
-    
-    /**
-     * Create a motor controller to control the specified motor. Runs atTarget when the motor
-     * reaches its target position (e.g. to stop the motor controller).
-     *
-     * @param motor    The motor to control
-     * @param atTarget The Runnable to run repeatedly when the motor is at its target position
-     */
-    public MotorController(DcMotor motor, Runnable atTarget)
-    {
-        this(motor, null, atTarget);
-    }
-    
-    /**
-     * Create a motor controller to control the specified motor. Uses the specified Config to load
-     * PID constants.
-     *
-     * @param motor The motor to control
-     * @param conf  The Config to get PID constants from
-     * @see #MotorController(DcMotor)
-     */
-    public MotorController(DcMotor motor, Config conf)
-    {
-        this(motor, conf, null);
-    }
-    
-    /**
-     * Create a motor controller to control the specified motor. Uses BaseAutonomous.config to get
-     * PID constants, so when in TeleOp, this constructor will fail. Please specify a Config to use
-     * in TeleOp.
-     *
-     * @param motor The motor to control
-     * @see #MotorController(DcMotor, Config)
-     */
-    public MotorController(DcMotor motor)
-    {
-        this(motor, BaseAutonomous.instance().config);
+        private DcMotor motor;
+        private int deadband = 5;
+        private double[] constants = new double[3];
+        private boolean noReset = true;
+
+        public MotorControllerFactory(DcMotor motor)
+        {
+            this.motor = motor;
+        }
+
+        public MotorControllerFactory setDeadband(int deadband)
+        {
+            this.deadband = deadband;
+            return this;
+        }
+
+        public MotorControllerFactory setConstants(double[] constants)
+        {
+            this.constants = constants;
+            return this;
+        }
+
+        public MotorControllerFactory setConstants(double kP, double kI, double kD)
+        {
+            this.constants = new double[] { kP, kI, kD };
+            return this;
+        }
+
+        public MotorControllerFactory resetEncoderOnInit(boolean reset)
+        {
+            this.noReset = !reset;
+            return this;
+        }
+
+        public MotorController create()
+        {
+            return new MotorController(new ParallelController(motor, deadband, noReset), constants);
+        }
     }
     
     /**
@@ -398,7 +362,7 @@ public class MotorController implements Closeable
     {
         if (closed) throw new IllegalStateException("Motor controller closed");
         hold(position);
-        while (!controller.nearTarget(controller.sse))
+        while (!controller.nearTarget(controller.deadband))
         {
             Thread.sleep(10);
         }

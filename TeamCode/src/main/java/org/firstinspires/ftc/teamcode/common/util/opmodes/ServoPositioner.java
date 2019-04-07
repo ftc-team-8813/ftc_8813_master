@@ -1,11 +1,11 @@
 package org.firstinspires.ftc.teamcode.common.util.opmodes;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
+import org.firstinspires.ftc.teamcode.common.util.Chooser;
+import org.firstinspires.ftc.teamcode.common.util.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.common.util.DataStorage;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 import org.firstinspires.ftc.teamcode.common.util.Config;
@@ -14,14 +14,12 @@ import org.firstinspires.ftc.teamcode.common.util.Utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
 
 import static org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper.a;
 import static org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper.b;
-import static org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper.back;
 import static org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper.dpad_down;
 import static org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper.dpad_up;
+import static org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper.left_bumper;
 import static org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper.x;
 
 /**
@@ -34,15 +32,12 @@ public class ServoPositioner extends OpMode
     
     private static final int STATE_CHOOSING = 1;
     private static final int STATE_RUNNING = 2;
-    private boolean init_draw = true;
+    private Chooser chooser;
     private int state;
     private String servo;
     private String[] servos;
     private Servo s;
-    private int chosen;
-    private int scroll;
     private double value;
-    private static final int VISIBLE_LINES = 5;
     private ButtonHelper helper;
     private Config presetNames;
     private DataStorage servoPositions;
@@ -62,7 +57,6 @@ public class ServoPositioner extends OpMode
         }
         state = STATE_CHOOSING;
         helper = new ButtonHelper(gamepad1);
-        init_draw = true;
         presetNames = new Config("preset_names.txt");
     }
     
@@ -75,30 +69,13 @@ public class ServoPositioner extends OpMode
                 if (servos == null)
                 {
                     servos = Utils.allDeviceNames(hardwareMap.servo);
-                    TelemetryWrapper.init(telemetry, VISIBLE_LINES + 1);
-                    TelemetryWrapper.setLine(0, "Choose a servo to move; press B to select");
+                    chooser = new Chooser("Choose a servo to move; press B to select", servos, gamepad1, telemetry);
                 } else
                 {
-                    if (init_draw)
+                    chooser.update();
+                    if (chooser.chosen())
                     {
-                        init_draw = false;
-                        draw();
-                    }
-                    if (helper.pressing(dpad_up) && chosen > 0)
-                    {
-                        chosen--;
-                        if (chosen < scroll) scroll = chosen;
-                        draw();
-                    }
-                    if (helper.pressing(dpad_down) && chosen < servos.length - 1)
-                    {
-                        chosen++;
-                        if (chosen >= scroll + VISIBLE_LINES) scroll = chosen - VISIBLE_LINES + 1;
-                        draw();
-                    }
-                    if (helper.pressing(b))
-                    {
-                        servo = servos[chosen];
+                        servo = (String)chooser.getSelected();
                         state = STATE_RUNNING;
                     }
                 }
@@ -106,10 +83,11 @@ public class ServoPositioner extends OpMode
             case STATE_RUNNING:
                 if (s == null)
                 {
-                    TelemetryWrapper.setLines(5);
+                    TelemetryWrapper.setLines(6);
                     TelemetryWrapper.setLine(0, "Use the left joystick up/down to control the servo");
-                    TelemetryWrapper.setLine(1, "Use the dpad up/down to choose a preset; press A to set the preset and X to move to it");
-                    TelemetryWrapper.setLine(2, "Press BACK to select a different servo");
+                    TelemetryWrapper.setLine(1, "Use the dpad up/down to choose a preset");
+                    TelemetryWrapper.setLine(2, "Press A to set the preset and X to move to it");
+                    TelemetryWrapper.setLine(3, "Press LEFT BUMPER to select a different servo");
                     s = hardwareMap.servo.get(servo);
                     servoPositions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
                     positionNames = presetNames.getStringArray(servo + "_presets");
@@ -121,8 +99,8 @@ public class ServoPositioner extends OpMode
                 value = Utils.constrain(value, 0, 1);
                 s.setPosition(value);
 
-                TelemetryWrapper.setLine(3, "Value: " + value);
-                TelemetryWrapper.setLine(4, "Preset '" + positionNames[selectedPreset] + "': " + presetValue);
+                TelemetryWrapper.setLine(4, "Value: " + value);
+                TelemetryWrapper.setLine(5, "Preset '" + positionNames[selectedPreset] + "': " + presetValue);
 
                 if (helper.pressing(dpad_up))
                 {
@@ -148,12 +126,11 @@ public class ServoPositioner extends OpMode
                     value = presetValue;
                 }
 
-                if (helper.pressing(back))
+                if (helper.pressing(left_bumper))
                 {
                     servoPositions.save();
                     s = null;
                     state = STATE_CHOOSING;
-                    init_draw = true;
                     servos = null;
                 }
 
@@ -173,21 +150,7 @@ public class ServoPositioner extends OpMode
     @Override
     public void stop()
     {
-        servoPositions.save();
+        if (servoPositions != null) servoPositions.save();
         Logger.close();
-    }
-    
-    private void draw()
-    {
-        for (int i = 0; i < VISIBLE_LINES; i++)
-        {
-            if (scroll + i >= servos.length) break;
-            String s = servos[scroll + i];
-            if (scroll + i == chosen)
-            {
-                s = "> " + s;
-            }
-            TelemetryWrapper.setLine(i + 1, s);
-        }
     }
 }

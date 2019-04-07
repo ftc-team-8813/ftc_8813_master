@@ -22,15 +22,16 @@ public class TaskIntakeMineral implements Task
         robot.reverse(10, 0.35);
         profiler.end();
 
-        profiler.start("drop");
-        // Drop the intake
-        robot.pivot.stopHolding();
-        Thread.sleep(30);
-        robot.intakePivot.setPower(0.5);
-        Thread.sleep(200);
-        robot.intakePivot.setPower(0);
-        Thread.sleep(500);
-        profiler.end();
+        // FIXME
+//        profiler.start("drop");
+//        // Drop the intake
+//        robot.pivot.stopHolding();
+//        Thread.sleep(30);
+//        robot.intakePivot.setPower(0.5);
+//        Thread.sleep(200);
+//        robot.intakePivot.setPower(0);
+//        Thread.sleep(500);
+//        profiler.end();
 
         // Run the intake
         profiler.start("intake");
@@ -44,11 +45,12 @@ public class TaskIntakeMineral implements Task
         robot.intake.setPower(0);
         profiler.end();
 
-        profiler.start("raise");
-        // Raise the intake
-        robot.pivot.hold(-10);
-        Thread.sleep(1000);
-        profiler.end();
+        // FIXME
+//        profiler.start("raise");
+//        // Raise the intake
+//        robot.pivot.hold(-10);
+//        Thread.sleep(1000);
+//        profiler.end();
 
         profiler.start("put");
         // Put the mineral in the dunk bucket

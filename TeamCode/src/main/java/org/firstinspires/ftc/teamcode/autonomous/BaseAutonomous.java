@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
-import org.firstinspires.ftc.teamcode.autonomous.util.telemetry.TelemetryWrapper;
+import org.firstinspires.ftc.teamcode.common.util.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
