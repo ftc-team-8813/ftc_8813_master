@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<Robot type="FirstInspires-FTC">
+    <LynxUsbDevice name="Expansion Hub Portal 1" serialNumber="DQ2AMIV2" parentModuleAddress="2">
+        <LynxModule name="Expansion Hub 2" port="2">
+            <RevRobotics20HDHexMotor name="dunk lift" port="0" />
+            <NeveRest20Gearmotor name="left front" port="1" />
+            <NeveRest40Gearmotor name="intake pivot" port="2" />
+            <NeveRest20Gearmotor name="left rear" port="3" />
+            <Servo name="hook" port="0" />
+            <Servo name="dunk" port="1" />
+            <Servo name="mark" port="2" />
+            <DigitalDevice name="upper limit" port="0" />
+            <DigitalDevice name="lower limit" port="1" />
+            <DigitalDevice name="pivot limit" port="3" />
+            <LynxEmbeddedIMU name="imu 2" port="0" bus="0" />
+            <AdafruitBNO055IMU name="imu" port="0" bus="1" />
+        </LynxModule>
+        <LynxModule name=" Expansion Hub 3" port="3">
+            <NeveRest40Gearmotor name="pull up" port="0" />
+            <NeveRest20Gearmotor name="intake" port="1" />
+            <NeveRest20Gearmotor name="right front" port="2" />
+            <NeveRest20Gearmotor name="right rear" port="3" />
+            <DigitalDevice name="pull up limit" port="0" />
+            <LynxEmbeddedIMU name="imu 1" port="0" bus="0" />
+        </LynxModule>
+    </LynxUsbDevice>
+</Robot>

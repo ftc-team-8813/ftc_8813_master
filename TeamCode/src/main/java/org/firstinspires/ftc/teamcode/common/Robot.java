@@ -126,8 +126,8 @@ public class Robot
         mark_in = dataStorage.getDouble("mark.In", 0);
         mark_out = dataStorage.getDouble("mark.Out", 0);
 
-        pivot_down = dataStorage.getDouble("pivot.Down", 0);
-        pivot_up = dataStorage.getDouble("pivot.Up", 0);
+        pivot_down = dataStorage.getDouble("intake pivot.Down", 0);
+        pivot_up = dataStorage.getDouble("intake pivot.Up", 0);
 
         hook.setPosition(HOOK_OPEN);
 

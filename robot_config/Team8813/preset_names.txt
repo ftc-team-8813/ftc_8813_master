@@ -1,0 +1,6 @@
+# Preset names for servo positioning
+dunk_presets=Down, Up, Dunk
+hook_presets=Open, Closed
+mark_presets=In, Out
+vexTest_presets=SavedPosition
+intake\ pivot_presets=Up, Down
