@@ -178,6 +178,7 @@ public class PIDTuner extends OpMode
     @Override
     public void stop()
     {
+        log.i("Finished PID tuning for %s", (String)chooser.getSelected());
         log.i("Final PID constants:");
         double[] cons = controller.getPIDConstants();
         log.i("kP: %.6f, kI: %.6f, kD: %.6f", cons[0], cons[1], cons[2]);
