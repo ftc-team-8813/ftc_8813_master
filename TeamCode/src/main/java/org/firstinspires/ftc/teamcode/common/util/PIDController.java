@@ -8,15 +8,22 @@ public class PIDController
     private volatile double lastOutput;
     private volatile double kP, kI, kD;
     private final double integratorCutoff;
+    private boolean autoIntegrate;
 
     private volatile double integral, prevError;
 
     public PIDController(double kP, double kI, double kD)
     {
+        this(kP, kI, kD, true);
+    }
+
+    public PIDController(double kP, double kI, double kD, boolean autoIntegrate)
+    {
         this.kP = kP;
         this.kI = kI;
         this.kD = kD;
         integratorCutoff = .8;
+        this.autoIntegrate = autoIntegrate;
     }
 
     public synchronized double process(double input)
@@ -25,19 +32,33 @@ public class PIDController
 
         derivative = error - prevError;
         prevError = error;
-        integral += error;
+        if (autoIntegrate)
+        {
+            integral += error;
 
-        if (integral * kI > integratorCutoff)
-        {
-            integral = integratorCutoff / kI;
-        }
-        else if (integral * kI < -integratorCutoff)
-        {
-            integral = -integratorCutoff / kI;
+            if (integral * kI > integratorCutoff)
+            {
+                integral = integratorCutoff / kI;
+            } else if (integral * kI < -integratorCutoff)
+            {
+                integral = -integratorCutoff / kI;
+            }
         }
 
         lastOutput = error * kP + integral * kI + derivative * kD;
         return lastOutput;
+    }
+
+    public void integrate(double input)
+    {
+        integral += input;
+        if (integral * kI > integratorCutoff)
+        {
+            integral = integratorCutoff / kI;
+        } else if (integral * kI < -integratorCutoff)
+        {
+            integral = -integratorCutoff / kI;
+        }
     }
 
     public double getOutput()

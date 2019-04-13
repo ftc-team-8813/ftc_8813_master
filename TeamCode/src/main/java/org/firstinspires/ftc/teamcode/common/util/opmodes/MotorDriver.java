@@ -45,7 +45,7 @@ public class MotorDriver extends OpMode
     @Override
     public void loop()
     {
-        telemetry.addData("Hello", "World");
+        telemetry.addData("Encoder", motor.getCurrentPosition());
         telemetry.update();
         if (gamepad1.dpad_up) motor.setPower(0.5);
         else if (gamepad1.dpad_down) motor.setPower(-0.5);

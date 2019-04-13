@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.common.util.opmodes;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -32,11 +31,16 @@ public class PIDTuner extends OpMode
     private Logger log;
 
     private Chooser chooser;
+
+    private int settings_step = 0;
+    private String motorName;
+    private double power = 0.5;
+    private double minPower = -1, maxPower = 1;
     
     @Override
     public void init() {
         try {
-            Logger.init(new File(Config.storageDir + "latest.log"));
+            Logger.init();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -59,23 +63,81 @@ public class PIDTuner extends OpMode
     @Override
     public void init_loop()
     {
-        if (chooser == null)
+        if (settings_step == 0)
         {
-            String[] motors = Utils.allDeviceNames(hardwareMap.dcMotor);
-            chooser = new Chooser("Choose a motor and then press PLAY", motors, gamepad1, telemetry);
-            chooser.setEnterButton(-1);
+            if (chooser == null)
+            {
+                String[] motors = Utils.allDeviceNames(hardwareMap.dcMotor);
+                chooser = new Chooser("Choose a motor; press B to continue", motors, buttons, telemetry);
+            }
+            if (chooser.chosen())
+            {
+                motorName = (String)chooser.getSelected();
+                controller = new MotorController.MotorControllerFactory(hardwareMap.dcMotor.get((String)chooser.getSelected())).create();
+                controller.setPIDConstants(0, 0, 0);
+                controller.holdStalled(true);
+                chooser = null;
+                settings_step++;
+            }
         }
-        chooser.update();
+        else if (settings_step == 1)
+        {
+            if (chooser == null)
+            {
+                chooser = new Chooser("Direction?", new String[] {"Forward", "Reverse"}, buttons, telemetry);
+            }
+            if (chooser.chosen())
+            {
+                controller.setReverse(chooser.getSelectedIndex() == 1);
+                chooser = null;
+                settings_step++;
+            }
+        }
+        else if (settings_step == 2)
+        {
+            if (chooser == null)
+            {
+                chooser = new Chooser("Use the left joystick to change the power; press B to continue", new Object[0], buttons, telemetry);
+            }
+            telemetry.addData("Power: ", Utils.shorten(power, 4));
+            power = Utils.constrain(power - gamepad1.left_stick_y * 0.001, 0, 1);
+            if (chooser.chosen())
+            {
+                controller.setPower(power);
+                chooser = null;
+                settings_step++;
+            }
+        }
+        else if (settings_step == 3)
+        {
+            if (chooser == null)
+            {
+                chooser = new Chooser("Use the left and right joysticks to change the power limits and then press PLAY", new Object[0], buttons, telemetry);
+            }
+            telemetry.addData("Minimum: ", Utils.shorten(minPower, 4));
+            telemetry.addData("Maximum: ", Utils.shorten(maxPower, 4));
+            minPower = Utils.constrain(minPower - gamepad1.left_stick_y * 0.01, -1, 1);
+            maxPower = Utils.constrain(maxPower - gamepad1.right_stick_y * 0.01, -1, 1);
+            if (chooser.chosen())
+            {
+                controller.constrainPower(minPower, maxPower);
+                chooser = null;
+                telemetry.clearAll();
+                telemetry.update();
+                settings_step++;
+            }
+        }
+        if (chooser != null) chooser.update();
     }
 
     @Override
     public void start()
     {
-        chooser.choose();
-        controller = new MotorController.MotorControllerFactory(hardwareMap.dcMotor.get((String)chooser.getSelected())).create();
-        controller.setPIDConstants(0, 0, 0);
-        controller.setPower(0.5);
-        controller.holdStalled(true);
+        if (settings_step < 3)
+        {
+            requestOpModeStop();
+            return;
+        }
         controller.hold(0);
     }
 
@@ -89,6 +151,7 @@ public class PIDTuner extends OpMode
     
     @Override
     public void loop() {
+        if (settings_step < 3) return;
         controller.hold(controller.getTargetPosition() - (int)(gamepad1.left_stick_y*10));
         if (buttons.pressing(ButtonHelper.dpad_up)) {
             changing++;
@@ -107,7 +170,7 @@ public class PIDTuner extends OpMode
                 break;
             case 1:
                 telemetry.addData("Changing", "Integral Gain");
-                controller.setPIDConstants(constants[0], constants[1] - gamepad1.right_stick_y / 100000, constants[2]);
+                controller.setPIDConstants(constants[0], constants[1] - gamepad1.right_stick_y / 1000, constants[2]);
                 break;
             case 2:
                 telemetry.addData("Changing", "Derivative Gain");
@@ -178,10 +241,16 @@ public class PIDTuner extends OpMode
     @Override
     public void stop()
     {
-        log.i("Finished PID tuning for %s", (String)chooser.getSelected());
+        if (settings_step < 3)
+        {
+            Logger.close();
+            return;
+        }
+        log.i("Finished PID tuning for %s", motorName);
         log.i("Final PID constants:");
         double[] cons = controller.getPIDConstants();
         log.i("kP: %.6f, kI: %.6f, kD: %.6f", cons[0], cons[1], cons[2]);
+        log.i("Settings: power = %.4f, minPower = %.4f, maxPower = %.4f", power, minPower, maxPower);
         dataLogger.close();
         // Allow the interrupt to be interpreted
         controller.close();

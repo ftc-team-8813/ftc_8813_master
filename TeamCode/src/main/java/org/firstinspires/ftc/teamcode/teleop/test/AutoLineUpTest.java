@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.PIDController;
 import org.firstinspires.ftc.teamcode.teleop.MainTeleOp;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
@@ -24,7 +25,7 @@ public class AutoLineUpTest extends MainTeleOp
         buttonHelper_1 = new ButtonHelper(gamepad1);
         lineUp = false;
         lineup_old = false;
-        robot = Robot.instance();
+        robot = Robot.initialize(hardwareMap, new Config(Config.configFile));
         // Quick and easy proportional control
         controller = new PIDController(.01, 0, 0);
     }

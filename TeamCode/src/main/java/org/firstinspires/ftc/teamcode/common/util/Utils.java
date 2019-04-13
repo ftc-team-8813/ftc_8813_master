@@ -76,9 +76,10 @@ public class Utils
      * Return a string representation of a double with 4-digit precision.
      *
      * @param r The number
+     * @param precision
      * @return A string representing the double to 4 digits of precision
      */
-    public static String shorten(double r)
+    public static String shorten(double r, int precision)
     {
         return String.format(Locale.US, "%.4f", r);
     }

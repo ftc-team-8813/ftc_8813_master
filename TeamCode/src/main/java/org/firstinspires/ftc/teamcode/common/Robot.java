@@ -68,6 +68,9 @@ public class Robot
     public final double pivot_up;
     public final double pivot_down;
 
+    public final int lift_up;
+    public final int ext_max;
+
     // Internal
     private final Logger log = new Logger("Robot");
 
@@ -102,6 +105,7 @@ public class Robot
         dunkLiftController = new MotorController.MotorControllerFactory(dunkLift)
                                 .setConstants(dunkLiftConstants)
                                 .create();
+        dunkLiftController.constrainPower(0, 1);
 
         double[] intakeExtConstants = config.getDoubleArray("intake_ext_constants");
         intakeExtController = new MotorController.MotorControllerFactory(intakeExt)
@@ -128,6 +132,9 @@ public class Robot
 
         pivot_down = dataStorage.getDouble("intake pivot.Down", 0);
         pivot_up = dataStorage.getDouble("intake pivot.Up", 0);
+
+        lift_up = config.getInt("lift_up", 0);
+        ext_max = config.getInt("ext_max", 0);
 
         hook.setPosition(HOOK_OPEN);
 

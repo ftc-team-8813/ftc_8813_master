@@ -6,10 +6,10 @@
             <NeveRest20Gearmotor name="left rear" port="1" />
             <NeveRest20Gearmotor name="dunk lift" port="2" />
             <Servo name="hook" port="0" />
-            <Servo name="dunk" port="1" />
             <Servo name="mark" port="2" />
             <ContinuousRotationServo name="intake" port="3" />
             <Servo name="intake pivot" port="4" />
+            <Servo name="dunk" port="5" />
             <LynxEmbeddedIMU name="imu" port="0" bus="0" />
         </LynxModule>
         <LynxModule name="Expansion Hub 2" port="2">

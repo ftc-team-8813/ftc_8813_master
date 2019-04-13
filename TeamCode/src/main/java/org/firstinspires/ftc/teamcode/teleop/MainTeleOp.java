@@ -27,12 +27,10 @@ public class MainTeleOp extends OpMode
     private boolean liftingDunk = false;
     private boolean droppingDunk = false;
     private boolean dunkDown = false;
-    private boolean pivotingDown = false;
+    private boolean liftDown = true;
     private int limit_press_count = 0;
 
     private double dunk_nearly_down;
-
-    private static final int intake_out = 300;
 
     private Scheduler scheduler = new Scheduler();
     private Logger log;
@@ -77,43 +75,23 @@ public class MainTeleOp extends OpMode
         }
     }
 
-    private void dunkLogic(double liftPower)
+    private void dunkLogic()
     {
-        if (robot.liftLimitDown.pressed())
+        if (robot.liftLimitUp.pressed())
         {
-            if (!dunkDown)
-            {
-                droppingDunk = true;
-                liftingDunk = false;
-                dunkDown = true;
-            }
+            robot.dunkLiftController.stopHolding();
         }
         else
         {
-            dunkDown = false;
+            robot.dunkLiftController.resumeHolding();
         }
-        if (robot.liftLimitDown.pressed())
+        if (gamepad2.left_trigger > 0.5)
         {
-            if (liftPower > 0)
-            {
-                liftingDunk = true;
-                droppingDunk = false;
-            }
-            if (liftPower >= 0)
-            {
-                robot.dunkLift.setPower(liftPower);
-            }
+            robot.dunkLiftController.hold(0);
         }
-        else if (robot.liftLimitUp.pressed())
+        else if (gamepad2.right_trigger > 0.5)
         {
-            if (liftPower <= 0)
-            {
-                robot.dunkLift.setPower(liftPower);
-            }
-        }
-        else
-        {
-            robot.dunkLift.setPower(liftPower);
+            robot.dunkLiftController.hold(robot.lift_up);
         }
     }
 
@@ -155,6 +133,7 @@ public class MainTeleOp extends OpMode
 
     private void dunk(int dunkButton)
     {
+        if (liftDown) robot.dunk.setPosition(robot.dunk_min);
         if (buttonHelper_1.pressing(ButtonHelper.b))
         {
             liftingDunk = false;
@@ -206,45 +185,39 @@ public class MainTeleOp extends OpMode
 
     private void runPivot()
     {
-        // FIXME add positions
+        if (buttonHelper_2.pressing(ButtonHelper.dpad_up))
+        {
+            robot.intakePivot.setPosition(robot.pivot_up);
+        }
+        else if (buttonHelper_2.pressing(ButtonHelper.dpad_down))
+        {
+            robot.intakePivot.setPosition(robot.pivot_down);
+        }
+    }
 
-//        if (buttonHelper_2.pressing(ButtonHelper.dpad_up))
-//        {
-//            robot.pivot.hold(15);
-//            // TODO run rollers when at target
-//        }
-//        else if (buttonHelper_2.pressing(ButtonHelper.dpad_left))
-//        {
-//            robot.pivot.hold(800);
-//        }
-//        else if (buttonHelper_2.pressing(ButtonHelper.dpad_right))
-//        {
-//            robot.pivot.stopHolding();
-//            pivotingDown = true;
-//        }
-//        else if (buttonHelper_2.pressing(ButtonHelper.dpad_down))
-//        {
-//            robot.pivot.hold(1600);
-//        }
-//        if (pivotingDown)
-//        {
-//            if (robot.pivot.isHolding()) pivotingDown = false;
-//            if (robot.intakePivot.getCurrentPosition() >= 400) pivotingDown = false;
-//            if (!pivotingDown) robot.intakePivot.setPower(0);
-//            else robot.intakePivot.setPower(0.75);
-//        }
+    private void driveExtension()
+    {
+        if (robot.intakeLimit.pressed())
+        {
+            robot.intakeExtController.stopHolding();
+            return;
+        }
+        int newPos = (int)(robot.intakeExtController.getTargetPosition() + (gamepad1.right_trigger - gamepad1.left_trigger) * 50);
+        newPos = Math.min(newPos, robot.ext_max);
+        robot.intakeExtController.hold(newPos);
     }
     
     @Override
     public void loop()
     {
         driveWheels(-gamepad1.left_stick_y, -gamepad1.right_stick_y, ButtonHelper.right_stick_button);
-        dunkLogic(-(gamepad2.right_trigger - gamepad2.left_trigger));
+        dunkLogic();
         drivePullup(ButtonHelper.left_bumper, ButtonHelper.right_bumper);
         dunk(ButtonHelper.b);
         hook(ButtonHelper.x);
         driveIntake(ButtonHelper.left_bumper, ButtonHelper.right_bumper);
         runPivot();
+        driveExtension();
 
         slowDunk();
 

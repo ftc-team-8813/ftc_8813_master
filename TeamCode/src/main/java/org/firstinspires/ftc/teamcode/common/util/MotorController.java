@@ -19,6 +19,7 @@ public class MotorController implements Closeable
     {
         
         protected volatile double power = 1;
+        protected volatile double minPower = -1, maxPower = 1;
         protected Logger log;
         protected volatile boolean holding = false;
         protected volatile boolean stopNearTarget = false;
@@ -44,7 +45,7 @@ public class MotorController implements Closeable
                 motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
-            controller = new PIDController(0, 0, 0);
+            controller = new PIDController(0, 0, 0, false);
             datalogger = new DataLogger(
                     new File(Config.storageDir + "pidLog_motor" + motor.getPortNumber() + ".dat"),
                     new DataLogger.Channel("target",   0xFFFF00),
@@ -83,6 +84,7 @@ public class MotorController implements Closeable
 
                     double speed = controller.process(getCurrentPosition());
                     speed = Utils.constrain(speed, -1, 1) * power;
+                    speed = Utils.constrain(speed, minPower, maxPower);
                     if (Math.abs(controller.getError()) < deadband && Math.abs(controller.getDerivative()) < 2)
                     {
                         if (stopNearTarget)
@@ -95,6 +97,7 @@ public class MotorController implements Closeable
                         if (atTarget != null) atTarget.run();
                     }
                     motor.setPower(speed);
+                    controller.integrate(speed); // I think this is what they mean by integrating the feed-forward
                 } else
                 {
                     if (!stopping)
@@ -133,8 +136,11 @@ public class MotorController implements Closeable
         
         void setTarget(int target)
         {
+            if (controller.getTarget() != target)
+            {
+                log.d("Position set to %d", target);
+            }
             controller.setTarget(target);
-            log.d("Position set to %d", target);
         }
 
         void runAtTarget(Runnable atTarget)
@@ -149,14 +155,14 @@ public class MotorController implements Closeable
         
         void hold()
         {
+            if (!holding) log.d("Holding position @ power = %.4f", power);
             holding = true;
-            log.d("Holding position @ power = %.4f", power);
         }
         
         void stopHolding()
         {
+            if (holding) log.d("Stop holding position");
             holding = false;
-            log.d("Stop holding position");
         }
 
         boolean isHolding()
@@ -186,7 +192,12 @@ public class MotorController implements Closeable
         
         void setPIDConstants(double kP, double kI, double kD)
         {
-            log.i("Updated PID constants to kP = %.4f, kI = %.4f, kD = %.4f", kP, kI, kD);
+            if (controller.getPIDConstants()[0] != kP ||
+                controller.getPIDConstants()[1] != kI ||
+                controller.getPIDConstants()[2] != kD)
+            {
+                log.i("Updated PID constants to kP = %.4f, kI = %.4f, kD = %.4f", kP, kI, kD);
+            }
             controller.setPIDConstants(kP, kI, kD);
         }
         
@@ -198,6 +209,12 @@ public class MotorController implements Closeable
         void setReverse(boolean reverse)
         {
             motor.setDirection(reverse ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
+        }
+
+        void constrainPower(double minPower, double maxPower)
+        {
+            this.minPower = minPower;
+            this.maxPower = maxPower;
         }
 
         PIDController getInternalController()
@@ -327,6 +344,17 @@ public class MotorController implements Closeable
     {
         if (closed) throw new IllegalStateException("Motor controller closed");
         controller.stopHolding();
+    }
+
+    /**
+     * Resume holding the last position that was set.
+     *
+     * @throws IllegalStateException if the motor controller has been closed
+     */
+    public void resumeHolding()
+    {
+        if (closed) throw new IllegalStateException("Motor controller closed");
+        controller.hold();
     }
     
     /**
@@ -473,6 +501,17 @@ public class MotorController implements Closeable
     {
         if (closed) throw new IllegalStateException("Motor controller closed");
         controller.startLogging();
+    }
+
+    /**
+     * Constrain the absolute power that can be delivered to the motor.
+     * @param min Minimum power (in the range -1..1)
+     * @param max Maximum power (in the range -1..1)
+     */
+    public void constrainPower(double min, double max)
+    {
+        if (closed) throw new IllegalStateException("Motor controller closed");
+        controller.constrainPower(min, max);
     }
 
     /**

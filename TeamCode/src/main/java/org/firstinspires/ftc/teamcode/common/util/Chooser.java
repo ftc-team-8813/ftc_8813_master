@@ -19,12 +19,17 @@ public class Chooser
     private int trigger_button = ButtonHelper.b;
     private static final int nLines = 5;
 
-    public Chooser(String prompt, Object[] values, Gamepad gamepad, Telemetry telemetry)
+    public Chooser(String prompt, Object[] values, ButtonHelper buttonHelper, Telemetry telemetry)
     {
         this.prompt = prompt;
         this.values = values;
         TelemetryWrapper.init(telemetry, nLines + 1);
-        buttonHelper = new ButtonHelper(gamepad);
+        this.buttonHelper = buttonHelper;
+    }
+
+    public Chooser(String prompt, Object[] values, Gamepad gamepad, Telemetry telemetry)
+    {
+        this(prompt, values, new ButtonHelper(gamepad), telemetry);
     }
 
     public void setEnterButton(int button)
