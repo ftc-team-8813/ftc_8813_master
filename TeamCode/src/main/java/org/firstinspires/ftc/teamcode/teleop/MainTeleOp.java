@@ -19,7 +19,6 @@ import java.io.IOException;
 public class MainTeleOp extends OpMode
 {
     private Robot robot;
-    private int intake_mode;
     private boolean slow;
     private ButtonHelper buttonHelper_1;
     private ButtonHelper buttonHelper_2;
@@ -50,8 +49,19 @@ public class MainTeleOp extends OpMode
         slow = false;
         // robot.pivot.startLogging();
         robot.intakePivot.setPosition(robot.pivot_up);
-
         robot.dunk.setPosition(robot.dunk_min);
+        robot.calibrateAll();
+    }
+
+    @Override
+    public void init_loop()
+    {
+        if (robot.working()) telemetry.addData("Calibrating intake pivot", "please wait");
+        else
+        {
+            telemetry.addData("Calibration", "Finished");
+            robot.intakeExt.setPower(0);
+        }
     }
 
     @Override
@@ -143,14 +153,7 @@ public class MainTeleOp extends OpMode
             else
             {
                 robot.dunk.setPosition(robot.dunk_dunk);
-                scheduler.add("Pull Back Dunk",750, new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        robot.dunk.setPosition(robot.dunk_up);
-                    }
-                });
+                scheduler.add("Pull Back Dunk",750, () -> robot.dunk.setPosition(robot.dunk_up));
             }
         }
     }
@@ -168,18 +171,17 @@ public class MainTeleOp extends OpMode
 
     private void driveIntake(int fwdButton, int revButton)
     {
-        robot.intake.setPower(intake_mode);
         if (buttonHelper_1.pressed(fwdButton))
         {
-            intake_mode = 1;
+            robot.intake.setPower(0.92);
         }
         else if (buttonHelper_1.pressed(revButton))
         {
-            intake_mode = -1;
+            robot.intake.setPower(-0.82);
         }
         else
         {
-            intake_mode = 0;
+            robot.intake.setPower(0);
         }
     }
 
@@ -203,7 +205,7 @@ public class MainTeleOp extends OpMode
             return;
         }
         int newPos = (int)(robot.intakeExtController.getTargetPosition() + (gamepad1.right_trigger - gamepad1.left_trigger) * 50);
-        newPos = Math.min(newPos, robot.ext_max);
+        newPos = Math.min(newPos, robot.ext_max); // Keep the robot from extending too far
         robot.intakeExtController.hold(newPos);
     }
     
@@ -223,7 +225,6 @@ public class MainTeleOp extends OpMode
 
         scheduler.update();
         telemetry.addData("Time", Utils.elapsedTime(System.currentTimeMillis() - start));
-        telemetry.addData("Intake Mode", intake_mode);
         telemetry.addData("Slow", slow);
         telemetry.addData("Intake extension limit switch", robot.intakeLimit.pressed() ? "Pressed" : "Released");
         telemetry.addData("Lower limit switch", robot.liftLimitDown.pressed() ? "Pressed" : "Released");

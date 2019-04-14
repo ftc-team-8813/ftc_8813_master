@@ -3,8 +3,13 @@ package org.firstinspires.ftc.teamcode.common.util;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.teamcode.common.util.concurrent.ResettableCountDownLatch;
+
 import java.io.Closeable;
 import java.io.File;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * DC motor controller. Replacement for the buggy built-in REV motor controller.
@@ -33,6 +38,8 @@ public class MotorController implements Closeable
         private DataLogger datalogger;
         
         public final int deadband;
+
+        private ResettableCountDownLatch latch = new ResettableCountDownLatch(1);
         
         ParallelController(DcMotor motor, int deadband, boolean noReset)
         {
@@ -64,6 +71,7 @@ public class MotorController implements Closeable
             {
                 if (holding)
                 {
+                    if (stopping) latch.countDown();
                     stopping = false;
                     if (!holdStalled && controller.getDerivative() == 0
                             && Math.abs(controller.getError()) > deadband
@@ -103,6 +111,7 @@ public class MotorController implements Closeable
                     if (!stopping)
                     {
                         log.d("Stopping motor controller");
+                        latch.countDown();
                         stopping = true;
                         motor.setPower(0);
                         controller.resetIntegrator();
@@ -119,7 +128,11 @@ public class MotorController implements Closeable
                 };
                 datalogger.log(data);
 
-                if (Thread.interrupted())
+                try
+                {
+                    Thread.sleep(1);
+                }
+                catch (InterruptedException e)
                 {
                     motor.setPower(0);
                     controller.resetIntegrator();
@@ -155,14 +168,25 @@ public class MotorController implements Closeable
         
         void hold()
         {
-            if (!holding) log.d("Holding position @ power = %.4f", power);
+            if (!holding)
+            {
+                log.d("Holding position @ power = %.4f", power);
+                latch.reset();
+            }
             holding = true;
+            try { latch.await(); } catch (InterruptedException e) {}
         }
         
         void stopHolding()
         {
-            if (holding) log.d("Stop holding position");
+            if (holding)
+            {
+                log.d("Stop holding position");
+                latch.reset();
+            }
             holding = false;
+            try { latch.await(); } catch (InterruptedException e) {}
+            log.d("Stopped holding position");
         }
 
         boolean isHolding()

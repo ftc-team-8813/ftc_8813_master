@@ -19,6 +19,13 @@ import org.firstinspires.ftc.teamcode.common.sensors.IMU;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Robot -- a container for all of the robot hardware interfaces
@@ -74,7 +81,10 @@ public class Robot
     // Internal
     private final Logger log = new Logger("Robot");
 
+    // TODO add class for concurrent task execution
     private DataLogger turnLogger;
+    private ExecutorService executor;
+    private List<Future<?>> calibrationTasks = new Vector<>();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //  Initialization and Lifecycle                                                                  //
@@ -153,10 +163,16 @@ public class Robot
         liftLimitUp = new Switch(hardwareMap.digitalChannel.get("upper limit"));
         pullupLimit = new Switch(hardwareMap.digitalChannel.get("pull up limit"));
 
+        /*
         leftRange = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "left range"));
         rightRange = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "right range"));
+        */
+
+        leftRange = null;
+        rightRange = null;
 
         // Other
+        executor = Executors.newCachedThreadPool();
         turnLogger =
                 new DataLogger(new File(Config.storageDir + "turnLog.bin"),
                         new DataLogger.Channel("Motor power", 0xFFFF00),
@@ -170,6 +186,7 @@ public class Robot
         if (config.getBoolean("pl_reverse", false)) pullUp.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("dl_reverse", false)) dunkLift.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("in_reverse", false)) intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (config.getBoolean("ie_reverse", false)) intakeExt.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     public static Robot initialize(HardwareMap hardwareMap, Config config)
@@ -234,6 +251,47 @@ public class Robot
 //        intakePivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        pivot.setPower(0.5);
 //        pivot.hold(15);
+    }
+
+    public synchronized void calibrateAll()
+    {
+        calibrationTasks.add(executor.submit(() ->
+        {
+            intakeExtController.stopHolding();
+            intakeExt.setPower(-0.5);
+            while (!intakeLimit.pressed())
+            {
+                try
+                {
+                    Thread.sleep(5);
+                }
+                catch (InterruptedException e)
+                {
+                    break;
+                }
+            }
+            intakeExt.setPower(0);
+            intakeExt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            intakeExt.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }));
+    }
+
+    public synchronized boolean working()
+    {
+        List<Future<?>> done = new ArrayList<>();
+        for (int i = 0; i < calibrationTasks.size(); i++)
+        {
+            if (calibrationTasks.get(i).isDone())
+            {
+                done.add(calibrationTasks.get(i));
+            }
+        }
+        if (done.size() > 0) log.d("%d tasks finished", done.size());
+        for (Future<?> f : done)
+        {
+            calibrationTasks.remove(f);
+        }
+        return calibrationTasks.size() > 0;
     }
 
     ///////////////////////////////////
