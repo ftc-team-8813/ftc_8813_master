@@ -69,7 +69,7 @@ public class ServoPositioner extends OpMode
                 if (servos == null)
                 {
                     servos = Utils.allDeviceNames(hardwareMap.servo);
-                    chooser = new Chooser("Choose a servo to move; press B to select", servos, gamepad1, telemetry);
+                    chooser = new Chooser("Choose a servo to move; press B to select", servos, helper, telemetry);
                 } else
                 {
                     chooser.update();

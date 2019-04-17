@@ -62,6 +62,7 @@ public class Profiler
     private Item root;
     private Item curr;
     private Logger log;
+    private boolean disabled;
 
     public Profiler()
     {
@@ -70,8 +71,15 @@ public class Profiler
         curr = root;
     }
 
+    public Profiler disable()
+    {
+        disabled = true;
+        return this;
+    }
+
     public void start(String name)
     {
+        if (disabled) return;
         Item n = new Item(name);
         curr.addTime(System.nanoTime() - curr.start);
         curr.start = System.nanoTime();
@@ -82,6 +90,7 @@ public class Profiler
 
     public void end()
     {
+        if (disabled) return;
         if (curr.parent == null) throw new NoSuchElementException("Stack underflow");
         curr.addTime(System.nanoTime() - curr.start);
         curr = curr.parent;
@@ -90,6 +99,7 @@ public class Profiler
 
     public void finish()
     {
+        if (disabled) return;
         while (curr.parent != null) end();
         log.d("");
         log.d("Profiling summary");

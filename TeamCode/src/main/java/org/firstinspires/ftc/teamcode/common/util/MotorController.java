@@ -39,6 +39,8 @@ public class MotorController implements Closeable
         
         public final int deadband;
 
+        private double last_speed;
+
         private ResettableCountDownLatch latch = new ResettableCountDownLatch(1);
         
         ParallelController(DcMotor motor, int deadband, boolean noReset)
@@ -67,6 +69,15 @@ public class MotorController implements Closeable
         public void run()
         {
             log.i("Starting!");
+            try
+            {
+                // Stagger the thread run-times to avoid blocking the processor at regular intervals
+                Thread.sleep(2 * motor.getPortNumber());
+            }
+            catch (InterruptedException e)
+            {
+                return;
+            }
             while (true)
             {
                 if (holding)
@@ -104,7 +115,11 @@ public class MotorController implements Closeable
                         controller.resetIntegrator();
                         if (atTarget != null) atTarget.run();
                     }
-                    motor.setPower(speed);
+                    if (speed != last_speed)
+                    {
+                        last_speed = speed;
+                        motor.setPower(speed);
+                    }
                     controller.integrate(speed); // I think this is what they mean by integrating the feed-forward
                 } else
                 {
@@ -118,6 +133,7 @@ public class MotorController implements Closeable
                     }
                 }
 
+                /*
                 double[] data = {
                         getTarget(),
                         getCurrentPosition(),
@@ -127,10 +143,11 @@ public class MotorController implements Closeable
                         controller.getOutput()
                 };
                 datalogger.log(data);
+                */
 
                 try
                 {
-                    Thread.sleep(1);
+                    Thread.sleep(10);
                 }
                 catch (InterruptedException e)
                 {
@@ -152,8 +169,8 @@ public class MotorController implements Closeable
             if (controller.getTarget() != target)
             {
                 log.d("Position set to %d", target);
+                controller.setTarget(target);
             }
-            controller.setTarget(target);
         }
 
         void runAtTarget(Runnable atTarget)
@@ -172,9 +189,9 @@ public class MotorController implements Closeable
             {
                 log.d("Holding position @ power = %.4f", power);
                 latch.reset();
+                holding = true;
+                try { latch.await(); } catch (InterruptedException e) {}
             }
-            holding = true;
-            try { latch.await(); } catch (InterruptedException e) {}
         }
         
         void stopHolding()
@@ -183,10 +200,10 @@ public class MotorController implements Closeable
             {
                 log.d("Stop holding position");
                 latch.reset();
+                holding = false;
+                try { latch.await(); } catch (InterruptedException e) {}
+                log.d("Stopped holding position");
             }
-            holding = false;
-            try { latch.await(); } catch (InterruptedException e) {}
-            log.d("Stopped holding position");
         }
 
         boolean isHolding()

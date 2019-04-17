@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.common.util;
 
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,7 +40,7 @@ public class DataLogger implements AutoCloseable
     {
         try
         {
-            logger = new DataOutputStream(new FileOutputStream(f));
+            logger = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
             numChannels = channels.length;
             writeHeader(channels);
         }
