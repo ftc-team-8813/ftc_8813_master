@@ -24,10 +24,10 @@ public class TaskDetectGold implements Task
     {
         Telemetry telemetry = BaseAutonomous.instance().telemetry;
         Robot robot = Robot.instance();
-        DcMotor left = robot.leftFront;
-        DcMotor right = robot.rightFront;
+        DcMotor left = robot.leftRear;
+        DcMotor right = robot.rightRear;
         double speed = 0.2;
-        robot.reverse(1, 0.2);
+        robot.reverse(1, 0.2); // Necessary to un-stick the wheels
 
         int counter = 0;
         while (!detector.goldSeen())

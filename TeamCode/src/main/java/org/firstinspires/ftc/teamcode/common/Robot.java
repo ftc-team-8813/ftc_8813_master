@@ -354,8 +354,8 @@ public class Robot
         log.d("Turning to %d degrees", angle);
         turnLogger.startClip();
         Robot robot = Robot.instance();
-        DcMotor left = robot.leftFront;
-        DcMotor right = robot.rightFront;
+        DcMotor left = robot.leftRear;
+        DcMotor right = robot.rightRear;
         double kP = 0.15;
         int deadband = 3;
         for (int i = 0; (Math.abs(robot.imu.getHeading() - angle) > deadband || i < 20);)
@@ -398,14 +398,14 @@ public class Robot
         leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        int start = leftRear.getCurrentPosition();
+        int start = rightRear.getCurrentPosition();
 
         leftFront.setPower(Math.abs(power) * Math.signum(distance));
         rightFront.setPower(Math.abs(power) * Math.signum(distance));
         leftRear.setPower(Math.abs(power) * Math.signum(distance));
         rightRear.setPower(Math.abs(power) * Math.signum(distance));
 
-        while (Math.abs(leftRear.getCurrentPosition() - start) < Math.abs(distance))
+        while (Math.abs(rightRear.getCurrentPosition() - start) < Math.abs(distance))
         {
             Thread.sleep(5);
         }

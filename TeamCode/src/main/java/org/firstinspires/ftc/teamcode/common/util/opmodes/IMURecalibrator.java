@@ -14,7 +14,6 @@ import java.io.File;
 /**
  * Created by aidan on 3/24/18.
  */
-@Disabled
 @Autonomous(name = "IMU Recalibration", group = "util")
 public class IMURecalibrator extends BaseAutonomous
 {

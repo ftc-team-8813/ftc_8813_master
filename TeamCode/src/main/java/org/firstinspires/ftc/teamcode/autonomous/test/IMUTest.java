@@ -7,7 +7,6 @@ import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.common.Robot;
 
 @Autonomous(name="IMU Test")
-@Disabled
 public class IMUTest extends BaseAutonomous
 {
     @Override

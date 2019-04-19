@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.teleop.test;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.teleop.MainTeleOp;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 
 @TeleOp(name="Automatic line-up test")
+@Disabled
 public class AutoLineUpTest extends MainTeleOp
 {
     private boolean lineUp = false;

@@ -9,9 +9,10 @@ import java.io.File;
 public class Vlogger
 {
     private VideoWriter writer;
-    private volatile boolean closed;
+    private boolean closed;
     private String filename;
     private Logger log = new Logger("Vlogger");
+    private boolean empty = true;
 
 
     public Vlogger(String filename, int width, int height, double fps)
@@ -25,6 +26,7 @@ public class Vlogger
     {
         if (closed) return;
         writer.write(frame);
+        empty = false;
     }
 
     public synchronized void close()
@@ -32,6 +34,14 @@ public class Vlogger
         closed = true;
         writer.release();
         log.d("Video saved to %s", filename);
-        Utils.scanFile(new File(Config.storageDir + filename));
+        if (empty)
+        {
+            new File(Config.storageDir + filename).delete();
+            log.d("Video has no content; deleted");
+        }
+        else
+        {
+            Utils.scanFile(new File(Config.storageDir + filename));
+        }
     }
 }

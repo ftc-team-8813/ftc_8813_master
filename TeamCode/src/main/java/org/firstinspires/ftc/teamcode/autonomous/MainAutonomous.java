@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskBasicSample;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDetectGold;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDrop;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskIntakeMineral;
@@ -44,7 +45,8 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 
     private Profiler profiler = new Profiler();
 
-    public static final boolean DROP = true;
+    private static final boolean DROP = false;
+    private static final boolean DROP_WAIT = false;
 
     @Override
     public void initialize() throws InterruptedException
@@ -58,8 +60,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         video = new Vlogger(getVlogName(),
                 (int)stream.getSize().width, (int)stream.getSize().height, 10.0);
         log = new Logger("Crater Autonomous");
-        robot.initPivotAuto();
-        robot.mark.setPosition(0.91);
+        robot.mark.setPosition(0);
     }
 
     private String getVlogName()
@@ -67,7 +68,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         int i;
         new File(Config.storageDir + "videos/").mkdir();
         for (i = 0; new File(Config.storageDir + "videos/autonomous_capture" + i + ".avi").exists(); i++);
-        return "autonomous_capture" + i + ".avi";
+        return "videos/autonomous_capture" + i + ".avi";
     }
 
     @Override
@@ -89,7 +90,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 
         profiler.start("drop");
         if (DROP) new TaskDrop().runTask();
-        else Thread.sleep(4000);
+        else if (DROP_WAIT) Thread.sleep(4000);
         robot.imu.resetHeading();
         profiler.end();
 
@@ -112,7 +113,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 
         state = "Sampling Mineral";
         profiler.start("sample");
-        new TaskSample(detector).runTask();
+        new TaskBasicSample(detector).runTask();
         profiler.end();
         telemetry.clearAll();
         telemetry.update();
@@ -123,45 +124,41 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         else side = CENTER;
         telemetry.addData("Side", sides[side + 1]).setRetained(true);
 
-        state = "Intake mineral";
-        profiler.start("intake");
-        new TaskIntakeMineral(profiler).runTask();
-        profiler.end();
-
         state = "Drive to depot";
         profiler.start("depot");
-        profiler.start("back up");
-        robot.reverse(10, 0.3);
+        profiler.start("reset_turn");
+        robot.turnTo(0, 0.3);
+        profiler.start("forward");
+        robot.forward(15, 0.3);
         profiler.end();
         profiler.start("turn");
-        if (side == RIGHT) robot.turnTo(70, 0.18);
-        else robot.turnTo(70, 0.18);
+        robot.turnTo(90, 0.3);
         profiler.end();
 
-        profiler.start("drive");
-        if (side == LEFT) robot.leftFront.setPower(0.45);
-        else if (side == RIGHT) robot.leftFront.setPower(0.55);
-        else robot.leftFront.setPower(0.5);
-        robot.rightFront.setPower(0.7);
+        profiler.start("curve");
+        // TODO calibrate this!!!
+        right.setPower(-0.5);
+        left.setPower(-0.7);
 
-        if (side == LEFT) Thread.sleep(1500);
-        else if (side == RIGHT) Thread.sleep(1500);
-        else Thread.sleep(2000);
+        Thread.sleep(2000);
 
-        if (side == LEFT) robot.forward(45, 0.4);
-        else robot.forward(45, 0.4);
-        Thread.sleep(500); // Allow it to coast
-        profiler.end();
-
-        profiler.start("drop");
-        robot.mark.setPosition(0);
+        profiler.start("dunk");
+        robot.reverse(20, 0.5);
+        robot.dunkLiftController.hold(robot.lift_up / 2); // Lifts...
         Thread.sleep(500);
-        profiler.end();
+        robot.dunk.setPosition(robot.dunk_dunk); // and dunks into the depot
+        Thread.sleep(1000);
+        robot.dunk.setPosition(robot.dunk_up); // and then returns
+        Thread.sleep(250);
+        robot.dunkLiftController.hold(0);
+        Thread.sleep(500);
+
         profiler.end(); // depot
 
         state = "Park in crater";
         profiler.start("park");
-        robot.reverse(150, 0.6);
+        robot.forward(120, 0.7);
+        robot.intakeExtController.hold(robot.ext_max / 2);
         profiler.end();
         profiler.end(); // run
 
@@ -187,6 +184,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         text(frame, Utils.elapsedTime(System.currentTimeMillis() - start), 0, y);
         video.put(frame);
         frame.release();
+        // bgr is passed through; the image is not modified
         return bgr;
     }
 
