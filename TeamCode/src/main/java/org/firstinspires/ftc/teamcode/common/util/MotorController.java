@@ -82,7 +82,7 @@ public class MotorController implements Closeable
             {
                 if (holding)
                 {
-                    if (stopping) latch.countDown();
+                    if (stopping) latch.countDown(); // Notify the waiting thread that we're holding now
                     stopping = false;
                     if (!holdStalled && controller.getDerivative() == 0
                             && Math.abs(controller.getError()) > deadband
@@ -93,7 +93,7 @@ public class MotorController implements Closeable
                             stall_begin = System.currentTimeMillis();
                         } else if (System.currentTimeMillis() > stall_begin + 2000)
                         {
-                            stopHolding();
+                            setTarget(getCurrentPosition() + (int)Math.signum(motor.getPower()) * 50);
                             stopNearTarget = false;
                         }
                     } else
@@ -126,10 +126,10 @@ public class MotorController implements Closeable
                     if (!stopping)
                     {
                         log.d("Stopping motor controller");
-                        latch.countDown();
                         stopping = true;
                         motor.setPower(0);
                         controller.resetIntegrator();
+                        latch.countDown();
                     }
                 }
 

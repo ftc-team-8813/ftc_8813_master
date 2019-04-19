@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.common.util.opmodes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @TeleOp(name="Servo Test")
+@Disabled
 public class ServoTester extends LinearOpMode
 {
     private List<ServoController> servoControllers;

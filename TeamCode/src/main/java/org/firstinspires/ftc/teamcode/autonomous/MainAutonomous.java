@@ -65,7 +65,8 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
     private String getVlogName()
     {
         int i;
-        for (i = 0; new File(Config.storageDir + "autonomous_capture" + i + ".avi").exists(); i++);
+        new File(Config.storageDir + "videos/").mkdir();
+        for (i = 0; new File(Config.storageDir + "videos/autonomous_capture" + i + ".avi").exists(); i++);
         return "autonomous_capture" + i + ".avi";
     }
 

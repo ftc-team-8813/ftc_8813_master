@@ -121,6 +121,7 @@ public class MainTeleOp extends OpMode
         if (gamepad2.left_trigger > 0.5)
         {
             robot.dunkLiftController.hold(0);
+            robot.dunk.setPosition(robot.dunk_min);
         }
         else if (gamepad2.right_trigger > 0.5)
         {
@@ -147,8 +148,8 @@ public class MainTeleOp extends OpMode
         profiler.end();
 
         profiler.start("dunk()");
-        if (robot.liftLimitDown.pressed()) robot.dunk.setPosition(robot.dunk_min);
-        if (buttonHelper_1.pressing(ButtonHelper.b))
+        if (robot.liftLimitDown.pressing() || robot.intakeLimit.pressing()) robot.dunk.setPosition(robot.dunk_min);
+        if (buttonHelper_1.pressing(ButtonHelper.b) && !robot.liftLimitDown.pressed())
         {
             liftingDunk = false;
             droppingDunk = false;
@@ -188,13 +189,18 @@ public class MainTeleOp extends OpMode
         profiler.end();
 
         profiler.start("runPivot()");
-        if (buttonHelper_2.pressing(ButtonHelper.dpad_up))
+        boolean manual_pivot = true;
+        if (gamepad2.dpad_up)
         {
             robot.intakePivot.setPosition(robot.pivot_up);
         }
-        else if (buttonHelper_2.pressing(ButtonHelper.dpad_down))
+        else if (gamepad2.dpad_down)
         {
             robot.intakePivot.setPosition(robot.pivot_down);
+        }
+        else
+        {
+            manual_pivot = false;
         }
         profiler.end();
 
@@ -204,9 +210,30 @@ public class MainTeleOp extends OpMode
 //            robot.intakeExtController.stopHolding();
 //            return;
 //        }
-        int newPos = (int)(robot.intakeExtController.getTargetPosition() + 200.0 * (gamepad1.right_trigger - gamepad1.left_trigger));
+        int newPos = (int)(robot.intakeExtController.getTargetPosition() + 200.0 * (-gamepad2.right_stick_y));
         newPos = (int)Utils.constrain(newPos, 0, robot.ext_max); // Keep the robot from extending too far
+        // Pop the dunk up when moving the intake
+        if (newPos != robot.intakeExtController.getTargetPosition())
+        {
+            robot.dunk.setPosition(robot.dunk_up);
+        }
         robot.intakeExtController.hold(newPos);
+        if (!manual_pivot)
+        {
+            if (Utils.floatEquals(robot.intakePivot.getPosition(), robot.pivot_up))
+            {
+                if (robot.intakeExtController.getCurrentPosition() > robot.ext_drop + 100)
+                {
+                    robot.intakePivot.setPosition(robot.pivot_down);
+                }
+            } else
+            {
+                if (robot.intakeExtController.getCurrentPosition() < robot.ext_drop - 100)
+                {
+                    robot.intakePivot.setPosition(robot.pivot_up);
+                }
+            }
+        }
         telemetry.addData("Intake holding", robot.intakeExtController.getTargetPosition());
         telemetry.addData("Intake at", robot.intakeExtController.getCurrentPosition());
         profiler.end();
@@ -232,6 +259,7 @@ public class MainTeleOp extends OpMode
         scheduler.update();
         telemetry.addData("Time", Utils.elapsedTime(System.currentTimeMillis() - start));
         telemetry.addData("Slow", slow);
+        telemetry.addData("Intake pivot", robot.intakePivot.getPosition());
         telemetry.addData("Intake extension limit switch", robot.intakeLimit.pressed() ? "Pressed" : "Released");
         telemetry.addData("Lower limit switch", robot.liftLimitDown.pressed() ? "Pressed" : "Released");
         telemetry.addData("Upper limit switch", robot.liftLimitUp.pressed() ? "Pressed" : "Released");

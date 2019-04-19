@@ -62,7 +62,7 @@ public class VMStats
                 lastMessage = scan.nextLine();
                 try
                 {
-                    Thread.sleep(50);
+                    Thread.sleep(50); // We don't want this to use any CPU because that would skew the output
                 }
                 catch (InterruptedException e)
                 {

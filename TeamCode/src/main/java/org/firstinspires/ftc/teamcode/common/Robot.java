@@ -60,8 +60,7 @@ public class Robot
     public final RangeSensor leftRange;
     public final RangeSensor rightRange;
 
-    // Other
-    public final Config config;
+    // Constants
     public final double HOOK_CLOSED;
     public final double HOOK_OPEN;
 
@@ -76,7 +75,11 @@ public class Robot
     public final double pivot_down;
 
     public final int lift_up;
-    public final int ext_max;
+    public final int ext_max;  // Maximum extension position
+    public final int ext_drop; // Intake extension amount at which the intake pivot should drop
+
+    // Other
+    public final Config config;
 
     // Internal
     private final Logger log = new Logger("Robot");
@@ -116,6 +119,7 @@ public class Robot
                                 .setConstants(dunkLiftConstants)
                                 .create();
         dunkLiftController.constrainPower(0, 1);
+        dunkLiftController.holdStalled(false);
 
         double[] intakeExtConstants = config.getDoubleArray("intake_ext_constants");
         intakeExtController = new MotorController.MotorControllerFactory(intakeExt)
@@ -129,6 +133,7 @@ public class Robot
         intakePivot = hardwareMap.servo.get("intake pivot");
         intake = hardwareMap.crservo.get("intake");
 
+        // Constants
         DataStorage dataStorage = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
         dunk_min  = dataStorage.getDouble("dunk.Down", 0);
         dunk_up   = dataStorage.getDouble("dunk.Up",   0);
@@ -145,6 +150,7 @@ public class Robot
 
         lift_up = config.getInt("lift_up", 0);
         ext_max = config.getInt("ext_max", 0);
+        ext_drop = config.getInt("ext_drop", ext_max);
 
         hook.setPosition(HOOK_OPEN);
 

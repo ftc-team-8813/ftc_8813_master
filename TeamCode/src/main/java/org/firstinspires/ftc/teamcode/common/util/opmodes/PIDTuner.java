@@ -207,12 +207,8 @@ public class PIDTuner extends OpMode
         }
         if (buttons.pressing(ButtonHelper.left_bumper))
         {
-            dataLogger.startLogging(new DataLogger.LogCallback()
+            dataLogger.startLogging((array) ->
             {
-                @Override
-                public void putData(double[] array)
-                {
-                    double[] constants = controller.getPIDConstants();
                     array[0] = constants[0];
                     array[1] = constants[1];
                     array[2] = constants[2];
@@ -222,7 +218,6 @@ public class PIDTuner extends OpMode
                     array[6] = controller.getInternalController().getIntegral();
                     array[7] = controller.getInternalController().getDerivative();
                     array[8] = controller.getOutput();
-                }
             });
         }
         try

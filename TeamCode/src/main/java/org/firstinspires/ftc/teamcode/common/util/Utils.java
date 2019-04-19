@@ -21,6 +21,12 @@ import java.util.Set;
 public class Utils
 {
 
+    public static boolean floatEquals(double a, double b)
+    {
+        final double EPSILON = 0.001; // This is about as accurate as our values get
+        return a > b - EPSILON && a < b + EPSILON;
+    }
+
     /**
      * Get a list of hardware device names in a certain class, i.e. hardwareMap.servo
      * @param mapping The device class to use (hardwareMap.[device class])

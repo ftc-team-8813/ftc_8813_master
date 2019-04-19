@@ -91,9 +91,17 @@ public class ServoPositioner extends OpMode
                     s = hardwareMap.servo.get(servo);
                     servoPositions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
                     positionNames = presetNames.getStringArray(servo + "_presets");
-                    for (int i = 0; i < positionNames.length; i++) positionNames[i] = servo + "." + positionNames[i];
-                    presetValue = servoPositions.getDouble(positionNames[selectedPreset], 0);
-                    value = presetValue;
+                    if (positionNames != null)
+                    {
+                        for (int i = 0; i < positionNames.length; i++)
+                            positionNames[i] = servo + "." + positionNames[i];
+                        presetValue = servoPositions.getDouble(positionNames[selectedPreset], 0);
+                        value = presetValue;
+                    }
+                    else
+                    {
+                        positionNames = new String[] {""};
+                    }
                 }
                 value += -0.05 * gamepad1.left_stick_y;
                 value = Utils.constrain(value, 0, 1);
@@ -102,28 +110,29 @@ public class ServoPositioner extends OpMode
                 TelemetryWrapper.setLine(4, "Value: " + value);
                 TelemetryWrapper.setLine(5, "Preset '" + positionNames[selectedPreset] + "': " + presetValue);
 
-                if (helper.pressing(dpad_up))
+                if (positionNames[selectedPreset].length() > 0)
                 {
-                    selectedPreset--;
-                    if (selectedPreset < 0) selectedPreset += positionNames.length;
-                    presetValue = servoPositions.getDouble(positionNames[selectedPreset], value);
-                    value = presetValue;
-                }
-                else if (helper.pressing(dpad_down))
-                {
-                    selectedPreset = (selectedPreset + 1) % positionNames.length;
-                    presetValue = servoPositions.getDouble(positionNames[selectedPreset], value);
-                    value = presetValue;
-                }
+                    if (helper.pressing(dpad_up))
+                    {
+                        selectedPreset--;
+                        if (selectedPreset < 0) selectedPreset += positionNames.length;
+                        presetValue = servoPositions.getDouble(positionNames[selectedPreset], value);
+                        value = presetValue;
+                    } else if (helper.pressing(dpad_down))
+                    {
+                        selectedPreset = (selectedPreset + 1) % positionNames.length;
+                        presetValue = servoPositions.getDouble(positionNames[selectedPreset], value);
+                        value = presetValue;
+                    }
 
-                if (helper.pressing(a))
-                {
-                    presetValue = value;
-                    servoPositions.addNumber(positionNames[selectedPreset], value);
-                }
-                else if (helper.pressing(x))
-                {
-                    value = presetValue;
+                    if (helper.pressing(a))
+                    {
+                        presetValue = value;
+                        servoPositions.addNumber(positionNames[selectedPreset], value);
+                    } else if (helper.pressing(x))
+                    {
+                        value = presetValue;
+                    }
                 }
 
                 if (helper.pressing(left_bumper))

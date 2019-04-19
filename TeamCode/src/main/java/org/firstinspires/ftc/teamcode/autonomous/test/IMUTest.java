@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.autonomous.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.common.Robot;
 
 @Autonomous(name="IMU Test")
+@Disabled
 public class IMUTest extends BaseAutonomous
 {
     @Override
