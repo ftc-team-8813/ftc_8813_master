@@ -3,9 +3,10 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskBasicSample;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDetectGold;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDrop;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskIntakeMineral;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDunkMarker;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
@@ -38,6 +39,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
     protected boolean OTHER_CRATER = false;
 
     public static final boolean DROP = true;
+    public static final boolean DROP_WAIT = false;
 
     @Override
     public void initialize() throws InterruptedException
@@ -57,8 +59,8 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
     private String getVlogName()
     {
         int i;
-        for (i = 0; new File(Config.storageDir + "autonomous_capture" + i + ".avi").exists(); i++);
-        return "autonomous_capture" + i + ".avi";
+        for (i = 0; new File(Config.storageDir + "videos/autonomous_capture" + i + ".avi").exists(); i++);
+        return "videos/autonomous_capture" + i + ".avi";
     }
 
     @Override
@@ -77,7 +79,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
 
         profiler.start("drop");
         if (DROP) new TaskDrop().runTask();
-        else Thread.sleep(4000);
+        else if (DROP_WAIT) Thread.sleep(4000);
         robot.imu.resetHeading();
         profiler.end();
 
@@ -95,101 +97,50 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         profiler.end();
 
         profiler.start("sample");
-        new TaskSample(detector).runTask();
+        new TaskBasicSample(detector).runTask();
         profiler.end();
         telemetry.clearAll();
         telemetry.update();
 
-        profiler.start("intake");
-        new TaskIntakeMineral(profiler).runTask();
-        profiler.end();
-
-        profiler.start("drop marker");
-        profiler.start("forward");
-        robot.forward(35, 0.3);
-        profiler.end();
-
         robot.imu.update();
-        if (robot.imu.getHeading() >= 15) side = LEFT;
-        else if (robot.imu.getHeading() <= -30) side = RIGHT;
+        if (robot.imu.getHeading() >= 25) side = LEFT;
+        else if (robot.imu.getHeading() <= -25) side = RIGHT;
         else side = CENTER;
 
-        int offset = 0;
-        switch (side)
-        {
-            case LEFT:
-                offset = -15;
-                break;
-            case RIGHT:
-                offset = 30;
-                break;
-            case CENTER:
-                offset = 0;
-                break;
-        }
-        telemetry.addData("Side", sides[side+1]).setRetained(true);
-        profiler.start("turn");
-        turnTo(offset);
+        profiler.start("drop marker");
+        profiler.start("reset turn");
+        robot.turnTo(0, 0.3);
         profiler.end();
 
+        profiler.start("forward");
+        robot.forward(20, 0.5);
+        profiler.end();
+        profiler.start("turn");
+        robot.turnTo(90, 0.3);
+
         profiler.start("forward2");
-        robot.forward(35, 0.4);
+        robot.forward(80, 0.4);
         Thread.sleep(200);
         profiler.end();
-        robot.mark.setPosition(0);
+
+        profiler.start("turn2");
+        robot.turnTo(135, 0.3);
+        profiler.end();
+        profiler.start("reverse");
+        robot.reverse(48, 0.5);
+        profiler.end();
+
+        profiler.start("dunk");
+        new TaskDunkMarker().runTask();
+        profiler.end();
 
         profiler.end(); // drop marker
 
         profiler.start("park");
-
-        profiler.start("turn 2");
-        if (OTHER_CRATER) turnTo(-52);
-        else turnTo(52);
-        profiler.end();
-
-        profiler.start("back up 2");
-        robot.reverse(125, 0.6);
-        profiler.end();
+        robot.forward(90, 0.7);
+        robot.intakeExtController.hold(robot.ext_max / 2);
         profiler.end(); // park
         profiler.end(); // run
-    }
-
-    private void turnTo(int offset) throws InterruptedException
-    {
-        Robot robot = Robot.instance();
-        DcMotor left = robot.leftFront;
-        DcMotor right = robot.rightFront;
-        double speed = 0.22;
-        for (int i = 0; Math.abs(robot.imu.getHeading() - offset) > 2 && opModeIsActive() && i < 50; )
-        {
-            if ((robot.imu.getHeading() - offset) > 0)
-            {
-                left.setPower(speed);
-                right.setPower(-speed);
-            }
-            else if ((robot.imu.getHeading() - offset) < 0)
-            {
-                left.setPower(-speed);
-                right.setPower(speed);
-            }
-            else
-            {
-                left.setPower(0);
-                right.setPower(0);
-            }
-            if (Math.abs(robot.imu.getHeading() - offset) < 2)
-            {
-                i++;
-            }
-            else
-            {
-                i = 0;
-            }
-            Thread.sleep(5);
-            robot.imu.update();
-        }
-        left.setPower(0);
-        right.setPower(0);
     }
 
     @Override

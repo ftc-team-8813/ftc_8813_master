@@ -42,8 +42,6 @@ public class MainTeleOp extends OpMode
     private int framecount;
     private long lastFrame = 0;
 
-    private double prevLeftJoy, prevRightJoy;
-
     private VMStats cpustat;
 
     
@@ -91,18 +89,10 @@ public class MainTeleOp extends OpMode
         double rightPower = -gamepad1.right_stick_y;
         double mult = 1;
         if (slow) mult = 0.4;
-        if (prevLeftJoy != leftPower)
-        {
-            prevLeftJoy = leftPower;
-            robot.leftFront.setPower(leftPower * mult);
-            robot.leftRear.setPower(leftPower * mult);
-        }
-        if (prevRightJoy != rightPower)
-        {
-            prevRightJoy = rightPower;
-            robot.rightFront.setPower(rightPower * mult);
-            robot.rightRear.setPower(rightPower * mult);
-        }
+        robot.leftFront.setPower(leftPower * mult);
+        robot.leftRear.setPower(leftPower * mult);
+        robot.rightFront.setPower(rightPower * mult);
+        robot.rightRear.setPower(rightPower * mult);
         if (buttonHelper_1.pressing(ButtonHelper.right_stick_button))
         {
             slow = !slow;

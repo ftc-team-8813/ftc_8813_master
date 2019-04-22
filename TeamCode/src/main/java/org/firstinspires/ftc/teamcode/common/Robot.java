@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Persistent;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
+import org.firstinspires.ftc.teamcode.common.util.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -152,8 +153,6 @@ public class Robot
         ext_max = config.getInt("ext_max", 0);
         ext_drop = config.getInt("ext_drop", ext_max);
 
-        hook.setPosition(HOOK_OPEN);
-
         // Sensors
         if (Persistent.get("imu") != null)
         {
@@ -193,6 +192,14 @@ public class Robot
         if (config.getBoolean("dl_reverse", false)) dunkLift.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("in_reverse", false)) intake.setDirection(DcMotorSimple.Direction.REVERSE);
         if (config.getBoolean("ie_reverse", false)) intakeExt.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        // Reset encoders
+        for (String name : Utils.allDeviceNames(hardwareMap.dcMotor))
+        {
+            DcMotor motor = hardwareMap.dcMotor.get(name);
+            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
     }
 
     public static Robot initialize(HardwareMap hardwareMap, Config config)
@@ -305,7 +312,7 @@ public class Robot
 
     public static final double ENC_PER_ROTATION_20  = 537.6; // NeveRest Orbital 20:1 motor
     public static final double ENC_PER_ROTATION_REV = 1120;  // REV Planetary 20:1 motor
-    public static final double ENC_PER_INCH = ENC_PER_ROTATION_20 / 25.1327; // For 8in wheels on NeveRest motors
+    public static final double ENC_PER_INCH = ENC_PER_ROTATION_20 / 18.8496; // For 6in wheels on NeveRest motors
     public static final double ENC_PER_CM = ENC_PER_INCH / 2.54;
 
     public static final double RADIUS_INCH = 7.75;
@@ -351,20 +358,20 @@ public class Robot
 
     public void turnTo(double angle, double power) throws InterruptedException
     {
-        log.d("Turning to %d degrees", angle);
+        log.d("Turning to %.2f degrees", angle);
         turnLogger.startClip();
         Robot robot = Robot.instance();
         DcMotor left = robot.leftRear;
         DcMotor right = robot.rightRear;
-        double kP = 0.15;
-        int deadband = 3;
+        double kP = 0.1;
+        double deadband = 2.25;
         for (int i = 0; (Math.abs(robot.imu.getHeading() - angle) > deadband || i < 20);)
         {
             double error = (robot.imu.getHeading() - angle);
             if (Math.abs(error) >= deadband)
             {
-                left.setPower(power * Math.min(1, error * kP));
-                right.setPower(-power * Math.min(1, error * kP));
+                left.setPower(power * Utils.constrain(error * kP, -1, 1));
+                right.setPower(-power * Utils.constrain(error * kP, -1, 1));
                 i = 0;
             }
             else

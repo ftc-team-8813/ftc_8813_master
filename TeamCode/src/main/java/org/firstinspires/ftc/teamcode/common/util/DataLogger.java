@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 public class DataLogger implements AutoCloseable
 {
 
+    private File file;
     private DataOutputStream logger;
     private int numChannels;
     private long clipStart;
@@ -40,6 +41,7 @@ public class DataLogger implements AutoCloseable
     {
         try
         {
+            this.file = f;
             logger = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
             numChannels = channels.length;
             writeHeader(channels);
@@ -104,20 +106,16 @@ public class DataLogger implements AutoCloseable
     {
         if (logThread != null) throw new IllegalStateException("Logging thread already running!");
         if (error) return;
-        logThread = new Thread(new Runnable()
+        logThread = new Thread(() ->
         {
-            @Override
-            public void run()
+            while (!Thread.interrupted())
             {
-                while (!Thread.interrupted())
-                {
-                    double[] channels = new double[numChannels];
-                    callback.putData(channels);
-                    log(channels);
-                    Thread.yield();
-                }
-                logThread = null;
+                double[] channels = new double[numChannels];
+                callback.putData(channels);
+                log(channels);
+                Thread.yield();
             }
+            logThread = null;
         });
         logThread.setDaemon(true);
         logThread.start();
@@ -149,6 +147,7 @@ public class DataLogger implements AutoCloseable
             log.w("Unable to close logger");
             log.w(e);
         }
+        Utils.scanFile(file);
     }
 
     public boolean error()

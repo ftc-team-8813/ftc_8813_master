@@ -73,7 +73,7 @@ public class TaskBasicSample implements Task
                 telemetry.addData("Mineral", "Seen");
                 double error = -(detector.getLocation().x / 640 - 0.5) * 2;
                 error += 0.1; // Adjust for camera placement
-                if (Math.abs(error) < 0.03) break;
+                if (Math.abs(error) < 0.05) break;
                 // Positive error -> turn RIGHT
                 l = -kP * error;
                 r = kP * error;
@@ -87,6 +87,7 @@ public class TaskBasicSample implements Task
             telemetry.addData("Left", l);
             telemetry.addData("Right", r);
             telemetry.update();
+            robot.imu.update();
             Thread.sleep(10);
         }
         telemetry.addData("Lineup", "Complete");
@@ -97,7 +98,7 @@ public class TaskBasicSample implements Task
         robot.intakeExtController.hold(robot.ext_max);
         Thread.sleep(100);
         robot.intakePivot.setPosition(robot.pivot_down);
-        robot.intake.setPower(-0.85);
+        // robot.intake.setPower(-0.85);
         while (robot.intakeExtController.getCurrentPosition() < robot.ext_max - 120) Thread.sleep(5);
         robot.forward(5, 0.3);
         Thread.sleep(500);
@@ -107,7 +108,7 @@ public class TaskBasicSample implements Task
         robot.intakePivot.setPosition(robot.pivot_up);
         Thread.sleep(250);
         robot.intakeExtController.hold(0);
-        robot.intake.setPower(0);
+        // robot.intake.setPower(0);
         Thread.sleep(750);
         robot.dunk.setPosition(robot.dunk_min);
 

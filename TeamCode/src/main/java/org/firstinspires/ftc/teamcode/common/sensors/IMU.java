@@ -212,10 +212,13 @@ public class IMU
         }
         lastAngle = h;
         heading = h + 360 * revolutions - angleOffset;
-        telemetry.addData("Heading", heading);
-        telemetry.addData("Roll", roll);
-        telemetry.addData("Pitch", pitch);
-        telemetry.update();
+        if (telemetry != null)
+        {
+            telemetry.addData("Heading", heading);
+            telemetry.addData("Roll", roll);
+            telemetry.addData("Pitch", pitch);
+            telemetry.update();
+        }
     }
     
     public float getHeading()

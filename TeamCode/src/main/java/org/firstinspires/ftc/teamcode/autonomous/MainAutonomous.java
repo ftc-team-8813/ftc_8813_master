@@ -6,8 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskBasicSample;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDetectGold;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDrop;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskIntakeMineral;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskSample;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.TaskDunkMarker;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
 import org.firstinspires.ftc.teamcode.common.Robot;
@@ -45,7 +44,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 
     private Profiler profiler = new Profiler();
 
-    private static final boolean DROP = false;
+    private static final boolean DROP = true;
     private static final boolean DROP_WAIT = false;
 
     @Override
@@ -76,11 +75,11 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
     {
         profiler.start("run");
         start = System.currentTimeMillis();
+        Robot robot = Robot.instance();
         state = "Initializing";
 
-        Robot robot = Robot.instance();
-        robot.leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        robot.rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        robot.leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        robot.rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         // Initialize camera
         profiler.start("init camera");
@@ -103,6 +102,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         stream.addModifier(detector);
         stream.addListener(detector);
         stream.addModifier(this);
+
 
         robot.imu.resetHeading();
 
@@ -129,35 +129,25 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         profiler.start("reset_turn");
         robot.turnTo(0, 0.3);
         profiler.start("forward");
-        robot.forward(15, 0.3);
+        robot.forward(25, 0.3);
         profiler.end();
         profiler.start("turn");
-        robot.turnTo(90, 0.3);
+        robot.turnTo(-105, 0.3);
         profiler.end();
 
         profiler.start("curve");
-        // TODO calibrate this!!!
-        right.setPower(-0.5);
-        left.setPower(-0.7);
 
-        Thread.sleep(2000);
+        robot.reverse(80, 0.7);
+        robot.turnTo(-45, 0.3);
 
         profiler.start("dunk");
-        robot.reverse(20, 0.5);
-        robot.dunkLiftController.hold(robot.lift_up / 2); // Lifts...
-        Thread.sleep(500);
-        robot.dunk.setPosition(robot.dunk_dunk); // and dunks into the depot
-        Thread.sleep(1000);
-        robot.dunk.setPosition(robot.dunk_up); // and then returns
-        Thread.sleep(250);
-        robot.dunkLiftController.hold(0);
-        Thread.sleep(500);
-
+        robot.reverse(55, 0.6);
+        new TaskDunkMarker().runTask();
         profiler.end(); // depot
 
         state = "Park in crater";
         profiler.start("park");
-        robot.forward(120, 0.7);
+        robot.forward(90, 1.0);
         robot.intakeExtController.hold(robot.ext_max / 2);
         profiler.end();
         profiler.end(); // run
