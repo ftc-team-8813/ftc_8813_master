@@ -38,8 +38,8 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
 
     protected boolean OTHER_CRATER = false;
 
-    public static final boolean DROP = true;
-    public static final boolean DROP_WAIT = false;
+    public static final boolean DROP = false;
+    public static final boolean DROP_WAIT = true;
 
     @Override
     public void initialize() throws InterruptedException
@@ -116,18 +116,18 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         robot.forward(20, 0.5);
         profiler.end();
         profiler.start("turn");
-        robot.turnTo(90, 0.3);
+        robot.turnTo(75, 0.5);
 
         profiler.start("forward2");
-        robot.forward(80, 0.4);
+        robot.forward(80, 0.8);
         Thread.sleep(200);
         profiler.end();
 
         profiler.start("turn2");
-        robot.turnTo(135, 0.3);
+        robot.turnTo(135, 0.5);
         profiler.end();
         profiler.start("reverse");
-        robot.reverse(48, 0.5);
+        robot.reverse(48, 0.8);
         profiler.end();
 
         profiler.start("dunk");
@@ -137,7 +137,7 @@ public class DepotAutonomous extends BaseAutonomous implements CameraStream.Outp
         profiler.end(); // drop marker
 
         profiler.start("park");
-        robot.forward(90, 0.7);
+        robot.forward(88, 1);
         robot.intakeExtController.hold(robot.ext_max / 2);
         profiler.end(); // park
         profiler.end(); // run

@@ -29,6 +29,8 @@ public class MainTeleOp extends OpMode
     private boolean droppingDunk = false;
     private boolean dunkDown = false;
     private boolean liftDown = true;
+    private boolean intakeIn = true;
+    private boolean landerMode = false;
     private int limit_press_count = 0;
 
     private double dunk_nearly_down;
@@ -43,6 +45,8 @@ public class MainTeleOp extends OpMode
     private long lastFrame = 0;
 
     private VMStats cpustat;
+
+    private Scheduler.TaskCallback respoolerHandle;
 
     
     @Override
@@ -138,7 +142,19 @@ public class MainTeleOp extends OpMode
         profiler.end();
 
         profiler.start("dunk()");
-        if (robot.liftLimitDown.pressing() || robot.intakeLimit.pressing()) robot.dunk.setPosition(robot.dunk_min);
+        if (robot.liftLimitDown.pressing()) robot.dunk.setPosition(robot.dunk_min);
+        if (robot.intakeExtController.getCurrentPosition() < 100)
+        {
+            if (!intakeIn)
+            {
+                intakeIn = true;
+                robot.dunk.setPosition(robot.dunk_min);
+            }
+        }
+        else
+        {
+            intakeIn = false;
+        }
         if (buttonHelper_1.pressing(ButtonHelper.b) && !robot.liftLimitDown.pressed())
         {
             liftingDunk = false;
@@ -166,7 +182,7 @@ public class MainTeleOp extends OpMode
         profiler.start("driveIntake()");
         if (buttonHelper_1.pressed(ButtonHelper.left_bumper))
         {
-            robot.intake.setPower(0.92);
+            robot.intake.setPower(0.85);
         }
         else if (buttonHelper_1.pressed(ButtonHelper.right_bumper))
         {
@@ -244,10 +260,44 @@ public class MainTeleOp extends OpMode
         }
         profiler.end();
 
+        profiler.start("landerMode()");
+        if (buttonHelper_1.pressing(ButtonHelper.y))
+        {
+            if (!landerMode)
+            {
+                landerMode = true;
+                robot.hook.setPosition(robot.HOOK_OPEN);
+                robot.intakePivot.setPosition(robot.pivot_down);
+                robot.pullUp.setPower(-1);
+                if (respoolerHandle != null) respoolerHandle.cancel();
+                respoolerHandle = scheduler.add(500, () ->
+                {
+                    if (robot.pullupLimit.pressed())
+                    {
+                        robot.pullUp.setPower(0);
+                        respoolerHandle.cancel();
+                    }
+                }, true);
+            }
+            else
+            {
+                landerMode = false;
+                if (respoolerHandle != null) respoolerHandle.cancel();
+                robot.pullUp.setPower(1);
+                respoolerHandle = scheduler.add(500, () ->
+                {
+                    robot.pullUp.setPower(0);
+                    robot.intakePivot.setPosition(robot.pivot_up);
+                });
+            }
+        }
+        profiler.end();
+
         profiler.finish();
 
         scheduler.update();
         telemetry.addData("Time", Utils.elapsedTime(System.currentTimeMillis() - start));
+        telemetry.addData("Lander Mode", landerMode);
         telemetry.addData("Slow", slow);
         telemetry.addData("Intake pivot", robot.intakePivot.getPosition());
         telemetry.addData("Intake extension limit switch", robot.intakeLimit.pressed() ? "Pressed" : "Released");
@@ -257,11 +307,11 @@ public class MainTeleOp extends OpMode
         telemetry.addData("Dunk Position", robot.dunk.getPosition());
         telemetry.addData("Lifting Dunk: " + liftingDunk + ", dropping dunk", droppingDunk);
         telemetry.addData("Loops per second", fps);
-        int[] stats = cpustat.getStats();
-        telemetry.addData("CPU usage | user", stats[VMStats.CPU_USER])
-                .addData("system", stats[VMStats.CPU_SYS])
-                .addData("waiting", stats[VMStats.CPU_WAIT])
-                .addData("idle", stats[VMStats.CPU_IDLE]);
+//        int[] stats = cpustat.getStats();
+//        telemetry.addData("CPU usage | user", stats[VMStats.CPU_USER])
+//                .addData("system", stats[VMStats.CPU_SYS])
+//                .addData("waiting", stats[VMStats.CPU_WAIT])
+//                .addData("idle", stats[VMStats.CPU_IDLE]);
         framecount++;
         if (System.currentTimeMillis() - lastFrame > 1000)
         {

@@ -45,7 +45,7 @@ public class TaskBasicSample implements Task
                     telemetry.addData("Mineral lost", "to the left");
                     if (wasSeen)
                     {
-                        log.d("Mineral lost to the side; reversing seek direction");
+                        log.d("Mineral lost to the left; reversing seek direction");
                         l *= -1;
                         r *= -1;
                     }
@@ -55,15 +55,15 @@ public class TaskBasicSample implements Task
                     telemetry.addData("Mineral lost", "to the right");
                     if (wasSeen)
                     {
-                        log.d("Mineral lost to the side; reversing seek direction");
+                        log.d("Mineral lost to the right; reversing seek direction");
                         l *= -1;
                         r *= -1;
                     }
                 }
                 else
                 {
-                    l *= 0.8;
-                    r *= 0.8;
+                    l *= 0.9;
+                    r *= 0.9;
                 }
                 wasSeen = false;
             }
@@ -72,8 +72,8 @@ public class TaskBasicSample implements Task
                 log.d("Mineral found");
                 telemetry.addData("Mineral", "Seen");
                 double error = -(detector.getLocation().x / 640 - 0.5) * 2;
-                error += 0.1; // Adjust for camera placement
-                if (Math.abs(error) < 0.05) break;
+                error += 0.08; // Adjust for camera placement
+                if (Math.abs(error) < 0.08) break;
                 // Positive error -> turn RIGHT
                 l = -kP * error;
                 r = kP * error;
@@ -98,17 +98,16 @@ public class TaskBasicSample implements Task
         robot.intakeExtController.hold(robot.ext_max);
         Thread.sleep(100);
         robot.intakePivot.setPosition(robot.pivot_down);
-        // robot.intake.setPower(-0.85);
-        while (robot.intakeExtController.getCurrentPosition() < robot.ext_max - 120) Thread.sleep(5);
-        robot.forward(5, 0.3);
-        Thread.sleep(500);
-        robot.reverse(5, 0.3);
+        if (Math.abs(robot.imu.getHeading()) > 15) robot.forward(5, 0.6);
+        robot.intake.setPower(-0.85);
+        Thread.sleep(800);
+        if (Math.abs(robot.imu.getHeading()) > 15) robot.reverse(5, 0.6);
         Thread.sleep(250);
         robot.dunk.setPosition(robot.dunk_up);
         robot.intakePivot.setPosition(robot.pivot_up);
         Thread.sleep(250);
         robot.intakeExtController.hold(0);
-        // robot.intake.setPower(0);
+        robot.intake.setPower(0);
         Thread.sleep(750);
         robot.dunk.setPosition(robot.dunk_min);
 

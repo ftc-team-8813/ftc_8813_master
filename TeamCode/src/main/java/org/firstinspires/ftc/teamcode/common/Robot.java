@@ -364,8 +364,8 @@ public class Robot
         DcMotor left = robot.leftRear;
         DcMotor right = robot.rightRear;
         double kP = 0.1;
-        double deadband = 2.25;
-        for (int i = 0; (Math.abs(robot.imu.getHeading() - angle) > deadband || i < 20);)
+        double deadband = 3;
+        for (int i = 0; (Math.abs(robot.imu.getHeading() - angle) > deadband || i < 5);)
         {
             double error = (robot.imu.getHeading() - angle);
             if (Math.abs(error) >= deadband)

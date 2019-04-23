@@ -26,8 +26,7 @@ public class TaskDetectGold implements Task
         Robot robot = Robot.instance();
         DcMotor left = robot.leftRear;
         DcMotor right = robot.rightRear;
-        double speed = 0.2;
-        robot.reverse(1, 0.2); // Necessary to un-stick the wheels
+        double speed = 0.3;
 
         int counter = 0;
         while (!detector.goldSeen())
@@ -67,7 +66,7 @@ public class TaskDetectGold implements Task
                 }
                 left.setPower(0);
                 right.setPower(0);
-                Thread.sleep(750);
+                Thread.sleep(500);
                 profiler.end();
                 if (detector.goldSeen())
                 {
@@ -88,7 +87,7 @@ public class TaskDetectGold implements Task
                 }
                 left.setPower(0);
                 right.setPower(0);
-                Thread.sleep(750);
+                Thread.sleep(500);
                 profiler.end();
                 if (detector.goldSeen())
                 {

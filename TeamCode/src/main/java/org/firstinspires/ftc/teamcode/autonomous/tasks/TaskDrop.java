@@ -21,9 +21,9 @@ public class TaskDrop implements Task
         while (robot.imu.getInternalImu().getGravity().xAccel > -9.79)
         {
             robot.imu.update();
-            log.d("Heading: %.4f", robot.imu.getHeading());
-            Acceleration gravity = robot.imu.getInternalImu().getGravity();
-            log.d("Gravity: <%.4f, %.4f, %.4f>", gravity.xAccel, gravity.yAccel, gravity.zAccel);
+//            log.d("Heading: %.4f", robot.imu.getHeading());
+//            Acceleration gravity = robot.imu.getInternalImu().getGravity();
+//            log.d("Gravity: <%.4f, %.4f, %.4f>", gravity.xAccel, gravity.yAccel, gravity.zAccel);
             Thread.sleep(5);
         }
         robot.hook.setPosition(robot.HOOK_OPEN);

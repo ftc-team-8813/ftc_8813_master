@@ -27,7 +27,7 @@ import org.opencv.imgproc.Imgproc;
 import java.io.File;
 
 @Autonomous(name="Crater Autonomous")
-public class MainAutonomous extends BaseAutonomous implements CameraStream.OutputModifier
+public class CraterAutonomous extends BaseAutonomous implements CameraStream.OutputModifier
 {
 
     private Vlogger video;
@@ -44,8 +44,8 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 
     private Profiler profiler = new Profiler();
 
-    private static final boolean DROP = true;
-    private static final boolean DROP_WAIT = false;
+    private static final boolean DROP = false;
+    private static final boolean DROP_WAIT = true;
 
     @Override
     public void initialize() throws InterruptedException
@@ -60,6 +60,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
                 (int)stream.getSize().width, (int)stream.getSize().height, 10.0);
         log = new Logger("Crater Autonomous");
         robot.mark.setPosition(0);
+        robot.dunk.setPosition(robot.dunk_min);
     }
 
     private String getVlogName()
@@ -119,8 +120,8 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         telemetry.update();
 
         robot.imu.update();
-        if (robot.imu.getHeading() >= 25) side = LEFT;
-        else if (robot.imu.getHeading() <= -25) side = RIGHT;
+        if (robot.imu.getHeading() >= 15) side = LEFT;
+        else if (robot.imu.getHeading() <= -15) side = RIGHT;
         else side = CENTER;
         telemetry.addData("Side", sides[side + 1]).setRetained(true);
 
@@ -129,7 +130,7 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
         profiler.start("reset_turn");
         robot.turnTo(0, 0.3);
         profiler.start("forward");
-        robot.forward(25, 0.3);
+        robot.forward(20, 0.6);
         profiler.end();
         profiler.start("turn");
         robot.turnTo(-105, 0.3);
@@ -137,11 +138,11 @@ public class MainAutonomous extends BaseAutonomous implements CameraStream.Outpu
 
         profiler.start("curve");
 
-        robot.reverse(80, 0.7);
+        robot.reverse(80, 1);
         robot.turnTo(-45, 0.3);
 
         profiler.start("dunk");
-        robot.reverse(55, 0.6);
+        robot.reverse(30, 0.8);
         new TaskDunkMarker().runTask();
         profiler.end(); // depot
 
