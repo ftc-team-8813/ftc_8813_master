@@ -93,7 +93,7 @@ public class MotorController implements Closeable
                             stall_begin = System.currentTimeMillis();
                         } else if (System.currentTimeMillis() > stall_begin + 2000)
                         {
-                            setTarget(getCurrentPosition() + (int)Math.signum(motor.getPower()) * 50);
+                            setTarget(getCurrentPosition() - (int)Math.signum(motor.getPower()) * 50);
                             stopNearTarget = false;
                         }
                     } else

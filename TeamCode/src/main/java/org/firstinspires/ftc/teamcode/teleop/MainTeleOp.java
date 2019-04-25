@@ -32,6 +32,8 @@ public class MainTeleOp extends OpMode
     private boolean intakeIn = true;
     private boolean landerMode = false;
     private int limit_press_count = 0;
+    private int prevLiftPos = 0;
+    private double prevAutoPivotPos;
 
     private double dunk_nearly_down;
 
@@ -43,6 +45,7 @@ public class MainTeleOp extends OpMode
     private int fps = 0;
     private int framecount;
     private long lastFrame = 0;
+    private boolean manual_pivot = false;
 
     private VMStats cpustat;
 
@@ -63,7 +66,9 @@ public class MainTeleOp extends OpMode
         robot.intakePivot.setPosition(robot.pivot_up);
         robot.dunk.setPosition(robot.dunk_min);
         robot.calibrateAll();
-        cpustat = new VMStats(1);
+        //
+        // cpustat = new VMStats(1);
+        robot.dunkLiftController.stopHolding();
     }
 
     @Override
@@ -104,23 +109,25 @@ public class MainTeleOp extends OpMode
         profiler.end();
 
         profiler.start("dunkLogic()");
-        //        if (robot.liftLimitUp.pressed())
+//        if (robot.liftLimitDown.pressed())
 //        {
-//            robot.dunkLiftController.stopHolding();
+//            robot.dunkLiftController.constrainPower(0, 1);
 //        }
 //        else
 //        {
-//            robot.dunkLiftController.resumeHolding();
+//            robot.dunkLiftController.constrainPower(-0.05, 1);
 //        }
-        if (gamepad2.left_trigger > 0.5)
-        {
-            robot.dunkLiftController.hold(0);
-            robot.dunk.setPosition(robot.dunk_min);
-        }
-        else if (gamepad2.right_trigger > 0.5)
-        {
-            robot.dunkLiftController.hold(robot.lift_up);
-        }
+//        if (gamepad2.left_trigger > 0.5)
+//        {
+//            robot.dunkLiftController.hold(0);
+//            robot.dunk.setPosition(robot.dunk_min);
+//        }
+//        else if (gamepad2.right_trigger > 0.5)
+//        {
+//            robot.dunkLiftController.hold(robot.lift_up);
+//        }
+        double liftPower = gamepad2.right_trigger - gamepad2.left_trigger;
+        robot.dunkLift.setPower(liftPower);
         profiler.end();
 
         profiler.start("drivePullup()");
@@ -143,18 +150,8 @@ public class MainTeleOp extends OpMode
 
         profiler.start("dunk()");
         if (robot.liftLimitDown.pressing()) robot.dunk.setPosition(robot.dunk_min);
-        if (robot.intakeExtController.getCurrentPosition() < 100)
-        {
-            if (!intakeIn)
-            {
-                intakeIn = true;
-                robot.dunk.setPosition(robot.dunk_min);
-            }
-        }
-        else
-        {
-            intakeIn = false;
-        }
+        if (robot.intakeExtController.getCurrentPosition() < 100 && robot.dunkLift.getCurrentPosition() < 200)
+            robot.dunk.setPosition(robot.dunk_min);
         if (buttonHelper_1.pressing(ButtonHelper.b) && !robot.liftLimitDown.pressed())
         {
             liftingDunk = false;
@@ -195,18 +192,16 @@ public class MainTeleOp extends OpMode
         profiler.end();
 
         profiler.start("runPivot()");
-        boolean manual_pivot = true;
+        double manualPivotPos = robot.intakePivot.getPosition();
         if (gamepad2.dpad_up)
         {
-            robot.intakePivot.setPosition(robot.pivot_up);
+            manualPivotPos = robot.pivot_up;
+            manual_pivot = true;
         }
         else if (gamepad2.dpad_down)
         {
-            robot.intakePivot.setPosition(robot.pivot_down);
-        }
-        else
-        {
-            manual_pivot = false;
+            manualPivotPos = robot.pivot_down;
+            manual_pivot = true;
         }
         profiler.end();
 
@@ -216,33 +211,61 @@ public class MainTeleOp extends OpMode
 //            robot.intakeExtController.stopHolding();
 //            return;
 //        }
-        int newPos = (int)(robot.intakeExtController.getTargetPosition() + 200.0 * (-gamepad2.right_stick_y));
+        int oldPos = robot.intakeExtController.getTargetPosition();
+        int newPos = (int)(oldPos + 200.0 * (-gamepad2.right_stick_y));
         newPos = (int)Utils.constrain(newPos, 0, robot.ext_max); // Keep the robot from extending too far
+        double pivotPos = robot.intakePivot.getPosition();
+        double autoPivotPos = robot.intakePivot.getPosition();
         // Pop the dunk up when moving the intake
-        if (newPos != robot.intakeExtController.getTargetPosition())
+        if (newPos != oldPos)
         {
             robot.dunk.setPosition(robot.dunk_up);
         }
         robot.intakeExtController.hold(newPos);
-        if (!manual_pivot)
+        if (Utils.floatEquals(robot.intakePivot.getPosition(), robot.pivot_up))
         {
-            if (Utils.floatEquals(robot.intakePivot.getPosition(), robot.pivot_up))
+            if (robot.intakeExtController.getCurrentPosition() > robot.ext_drop + 100)
             {
-                if (robot.intakeExtController.getCurrentPosition() > robot.ext_drop + 100)
-                {
-                    robot.intakePivot.setPosition(robot.pivot_down);
-                }
-            } else
-            {
-                if (robot.intakeExtController.getCurrentPosition() < robot.ext_drop - 100)
-                {
-                    robot.intakePivot.setPosition(robot.pivot_up);
-                }
+                autoPivotPos = robot.pivot_down;
             }
         }
+        else
+        {
+            if (robot.intakeExtController.getCurrentPosition() < robot.ext_drop - 100)
+            {
+                autoPivotPos = robot.pivot_up;
+            }
+        }
+
+        // Force pivot up when retracting
+        if (newPos < oldPos)
+        {
+            manual_pivot = true; // Pretend to be manual pivot
+            manualPivotPos = robot.pivot_up;
+        }
+
+        if (manual_pivot)
+        {
+            if (!Utils.floatEquals(autoPivotPos, prevAutoPivotPos))
+            {
+                pivotPos = autoPivotPos;
+                manual_pivot = false;
+            }
+            else if (!Utils.floatEquals(manualPivotPos, pivotPos))
+            {
+                pivotPos = manualPivotPos;
+            }
+        }
+        else
+        {
+            pivotPos = autoPivotPos;
+        }
+        robot.intakePivot.setPosition(pivotPos);
+        prevAutoPivotPos = autoPivotPos;
         telemetry.addData("Intake holding", robot.intakeExtController.getTargetPosition());
         telemetry.addData("Intake at", robot.intakeExtController.getCurrentPosition());
         profiler.end();
+
 
         profiler.start("slowDunk()");
         if (liftingDunk)
@@ -263,8 +286,11 @@ public class MainTeleOp extends OpMode
         profiler.start("landerMode()");
         if (buttonHelper_1.pressing(ButtonHelper.y))
         {
+            log.d("Trigger lander mode");
             if (!landerMode)
             {
+                log.d("Enable lander mode");
+                manual_pivot = true;
                 landerMode = true;
                 robot.hook.setPosition(robot.HOOK_OPEN);
                 robot.intakePivot.setPosition(robot.pivot_down);
@@ -281,23 +307,31 @@ public class MainTeleOp extends OpMode
             }
             else
             {
+                log.d("Disable lander mode");
                 landerMode = false;
                 if (respoolerHandle != null) respoolerHandle.cancel();
                 robot.pullUp.setPower(1);
                 respoolerHandle = scheduler.add(500, () ->
                 {
                     robot.pullUp.setPower(0);
-                    robot.intakePivot.setPosition(robot.pivot_up);
+                    manual_pivot = false;
                 });
             }
         }
         profiler.end();
+
+        if (liftPower != 0 && Utils.floatEquals(robot.dunk.getPosition(), robot.dunk_up))
+        {
+            robot.dunk.setPosition(robot.dunk_min);
+        }
 
         profiler.finish();
 
         scheduler.update();
         telemetry.addData("Time", Utils.elapsedTime(System.currentTimeMillis() - start));
         telemetry.addData("Lander Mode", landerMode);
+        telemetry.addData("Manual pivot", manual_pivot);
+        telemetry.addData("Pivot pos", "auto: " + autoPivotPos + " manual: " + manualPivotPos + " actual: " + pivotPos);
         telemetry.addData("Slow", slow);
         telemetry.addData("Intake pivot", robot.intakePivot.getPosition());
         telemetry.addData("Intake extension limit switch", robot.intakeLimit.pressed() ? "Pressed" : "Released");
@@ -325,7 +359,7 @@ public class MainTeleOp extends OpMode
     public void stop()
     {
         robot.uninitialize();
-        cpustat.close();
+        // cpustat.close();
         Logger.close();
     }
 }

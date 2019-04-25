@@ -270,6 +270,7 @@ public class Robot
     {
         calibrationTasks.add(executor.submit(() ->
         {
+            dunk.setPosition(dunk_up);
             intakeExtController.stopHolding();
             intakeExt.setPower(-0.5);
             while (!intakeLimit.pressed())
@@ -286,6 +287,7 @@ public class Robot
             intakeExt.setPower(0);
             intakeExt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             intakeExt.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            dunk.setPosition(dunk_min);
         }));
     }
 

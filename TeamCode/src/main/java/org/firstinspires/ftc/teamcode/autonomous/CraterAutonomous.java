@@ -44,8 +44,8 @@ public class CraterAutonomous extends BaseAutonomous implements CameraStream.Out
 
     private Profiler profiler = new Profiler();
 
-    private static final boolean DROP = false;
-    private static final boolean DROP_WAIT = true;
+    private static final boolean DROP = true;
+    private static final boolean DROP_WAIT = false;
 
     @Override
     public void initialize() throws InterruptedException

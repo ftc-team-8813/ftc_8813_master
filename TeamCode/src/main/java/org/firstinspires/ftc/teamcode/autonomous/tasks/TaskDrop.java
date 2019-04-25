@@ -31,7 +31,7 @@ public class TaskDrop implements Task
         Thread respooler = new Thread(new Respooler(), "Pullup Respooler Thread");
         respooler.setDaemon(true);
         BaseAutonomous.instance().addThread(respooler);
-        respooler.start();
+        // respooler.start();
     }
 
     private class Respooler implements Runnable
