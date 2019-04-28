@@ -127,7 +127,10 @@ public class MainTeleOp extends OpMode
 //            robot.dunkLiftController.hold(robot.lift_up);
 //        }
         double liftPower = gamepad2.right_trigger - gamepad2.left_trigger;
-        robot.dunkLift.setPower(liftPower);
+        if (liftPower >= 0 || ( !robot.liftLimitDown.pressed() && robot.dunkLift.getCurrentPosition() > -100))
+            robot.dunkLift.setPower(liftPower);
+        else
+            robot.dunkLift.setPower(0);
         profiler.end();
 
         profiler.start("drivePullup()");
@@ -150,7 +153,7 @@ public class MainTeleOp extends OpMode
 
         profiler.start("dunk()");
         if (robot.liftLimitDown.pressing()) robot.dunk.setPosition(robot.dunk_min);
-        if (robot.intakeExtController.getCurrentPosition() < 100 && robot.dunkLift.getCurrentPosition() < 200)
+        if (robot.intakeExtController.getCurrentPosition() < 300 && robot.liftLimitDown.pressed())
             robot.dunk.setPosition(robot.dunk_min);
         if (buttonHelper_1.pressing(ButtonHelper.b) && !robot.liftLimitDown.pressed())
         {
@@ -164,7 +167,7 @@ public class MainTeleOp extends OpMode
                 scheduler.add("Pull Back Dunk",750, () -> robot.dunk.setPosition(robot.dunk_up));
             }
         }
-        profiler.end();
+    profiler.end();
 
         profiler.start("hook()");
         if (buttonHelper_2.pressing(ButtonHelper.x))

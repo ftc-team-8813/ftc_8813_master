@@ -99,13 +99,16 @@ public class TaskBasicSample implements Task
         Thread.sleep(100);
         robot.intakePivot.setPosition(robot.pivot_down);
         if (Math.abs(robot.imu.getHeading()) > 15) robot.forward(5, 0.6);
-        robot.intake.setPower(-0.85);
+        robot.intake.setPower(0.85);
         Thread.sleep(800);
         if (Math.abs(robot.imu.getHeading()) > 15) robot.reverse(5, 0.6);
         Thread.sleep(250);
-        robot.dunk.setPosition(robot.dunk_up);
         robot.intakePivot.setPosition(robot.pivot_up);
-        Thread.sleep(250);
+        for (double v = robot.dunk_min; v < robot.dunk_up; v += 0.05)
+        {
+            robot.dunk.setPosition(v);
+            Thread.sleep(10);
+        }
         robot.intakeExtController.hold(0);
         robot.intake.setPower(0);
         Thread.sleep(750);
