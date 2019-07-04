@@ -71,28 +71,14 @@ public class WebcamTest extends LinearOpMode
     {
         final FtcRobotControllerActivity activity = (FtcRobotControllerActivity) AppUtil.getInstance().getActivity();
         view = new FrameView(activity);
-        activity.runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                activity.cameraMonitorLayout.addView(view);
-            }
-        });
+        activity.runOnUiThread(() -> activity.cameraMonitorLayout.addView(view));
         camera.startStreaming(view);
     }
 
     private void removeFrameView()
     {
         final FtcRobotControllerActivity activity = (FtcRobotControllerActivity) AppUtil.getInstance().getActivity();
-        activity.runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                activity.cameraMonitorLayout.removeView(view);
-            }
-        });
+        activity.runOnUiThread(() -> activity.cameraMonitorLayout.removeView(view));
     }
 
     private class FrameView extends ImageView implements Webcam.FrameCallback

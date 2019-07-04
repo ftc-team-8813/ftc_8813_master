@@ -72,15 +72,11 @@ public class CameraStream
         FtcRobotControllerActivity rc = (FtcRobotControllerActivity) activity;
         final LinearLayout cameraLayout = rc.cameraMonitorLayout;
         uiRunning = true;
-        activity.runOnUiThread(new Runnable()
+        activity.runOnUiThread(() ->
         {
-            @Override
-            public void run()
-            {
-                cameraView.disableView();
-                cameraLayout.removeView(cameraView);
-                uiRunning = false;
-            }
+            cameraView.disableView();
+            cameraLayout.removeView(cameraView);
+            uiRunning = false;
         });
     }
     
@@ -153,17 +149,13 @@ public class CameraStream
         FtcRobotControllerActivity rc = (FtcRobotControllerActivity) activity;
         final LinearLayout cameraLayout = rc.cameraMonitorLayout;
         uiRunning = true;
-        activity.runOnUiThread(new Runnable()
+        activity.runOnUiThread(() ->
         {
-            @Override
-            public void run()
-            {
-                cameraView = new JavaCameraView(activity, JavaCameraView.CAMERA_ID_BACK);
-                cameraView.setVisibility(View.INVISIBLE);
-                //cameraView.setRotation(90);
-                cameraLayout.addView(cameraView);
-                uiRunning = false;
-            }
+            cameraView = new JavaCameraView(activity, JavaCameraView.CAMERA_ID_BACK);
+            cameraView.setVisibility(View.INVISIBLE);
+            //cameraView.setRotation(90);
+            cameraLayout.addView(cameraView);
+            uiRunning = false;
         });
         while (uiRunning)
         {

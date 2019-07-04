@@ -156,14 +156,7 @@ public class Webcam
 
                 CameraCaptureSequenceId sequenceId = session.startCapture(request,
                         new CaptureCallback(request),
-                        Continuation.create(executor, new CameraCaptureSession.StatusCallback()
-                        {
-                            @Override
-                            public void onCaptureSequenceCompleted(@NonNull CameraCaptureSession session, CameraCaptureSequenceId cameraCaptureSequenceId, long lastFrameNumber)
-                            {
-                                log.d("Capture sequence completed");
-                            }
-                        }));
+                        Continuation.create(executor, (session1, cameraCaptureSequenceId, lastFrameNumber) -> log.d("Capture sequence completed")));
             } catch (CameraException e)
             {
                 log.e("Error creating capture request");

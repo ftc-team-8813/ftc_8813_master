@@ -25,9 +25,6 @@ public class WebcamStreamTest extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
         WebcamStream stream = new WebcamStream();
-        ShapeGoldDetector detector = new ShapeGoldDetector();
-        stream.addListener(detector);
-        stream.addModifier(detector);
         waitForStart();
         while (opModeIsActive()) Thread.sleep(5);
         stream.stop();

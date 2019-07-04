@@ -103,28 +103,14 @@ public class WebcamStream extends CameraStream
     {
         final FtcRobotControllerActivity activity = (FtcRobotControllerActivity) AppUtil.getInstance().getActivity();
         view = new WebcamStream.FrameView(activity);
-        activity.runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                activity.cameraMonitorLayout.addView(view);
-            }
-        });
+        activity.runOnUiThread(() -> activity.cameraMonitorLayout.addView(view));
         camera.startStreaming(view);
     }
 
     private void removeFrameView()
     {
         final FtcRobotControllerActivity activity = (FtcRobotControllerActivity) AppUtil.getInstance().getActivity();
-        activity.runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                activity.cameraMonitorLayout.removeView(view);
-            }
-        });
+        activity.runOnUiThread(() -> activity.cameraMonitorLayout.removeView(view));
         view.onRemove();
     }
 
@@ -166,14 +152,7 @@ public class WebcamStream extends CameraStream
 
             final Bitmap outFrame = Bitmap.createBitmap(out.width(), out.height(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(mat, outFrame);
-            activity.runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    setImageBitmap(outFrame);
-                }
-            });
+            activity.runOnUiThread(() -> setImageBitmap(outFrame));
         }
 
         void onRemove()

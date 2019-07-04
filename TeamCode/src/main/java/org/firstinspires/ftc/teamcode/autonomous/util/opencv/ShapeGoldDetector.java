@@ -23,7 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Shape-based mineral detector and tracker.
+ * Shape-based mineral detector and tracker. This is being kept in the repository as a sample
+ * CameraStream listener.
  * <h3>1: How it works</h3>
  * The detector uses several criteria to detect gold minerals:
  * <ol>
