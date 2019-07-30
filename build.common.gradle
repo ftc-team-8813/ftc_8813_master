@@ -97,7 +97,7 @@ android {
 
     sourceSets.main {
         jni.srcDirs = []
-        jniLibs.srcDir rootProject.file('libs')
+        jniLibs.srcDirs rootProject.file('libs'), rootProject.file('OpenCV-android-sdk/sdk/native/libs')
     }
 }
 
