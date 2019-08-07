@@ -21,6 +21,8 @@ public class AMSEncoder
     private long prevSampleTime = 0;
     private int rotations = 0;
 
+    private int zeroPos = 0;
+
     private class Timeout
     {
         private Thread toInterrupt;
@@ -98,41 +100,40 @@ public class AMSEncoder
         device.setReadWindow(
                 new I2cDeviceSynch.ReadWindow(0xFE, 2, I2cDeviceSynch.ReadMode.REPEAT)
         );
-        prevAngle = getAngle();
+
+        device.write8(0x16, 0);
+        device.write8(0x17, 0);
     }
 
     public void resetEncoder()
     {
         if (error) return;
-        device.write8(0x16, 0);
-        device.write8(0x17, 0);
 
-        int angle = getRawAngle();
-        device.write8(0x16, (angle >> 6) & 0xFF);
-        device.write8(0x17, angle & 0x3F);
-
-        prevAngle = 0;
+        zeroPos = getRawAngle();
         rotations = 0;
     }
 
     public int getRawAngle()
     {
         if (error) return -1;
-        byte[] data = device.read(0xFE, 2);
-        return (((int)data[0] & 0xFF) << 8) + ((int)data[1] & 0xFF);
+        // byte[] data = device.read(0xFE, 2);
+        int msb = device.read8(0xFF);
+        int lsb = device.read8(0xFE);
+        // log.v("Should be 2 bytes: " + data.length);
+        return ((msb & 0xFF) << 6) + (lsb & 0x3F);
     }
 
     public double getAngle()
     {
         if (error) return -1;
-        double angle = (double)(getRawAngle() * 360) / 0xFFFF;
+        double angle = (double)((getRawAngle() - zeroPos) * 360) / 0x3FFF;
         long elapsed = System.currentTimeMillis() - prevSampleTime;
 
-        if (elapsed < 50)
+        if (elapsed < 100)
         {
-            if (Math.abs(angle - prevAngle) > 270)
+            if (Math.abs(angle - prevAngle) > 180)
             {
-                rotations += Math.signum(angle - prevAngle);
+                rotations += Math.signum(prevAngle - angle);
             }
         }
         else
@@ -154,5 +155,10 @@ public class AMSEncoder
     public int getRotations()
     {
         return rotations;
+    }
+
+    public boolean error()
+    {
+        return error;
     }
 }

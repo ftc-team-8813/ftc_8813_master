@@ -186,7 +186,7 @@ public abstract class BaseAutonomous extends LinearOpMode
             //Clear the persistent objects since this would be a new round in competition
             Persistent.clear();
             
-            TelemetryWrapper.init(telemetry, 0);
+            // TelemetryWrapper.init(telemetry, 0);
             
             //Set the current instance
             instance = this;
