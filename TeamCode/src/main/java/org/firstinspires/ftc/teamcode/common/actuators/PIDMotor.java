@@ -1,21 +1,23 @@
-package org.firstinspires.ftc.teamcode.common.util;
+package org.firstinspires.ftc.teamcode.common.actuators;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.DataLogger;
+import org.firstinspires.ftc.teamcode.common.util.Logger;
+import org.firstinspires.ftc.teamcode.common.util.PIDController;
+import org.firstinspires.ftc.teamcode.common.util.Utils;
 import org.firstinspires.ftc.teamcode.common.util.concurrent.ResettableCountDownLatch;
 
 import java.io.Closeable;
 import java.io.File;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * DC motor controller. Replacement for the buggy built-in REV motor controller.
+ * DC motor controller. Replacement for the non-configurable built-in REV motor controller.
  */
 
-public class MotorController implements Closeable
+public class PIDMotor implements Closeable
 {
     /*
     Internal motor controller. Runs in parallel with the main controller.
@@ -41,7 +43,11 @@ public class MotorController implements Closeable
 
         private double last_speed;
 
-        private ResettableCountDownLatch latch = new ResettableCountDownLatch(1);
+        // Notifies the main thread when hold/stop hold instructions are carried out
+        private ResettableCountDownLatch stopWaitLatch = new ResettableCountDownLatch(1);
+        
+        // Allows the controller thread to wait indefinitely until it needs to hold
+        private ResettableCountDownLatch holdLatch = new ResettableCountDownLatch(1);
         
         ParallelController(DcMotor motor, int deadband, boolean noReset)
         {
@@ -69,23 +75,13 @@ public class MotorController implements Closeable
         public void run()
         {
             log.i("Starting!");
-            try
-            {
-                // Stagger the thread run-times to avoid blocking the processor at regular intervals
-                Thread.sleep(2 * motor.getPortNumber());
-            }
-            catch (InterruptedException e)
-            {
-                return;
-            }
             while (true)
             {
                 if (holding)
                 {
-                    if (stopping) latch.countDown(); // Notify the waiting thread that we're holding now
+                    if (stopping) stopWaitLatch.countDown(); // Notify the waiting thread that we're holding now
                     stopping = false;
                     if (!holdStalled && controller.getDerivative() == 0
-                            && Math.abs(controller.getError()) > deadband
                             && Math.abs(motor.getPower()) > 0.6)
                     {
                         if (stall_begin == 0)
@@ -121,6 +117,19 @@ public class MotorController implements Closeable
                         motor.setPower(speed);
                     }
                     controller.integrate(speed); // I think this is what they mean by integrating the feed-forward
+                    
+                    // Delay
+                    try
+                    {
+                        Thread.sleep(10);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        motor.setPower(0);
+                        controller.resetIntegrator();
+                        datalogger.close();
+                        return;
+                    }
                 } else
                 {
                     if (!stopping)
@@ -129,7 +138,20 @@ public class MotorController implements Closeable
                         stopping = true;
                         motor.setPower(0);
                         controller.resetIntegrator();
-                        latch.countDown();
+                        stopWaitLatch.countDown();
+                    }
+                    holdLatch.reset();
+                    try
+                    {
+                        log.d("Waiting for a hold command");
+                        holdLatch.await();
+                        log.d("Hold command received; starting");
+                    } catch (InterruptedException e)
+                    {
+                        motor.setPower(0);
+                        controller.resetIntegrator();
+                        datalogger.close();
+                        return;
                     }
                 }
 
@@ -145,17 +167,7 @@ public class MotorController implements Closeable
                 datalogger.log(data);
                 */
 
-                try
-                {
-                    Thread.sleep(10);
-                }
-                catch (InterruptedException e)
-                {
-                    motor.setPower(0);
-                    controller.resetIntegrator();
-                    datalogger.close();
-                    return;
-                }
+                
             }
         }
 
@@ -188,9 +200,10 @@ public class MotorController implements Closeable
             if (!holding)
             {
                 log.d("Holding position @ power = %.4f", power);
-                latch.reset();
+                stopWaitLatch.reset();
                 holding = true;
-                try { latch.await(); } catch (InterruptedException e) {}
+                holdLatch.countDown(); // Start up the parallel thread again
+                try { stopWaitLatch.await(); } catch (InterruptedException e) {}
             }
         }
         
@@ -199,9 +212,9 @@ public class MotorController implements Closeable
             if (holding)
             {
                 log.d("Stop holding position");
-                latch.reset();
+                stopWaitLatch.reset();
                 holding = false;
-                try { latch.await(); } catch (InterruptedException e) {}
+                try { stopWaitLatch.await(); } catch (InterruptedException e) {}
                 log.d("Stopped holding position");
             }
         }
@@ -271,7 +284,7 @@ public class MotorController implements Closeable
     /* Whether or not the controller has been closed */
     private boolean closed = false;
     
-    private MotorController(ParallelController controller, double[] constants)
+    private PIDMotor(ParallelController controller, double[] constants)
     {
         this.controller = controller;
         controller.setPIDConstants(constants);
@@ -280,46 +293,55 @@ public class MotorController implements Closeable
         thread.start();
     }
 
-    public static class MotorControllerFactory
+    public static class PIDMotorFactory
     {
         private DcMotor motor;
         private int deadband = 5;
         private double[] constants = new double[3];
         private boolean noReset = true;
 
-        public MotorControllerFactory(DcMotor motor)
+        public PIDMotorFactory(DcMotor motor)
         {
             this.motor = motor;
         }
 
-        public MotorControllerFactory setDeadband(int deadband)
+        public PIDMotorFactory setDeadband(int deadband)
         {
             this.deadband = deadband;
             return this;
         }
 
-        public MotorControllerFactory setConstants(double[] constants)
+        public PIDMotorFactory setConstants(double[] constants)
         {
             this.constants = constants;
             return this;
         }
 
-        public MotorControllerFactory setConstants(double kP, double kI, double kD)
+        public PIDMotorFactory setConstants(double kP, double kI, double kD)
         {
             this.constants = new double[] { kP, kI, kD };
             return this;
         }
 
-        public MotorControllerFactory resetEncoderOnInit(boolean reset)
+        public PIDMotorFactory resetEncoderOnInit(boolean reset)
         {
             this.noReset = !reset;
             return this;
         }
 
-        public MotorController create()
+        public PIDMotor create()
         {
-            return new MotorController(new ParallelController(motor, deadband, noReset), constants);
+            return new PIDMotor(new ParallelController(motor, deadband, noReset), constants);
         }
+    }
+    
+    /**
+     * Get the DcMotor that this PIDMotor is/was controlling
+     * @return The underlying DcMotor, even if the controller is closed
+     */
+    public DcMotor getMotor()
+    {
+        return controller.motor;
     }
     
     /**
@@ -490,6 +512,18 @@ public class MotorController implements Closeable
     {
         if (closed) throw new IllegalStateException("Motor controller closed");
         controller.setReverse(reverse);
+    }
+    
+    /**
+     * Alias for {@link #setReverse} that takes a Direction argument instead of a boolean.
+     *
+     * @param direction If REVERSE, this function reverses the motor direction from the default.
+     *                Otherwise, it will reset the direction to the default.
+     * @throws IllegalArgumentException if the motor controller has been closed
+     */
+    public void setDirection(DcMotorSimple.Direction direction)
+    {
+        setReverse(direction == DcMotorSimple.Direction.REVERSE);
     }
     
     /**

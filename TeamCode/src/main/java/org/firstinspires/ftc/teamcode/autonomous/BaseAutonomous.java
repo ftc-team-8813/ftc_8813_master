@@ -141,7 +141,7 @@ public abstract class BaseAutonomous extends LinearOpMode
 
     private Interrupter interrupter;
 
-    public final void addThread(Thread t)
+    public final void addThreadToInterrupt(Thread t)
     {
         if (interrupter == null)
         {

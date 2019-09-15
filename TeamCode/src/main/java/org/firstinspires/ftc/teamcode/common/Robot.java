@@ -1,32 +1,13 @@
 package org.firstinspires.ftc.teamcode.common;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.common.sensors.RangeSensor;
-import org.firstinspires.ftc.teamcode.common.util.DataStorage;
-import org.firstinspires.ftc.teamcode.common.util.MotorController;
+import org.firstinspires.ftc.teamcode.common.actuators.PIDMotor;
+import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
 import org.firstinspires.ftc.teamcode.common.util.Config;
-import org.firstinspires.ftc.teamcode.common.util.DataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
-import org.firstinspires.ftc.teamcode.common.util.Persistent;
-import org.firstinspires.ftc.teamcode.common.sensors.IMU;
-import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Robot -- a container for all of the robot hardware interfaces
@@ -35,9 +16,13 @@ public class Robot
 {
     // Motors
 
-    // PID controllers
+    // PID-controlled motors
 
     // Servos
+    
+    // Actuators
+    public final SwerveWheel frontWheel;
+    public final SwerveWheel backWheel;
 
     // Sensors
 
@@ -65,18 +50,49 @@ public class Robot
         this.config = config;
         // Motors
 
+        
         // PID controllers
 
+        
         // Servos
+        
+        
+        // Actuators
+        
+        
+        // Swerve wheels
+        DcMotor w1upper = hardwareMap.dcMotor.get("front upper");
+        DcMotor w1lower = hardwareMap.dcMotor.get("front lower");
+        DcMotor w2upper = hardwareMap.dcMotor.get("back upper");
+        DcMotor w2lower = hardwareMap.dcMotor.get("back lower");
+        
+        // FIXME Add PID constants
+        PIDMotor front_up_pid =
+                new PIDMotor.PIDMotorFactory(w1upper).setConstants(new double[] {0, 0, 0}).create();
+        PIDMotor front_low_pid =
+                new PIDMotor.PIDMotorFactory(w1lower).setConstants(new double[] {0, 0, 0}).create();
+        PIDMotor back_up_pid =
+                new PIDMotor.PIDMotorFactory(w2upper).setConstants(new double[] {0, 0, 0}).create();
+        PIDMotor back_low_pid =
+                new PIDMotor.PIDMotorFactory(w2lower).setConstants(new double[] {0, 0, 0}).create();
+        
+        
+        frontWheel = new SwerveWheel(front_up_pid, front_low_pid);
+        backWheel = new SwerveWheel(back_up_pid, back_low_pid);
 
+        
         // Sensors
 
+        
         // Constants
 
+        
         // Other
 
+        
         // Reverse motors as necessary
 
+        
         // Reset encoders
         for (String name : Utils.allDeviceNames(hardwareMap.dcMotor))
         {
