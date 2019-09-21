@@ -1,20 +1,20 @@
-package org.firstinspires.ftc.teamcode.teleop.util;
+package org.firstinspires.ftc.teamcode.teleop;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.common.Robot;
-import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.teleop.BaseTeleOp;
+import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 
 @TeleOp(name="Swerve Test/Calibration")
-public class SwerveTest extends OpMode
+public class SwerveTest extends BaseTeleOp
 {
-    private Robot robot;
     private final String[] modes =
             {
                     "Direct Drive",
                     "Forward Only",
-                    "Turn Only"
+                    "Turn Only",
+                    "90 degree increments"
             };
     private final String[][] descriptions =
             {
@@ -34,11 +34,13 @@ public class SwerveTest extends OpMode
             };
     private int mode = 0;
     private ButtonHelper buttons;
+    private int horiz_dist = 0;
+    private int vert_dist = 0;
     
     @Override
     public void init()
     {
-        robot = Robot.initialize(hardwareMap, new Config(Config.configFile));
+        super.init();
         buttons = new ButtonHelper(gamepad1);
     }
     
@@ -67,6 +69,30 @@ public class SwerveTest extends OpMode
                 robot.backWheel.drive(-gamepad1.right_stick_y, -gamepad1.right_stick_y);
                 break;
             }
+            case 3:
+            {
+                if (buttons.pressing(ButtonHelper.a))
+                {
+                    vert_dist--;
+                    robot.frontWheel.moveAsync(horiz_dist * 360 + vert_dist * 75, horiz_dist * 360 - vert_dist * 75, 0.5);
+                }
+                else if (buttons.pressing(ButtonHelper.y))
+                {
+                    vert_dist++;
+                    robot.frontWheel.moveAsync(horiz_dist * 360 + vert_dist * 75, horiz_dist * 360 - vert_dist * 75, 0.5);
+                }
+                else if (buttons.pressing(ButtonHelper.b))
+                {
+                    horiz_dist++;
+                    robot.frontWheel.moveAsync(horiz_dist * 360 + vert_dist * 75, horiz_dist * 360 - vert_dist * 75, 0.5);
+                }
+                else if (buttons.pressing(ButtonHelper.x))
+                {
+                    horiz_dist--;
+                    robot.frontWheel.moveAsync(horiz_dist * 360 + vert_dist * 75, horiz_dist * 360 - vert_dist * 75, 0.5);
+                }
+                break;
+            }
         }
     }
     
@@ -89,6 +115,7 @@ public class SwerveTest extends OpMode
         telemetry.clearAll();
         telemetry.addData("Front wheel", "%d, %d", robot.frontWheel.getUpperPos(), robot.frontWheel.getLowerPos());
         telemetry.addData("Rear wheel", "%d, %d", robot.backWheel.getUpperPos(), robot.backWheel.getLowerPos());
+        telemetry.addData("hd, vd", "%d, %d", horiz_dist, vert_dist);
         telemetry.addData("Mode", modes[mode]);
     }
     

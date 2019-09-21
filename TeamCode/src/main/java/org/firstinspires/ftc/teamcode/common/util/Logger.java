@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.util;
 
+import com.qualcomm.robotcore.util.RobotLog;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -127,6 +129,7 @@ public class Logger
         {
             String base = base(level);
             writer.println(base + String.format(fmt, args));
+            RobotLog.dd(tag, String.format(fmt, args));
         }
     }
 

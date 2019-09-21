@@ -17,11 +17,10 @@ import java.io.IOException;
 /**
  * Main driver control
  */
-@TeleOp(name="Driver Control")
-public class MainTeleOp extends OpMode
+public abstract class BaseTeleOp extends OpMode
 {
-    private Robot robot;
-    private Logger log;
+    protected Robot robot;
+    protected Logger log;
     
     @Override
     public void init()
@@ -32,10 +31,7 @@ public class MainTeleOp extends OpMode
     }
 
     @Override
-    public void loop()
-    {
-
-    }
+    public abstract void loop();
 
     @Override
     public void stop()

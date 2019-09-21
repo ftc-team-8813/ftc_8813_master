@@ -35,6 +35,15 @@ public class SwerveWheel
         }
     }
     
+    public void moveAsync(int encUpper, int encLower, double power)
+    {
+        upper.setPower(power);
+        lower.setPower(power);
+    
+        upper.startRunToPosition(encUpper);
+        lower.startRunToPosition(encLower);
+    }
+    
     public void drive(double pUpper, double pLower)
     {
         upper.getMotor().setPower(pUpper);

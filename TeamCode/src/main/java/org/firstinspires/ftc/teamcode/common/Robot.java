@@ -66,15 +66,10 @@ public class Robot
         DcMotor w2upper = hardwareMap.dcMotor.get("back upper");
         DcMotor w2lower = hardwareMap.dcMotor.get("back lower");
         
-        // FIXME Add PID constants
-        PIDMotor front_up_pid =
-                new PIDMotor.PIDMotorFactory(w1upper).setConstants(new double[] {0, 0, 0}).create();
-        PIDMotor front_low_pid =
-                new PIDMotor.PIDMotorFactory(w1lower).setConstants(new double[] {0, 0, 0}).create();
-        PIDMotor back_up_pid =
-                new PIDMotor.PIDMotorFactory(w2upper).setConstants(new double[] {0, 0, 0}).create();
-        PIDMotor back_low_pid =
-                new PIDMotor.PIDMotorFactory(w2lower).setConstants(new double[] {0, 0, 0}).create();
+        PIDMotor front_up_pid = new PIDMotor(w1upper);
+        PIDMotor front_low_pid = new PIDMotor(w1upper);
+        PIDMotor back_up_pid = new PIDMotor(w1upper);;
+        PIDMotor back_low_pid = new PIDMotor(w1upper);
         
         
         frontWheel = new SwerveWheel(front_up_pid, front_low_pid);

@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Persistent;
+import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
 import org.opencv.android.OpenCVLoader;
 
 import java.io.IOException;
@@ -182,6 +183,9 @@ public abstract class BaseAutonomous extends LinearOpMode
             Thread interrupterThread = new Thread(interrupter, "BaseAutonomous interrupter");
             interrupterThread.setDaemon(true);
             interrupterThread.start();
+            
+            // Create our global thread pool for future threads
+            GlobalThreadPool.initialize(10, this);
             
             //Clear the persistent objects since this would be a new round in competition
             Persistent.clear();

@@ -1,338 +1,53 @@
 package org.firstinspires.ftc.teamcode.common.actuators;
 
+import com.qualcomm.hardware.lynx.LynxDcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.PIDController;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
+import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
 import org.firstinspires.ftc.teamcode.common.util.concurrent.ResettableCountDownLatch;
 
 import java.io.Closeable;
 import java.io.File;
 
 /**
- * DC motor controller. Replacement for the non-configurable built-in REV motor controller.
+ * Wrapper for the built-in DC motor controller; breaks out more functionality than DcMotor.
  */
 
 public class PIDMotor implements Closeable
 {
-    /*
-    Internal motor controller. Runs in parallel with the main controller.
-     */
-    protected static class ParallelController implements Runnable
+    
+    private DcMotor motor;
+    private LynxDcMotorController controller;
+    private int port;
+    
+    private int deadband = 10; // For checking if the motor is busy
+    
+    private double power = 0;
+    
+    public PIDMotor(DcMotor motor)
     {
+        this.motor = motor;
+        DcMotorController controller = motor.getController();
+        if (!(controller instanceof LynxDcMotorController))
+        {
+            throw new IllegalArgumentException("PIDMotor only works with the REV motor controller!");
+        }
+        this.controller = (LynxDcMotorController)motor.getController();
         
-        protected volatile double power = 1;
-        protected volatile double minPower = -1, maxPower = 1;
-        protected Logger log;
-        protected volatile boolean holding = false;
-        protected volatile boolean stopNearTarget = false;
-        protected volatile boolean holdStalled = true;
-        protected DcMotor motor;
-        protected Runnable atTarget;
-        private boolean stopping;
-        protected PIDController controller;
-        
-        private long stall_begin;
-        private DataLogger datalogger;
-        
-        public final int deadband;
-
-        private double last_speed;
-
-        // Notifies the main thread when hold/stop hold instructions are carried out
-        private ResettableCountDownLatch stopWaitLatch = new ResettableCountDownLatch(1);
-        
-        // Allows the controller thread to wait indefinitely until it needs to hold
-        private ResettableCountDownLatch holdLatch = new ResettableCountDownLatch(1);
-        
-        ParallelController(DcMotor motor, int deadband, boolean noReset)
-        {
-            this.deadband = deadband;
-            log = new Logger("Motor " + motor.getPortNumber() + " Controller");
-            log.d("Initializing!");
-            this.motor = motor;
-            if (!noReset)
-            {
-                motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            }
-            controller = new PIDController(0, 0, 0, false);
-            datalogger = new DataLogger(
-                    new File(Config.storageDir + "pidLog_motor" + motor.getPortNumber() + ".dat"),
-                    new DataLogger.Channel("target",   0xFFFF00),
-                    new DataLogger.Channel("position", 0x00FF00),
-                    new DataLogger.Channel("error",    0xFF0000),
-                    new DataLogger.Channel("integral", 0x7F00FF),
-                    new DataLogger.Channel("deriv",    0x00FFFF),
-                    new DataLogger.Channel("output",   0xFFFFFF));
-        }
-        
-        @Override
-        public void run()
-        {
-            log.i("Starting!");
-            while (true)
-            {
-                if (holding)
-                {
-                    if (stopping) stopWaitLatch.countDown(); // Notify the waiting thread that we're holding now
-                    stopping = false;
-                    if (!holdStalled && controller.getDerivative() == 0
-                            && Math.abs(motor.getPower()) > 0.6)
-                    {
-                        if (stall_begin == 0)
-                        {
-                            stall_begin = System.currentTimeMillis();
-                        } else if (System.currentTimeMillis() > stall_begin + 2000)
-                        {
-                            setTarget(getCurrentPosition() - (int)Math.signum(motor.getPower()) * 50);
-                            stopNearTarget = false;
-                        }
-                    } else
-                    {
-                        stall_begin = 0;
-                    }
-
-                    double speed = controller.process(getCurrentPosition());
-                    speed = Utils.constrain(speed, -1, 1) * power;
-                    speed = Utils.constrain(speed, minPower, maxPower);
-                    if (Math.abs(controller.getError()) < deadband && Math.abs(controller.getDerivative()) < 2)
-                    {
-                        if (stopNearTarget)
-                        {
-                            stopHolding();
-                            stopNearTarget = false;
-                        }
-                        speed = 0;
-                        controller.resetIntegrator();
-                        if (atTarget != null) atTarget.run();
-                    }
-                    if (speed != last_speed)
-                    {
-                        last_speed = speed;
-                        motor.setPower(speed);
-                    }
-                    controller.integrate(speed); // I think this is what they mean by integrating the feed-forward
-                    
-                    // Delay
-                    try
-                    {
-                        Thread.sleep(10);
-                    }
-                    catch (InterruptedException e)
-                    {
-                        motor.setPower(0);
-                        controller.resetIntegrator();
-                        datalogger.close();
-                        return;
-                    }
-                } else
-                {
-                    if (!stopping)
-                    {
-                        log.d("Stopping motor controller");
-                        stopping = true;
-                        motor.setPower(0);
-                        controller.resetIntegrator();
-                        stopWaitLatch.countDown();
-                    }
-                    holdLatch.reset();
-                    try
-                    {
-                        log.d("Waiting for a hold command");
-                        holdLatch.await();
-                        log.d("Hold command received; starting");
-                    } catch (InterruptedException e)
-                    {
-                        motor.setPower(0);
-                        controller.resetIntegrator();
-                        datalogger.close();
-                        return;
-                    }
-                }
-
-                /*
-                double[] data = {
-                        getTarget(),
-                        getCurrentPosition(),
-                        controller.getError(),
-                        controller.getIntegral(),
-                        controller.getDerivative(),
-                        controller.getOutput()
-                };
-                datalogger.log(data);
-                */
-
-                
-            }
-        }
-
-        void startLogging()
-        {
-            datalogger.startClip();
-        }
-        
-        void setTarget(int target)
-        {
-            if (controller.getTarget() != target)
-            {
-                log.d("Position set to %d", target);
-                controller.setTarget(target);
-            }
-        }
-
-        void runAtTarget(Runnable atTarget)
-        {
-            this.atTarget = atTarget;
-        }
-        
-        int getTarget()
-        {
-            return (int)controller.getTarget();
-        }
-        
-        void hold()
-        {
-            if (!holding)
-            {
-                log.d("Holding position @ power = %.4f", power);
-                stopWaitLatch.reset();
-                holding = true;
-                holdLatch.countDown(); // Start up the parallel thread again
-                try { stopWaitLatch.await(); } catch (InterruptedException e) {}
-            }
-        }
-        
-        void stopHolding()
-        {
-            if (holding)
-            {
-                log.d("Stop holding position");
-                stopWaitLatch.reset();
-                holding = false;
-                try { stopWaitLatch.await(); } catch (InterruptedException e) {}
-                log.d("Stopped holding position");
-            }
-        }
-
-        boolean isHolding()
-        {
-            return holding;
-        }
-        
-        void stopWhenComplete(boolean stopNearTarget)
-        {
-            this.stopNearTarget = stopNearTarget;
-        }
-        
-        int getCurrentPosition()
-        {
-            return motor.getCurrentPosition();
-        }
-        
-        boolean nearTarget(int error)
-        {
-            return Math.abs(controller.getError()) <= error;
-        }
-        
-        double[] getPIDConstants()
-        {
-            return controller.getPIDConstants();
-        }
-        
-        void setPIDConstants(double kP, double kI, double kD)
-        {
-            if (controller.getPIDConstants()[0] != kP ||
-                controller.getPIDConstants()[1] != kI ||
-                controller.getPIDConstants()[2] != kD)
-            {
-                log.i("Updated PID constants to kP = %.4f, kI = %.4f, kD = %.4f", kP, kI, kD);
-            }
-            controller.setPIDConstants(kP, kI, kD);
-        }
-        
-        void setPIDConstants(double[] constants)
-        {
-            setPIDConstants(constants[0], constants[1], constants[2]);
-        }
-        
-        void setReverse(boolean reverse)
-        {
-            motor.setDirection(reverse ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
-        }
-
-        void constrainPower(double minPower, double maxPower)
-        {
-            this.minPower = minPower;
-            this.maxPower = maxPower;
-        }
-
-        PIDController getInternalController()
-        {
-            return controller;
-        }
     }
     
-    /* Thread that runs the ParallelControler */
-    private Thread thread;
-    /* The ParallelController */
-    protected ParallelController controller;
-    /* Whether or not the controller has been closed */
-    private boolean closed = false;
-    
-    private PIDMotor(ParallelController controller, double[] constants)
+    public void setDeadband(int deadband)
     {
-        this.controller = controller;
-        controller.setPIDConstants(constants);
-        // Create the motor controller thread
-        thread = new Thread(controller, "Motor " + controller.motor.getPortNumber() + " controller thread");
-        thread.start();
-    }
-
-    public static class PIDMotorFactory
-    {
-        private DcMotor motor;
-        private int deadband = 5;
-        private double[] constants = new double[3];
-        private boolean noReset = true;
-
-        public PIDMotorFactory(DcMotor motor)
-        {
-            this.motor = motor;
-        }
-
-        public PIDMotorFactory setDeadband(int deadband)
-        {
-            this.deadband = deadband;
-            return this;
-        }
-
-        public PIDMotorFactory setConstants(double[] constants)
-        {
-            this.constants = constants;
-            return this;
-        }
-
-        public PIDMotorFactory setConstants(double kP, double kI, double kD)
-        {
-            this.constants = new double[] { kP, kI, kD };
-            return this;
-        }
-
-        public PIDMotorFactory resetEncoderOnInit(boolean reset)
-        {
-            this.noReset = !reset;
-            return this;
-        }
-
-        public PIDMotor create()
-        {
-            return new PIDMotor(new ParallelController(motor, deadband, noReset), constants);
-        }
+        this.deadband = deadband;
     }
     
     /**
@@ -341,83 +56,70 @@ public class PIDMotor implements Closeable
      */
     public DcMotor getMotor()
     {
-        return controller.motor;
+        return motor;
     }
     
     /**
-     * Start holding a position. Returns immediately.
+     * Start holding a position. Returns immediately. Since the default power is zero, this function
+     * won't do anything until {@link #setPower(double) } is called.
      *
      * @param position The position to hold
-     * @throws IllegalStateException if the motor controller has been closed
      * @see #stopHolding()
      * @see #runToPosition(int)
      * @see #runToPosition(int, boolean)
      */
     public void hold(int position)
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        controller.stopWhenComplete(false);
-        controller.setTarget(position);
-        controller.hold();
+        controller.setMotorMode(port, DcMotor.RunMode.RUN_TO_POSITION);
+        controller.setMotorTargetPosition(port, position, deadband);
     }
     
     /**
      * Set the maximum absolute power which can be attained when trying to hold a position.
-     * Constrained between 0 and 1.
+     * Takes the absolute value of the input, so a power of -1 would be the same as a power of 1.
      *
      * @param power The maximum power
-     * @throws IllegalStateException if the motor controller has been closed
      */
     public void setPower(double power)
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        controller.power = Utils.constrain(power, 0, 1);
+        controller.setMotorPower(port, power);
     }
     
     /**
      * Return the current position which the controller is trying to hold.
      *
      * @return The target position
-     * @throws IllegalStateException if the motor controller has been closed
      */
     public int getTargetPosition()
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        return controller.getTarget();
+        return controller.getMotorTargetPosition(port);
     }
     
     /**
      * Return the current position of the motor.
      *
      * @return The current position
-     * @throws IllegalStateException if the motor controller has been closed
      */
     public int getCurrentPosition()
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        return controller.getCurrentPosition();
+        return controller.getMotorCurrentPosition(port);
     }
     
     /**
      * Stop trying to keep at a certain position.
-     *
-     * @throws IllegalStateException if the motor controller has been closed
      */
     public void stopHolding()
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        controller.stopHolding();
+        controller.setMotorPower(port, 0);
+        controller.setMotorMode(port, DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     /**
      * Resume holding the last position that was set.
-     *
-     * @throws IllegalStateException if the motor controller has been closed
      */
     public void resumeHolding()
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        controller.hold();
+        controller.setMotorPower(port, power);
     }
     
     /**
@@ -427,13 +129,11 @@ public class PIDMotor implements Closeable
      * @param position The new position to drive to
      * @throws InterruptedException  if the thread is interrupted while waiting for the motor to
      *                               reach its target
-     * @throws IllegalStateException if the motor controller has been closed
      * @see #hold(int)
      * @see #runToPosition(int, boolean)
      */
     public void runToPosition(int position) throws InterruptedException
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
         runToPosition(position, true);
     }
     
@@ -446,14 +146,12 @@ public class PIDMotor implements Closeable
      * @param keepHolding Whether to stop the motor when it reaches its target
      * @throws InterruptedException  if the thread is interrupted while waiting for the motor to
      *                               reach its target
-     * @throws IllegalStateException if the motor controller has been closed
      * @see #runToPosition(int)
      */
     public void runToPosition(int position, boolean keepHolding) throws InterruptedException
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
         hold(position);
-        while (!controller.nearTarget(controller.deadband))
+        while (controller.isBusy(port))
         {
             Thread.sleep(10);
         }
@@ -464,39 +162,76 @@ public class PIDMotor implements Closeable
      * Start driving to a position. Does not hold the position once the target has been reached.
      *
      * @param position The position
+     * @throws NullPointerException if the GlobalThreadPool hasn't been initialized
      */
     public void startRunToPosition(int position)
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        controller.stopWhenComplete(true);
-        controller.setTarget(position);
-        controller.hold();
+        hold(position);
+        GlobalThreadPool.instance().start(() ->
+        {
+           while (controller.isBusy(port))
+           {
+               try
+               {
+                   Thread.sleep(10);
+               }
+               catch (InterruptedException e)
+               {
+                   break;
+               }
+           }
+           controller.setMotorPower(port, 0);
+        });
     }
     
     /**
-     * Get the current PID constants as an array of <code>[kP, kI, kD]</code>
+     * Get the current PIDF constants as an array of <code>[kP, kI, kD, kF]</code>
      *
-     * @return The current PID constants
-     * @throws IllegalStateException if the motor controller has been closed
+     * @param mode Use RUN_TO_POSITION to get the position PID constants and RUN_USING_ENCODER for
+     *             the velocity PID constants
+     *
+     * @return The current PIDF constants for the specified mode
+     */
+    public double[] getPIDConstants(DcMotor.RunMode mode)
+    {
+        PIDFCoefficients coeffs = controller.getPIDFCoefficients(port, mode);
+        return new double[] {coeffs.p, coeffs.i, coeffs.d, coeffs.f};
+    }
+    
+    /**
+     * Backwards compatibility. Returns the position PIDF constants
+     * @return The PIDF constants
      */
     public double[] getPIDConstants()
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        return controller.getPIDConstants();
+        return getPIDConstants(DcMotor.RunMode.RUN_TO_POSITION);
     }
     
     /**
-     * Set the PID constants
+     * Set the PID constants. For backward compatibility, this uses position mode and sets the F constant to zero.
+     * Use {@link #setPIDFConstants} if you do not want this.
      *
      * @param kP The proportional gain
      * @param kI The integral gain
      * @param kD The derivative gain
-     * @throws IllegalStateException if the motor controller has been closed
      */
     public void setPIDConstants(double kP, double kI, double kD)
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        controller.setPIDConstants(kP, kI, kD);
+        controller.setPIDCoefficients(port, DcMotor.RunMode.RUN_TO_POSITION, new PIDCoefficients(kP, kI, kD));
+    }
+    
+    /**
+     * Set the PIDF constants for the given mode (RUN_TO_POSITION or RUN_USING_ENCODER).
+     *
+     * @param mode The mode
+     * @param kP The proportional gain
+     * @param kI The integral gain
+     * @param kD The derivative gain
+     * @param kF The feed-forward gain
+     */
+    public void setPIDFConstants(DcMotor.RunMode mode, double kP, double kI, double kD, double kF)
+    {
+        controller.setPIDFCoefficients(port, mode, new PIDFCoefficients(kP, kI, kD, kF));
     }
     
     /**
@@ -506,12 +241,10 @@ public class PIDMotor implements Closeable
      *
      * @param reverse If true, this function reverses the motor direction from the default.
      *                Otherwise, it will reset the direction to the default.
-     * @throws IllegalArgumentException if the motor controller has been closed
      */
     public void setReverse(boolean reverse)
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        controller.setReverse(reverse);
+        motor.setDirection(reverse ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
     }
     
     /**
@@ -533,81 +266,77 @@ public class PIDMotor implements Closeable
      */
     public boolean isHolding()
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        return controller.isHolding();
+        return controller.getMotorPower(port) > 0;
     }
 
     /**
-     * Access the internal {@link PIDController}. Use this to access data for logging.
+     * Access the internal {@link PIDController}. This is irrelevant now.
      * @return The internal PIDController
      */
+    @Deprecated
     public PIDController getInternalController()
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        return controller.getInternalController();
+        return null;
     }
 
     /**
-     * Get the current motor output. NOTE that this is different from {@link PIDController#getOutput()}
-     * because the motor controller does some adjustments (specifically, power and steady-state error).
-     * @return The current motor power
+     * Get the current velocity of the motor
+     * @return The current motor velocity, in ticks per second
      */
     public double getOutput()
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        return controller.motor.getPower();
+        return controller.getMotorVelocity(port);
+    }
+    
+    
+    public void setVelocity(double velocity)
+    {
+        controller.setMotorMode(port, DcMotor.RunMode.RUN_USING_ENCODER);
+        controller.setMotorVelocity(port, velocity);
     }
 
     /**
-     * Tell the controller whether to keep holding the motor when it appears to be stalled.
-     * @param hold If true, keep holding when stalled. Otherwise, stop after 2 seconds of stall.
+     * TODO add a thread that checks if the motor is stalled
      */
     public void holdStalled(boolean hold)
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        controller.holdStalled = hold;
+    
     }
 
     /**
-     * Enable motor controller logging. NOTE that a log file will be generated regardless of whether
-     * this function is called!
+     * DOES NOTHING
      */
+    @Deprecated
     public void startLogging()
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        controller.startLogging();
+    
     }
 
     /**
-     * Constrain the absolute power that can be delivered to the motor.
+     * This is not supported by the REV controller
      * @param min Minimum power (in the range -1..1)
      * @param max Maximum power (in the range -1..1)
      */
+    @Deprecated
     public void constrainPower(double min, double max)
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        controller.constrainPower(min, max);
     }
 
     /**
-     * Close the motor controller. Attempting to access any of the methods (except
-     * {@link #closed()}) after the controller has been closed will throw an IllegalStateException.
-     *
-     * @throws IllegalStateException if the motor controller has already been closed
+     * Stop the motor. Doesn't do anything else.
      */
+    @Deprecated
     public void close()
     {
-        if (closed) throw new IllegalStateException("Motor controller closed");
-        thread.interrupt();
+        motor.setPower(0);
     }
     
     /**
-     * Returns whether the controller has been closed
-     *
-     * @return true if the controller is closed
+     * Returns false
      */
+    @Deprecated
     public boolean closed()
     {
-        return closed;
+        return false;
     }
 }
