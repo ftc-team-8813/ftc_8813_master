@@ -67,9 +67,9 @@ public class Robot
         DcMotor w2lower = hardwareMap.dcMotor.get("back lower");
         
         PIDMotor front_up_pid = new PIDMotor(w1upper);
-        PIDMotor front_low_pid = new PIDMotor(w1upper);
-        PIDMotor back_up_pid = new PIDMotor(w1upper);;
-        PIDMotor back_low_pid = new PIDMotor(w1upper);
+        PIDMotor front_low_pid = new PIDMotor(w1lower);
+        PIDMotor back_up_pid = new PIDMotor(w2upper);
+        PIDMotor back_low_pid = new PIDMotor(w2lower);
         
         
         frontWheel = new SwerveWheel(front_up_pid, front_low_pid);

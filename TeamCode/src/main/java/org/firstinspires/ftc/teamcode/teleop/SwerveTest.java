@@ -42,6 +42,7 @@ public class SwerveTest extends BaseTeleOp
     {
         super.init();
         buttons = new ButtonHelper(gamepad1);
+        robot.backWheel.copy(robot.frontWheel); // Test
     }
     
     private void drive()
@@ -54,19 +55,19 @@ public class SwerveTest extends BaseTeleOp
             
                 int lmult = (gamepad1.left_bumper ? 0 : 1) * 2 - 1;
                 int rmult = (gamepad1.right_bumper ? 0 : 1) * 2 - 1;
-                robot.backWheel.drive(gamepad1.left_trigger * lmult, gamepad1.right_trigger * rmult);
+                // robot.backWheel.drive(gamepad1.left_trigger * lmult, gamepad1.right_trigger * rmult);
                 break;
             }
             case 1:
             {
                 robot.frontWheel.drive(-gamepad1.left_stick_y, gamepad1.left_stick_y);
-                robot.backWheel.drive(-gamepad1.right_stick_y, gamepad1.right_stick_y);
+                // robot.backWheel.drive(-gamepad1.right_stick_y, gamepad1.right_stick_y);
                 break;
             }
             case 2:
             {
                 robot.frontWheel.drive(-gamepad1.left_stick_y, -gamepad1.left_stick_y);
-                robot.backWheel.drive(-gamepad1.right_stick_y, -gamepad1.right_stick_y);
+                // robot.backWheel.drive(-gamepad1.right_stick_y, -gamepad1.right_stick_y);
                 break;
             }
             case 3:

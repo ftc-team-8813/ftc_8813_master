@@ -42,7 +42,7 @@ public class PIDMotor implements Closeable
             throw new IllegalArgumentException("PIDMotor only works with the REV motor controller!");
         }
         this.controller = (LynxDcMotorController)motor.getController();
-        
+        this.port = motor.getPortNumber();
     }
     
     public void setDeadband(int deadband)
@@ -180,7 +180,7 @@ public class PIDMotor implements Closeable
                    break;
                }
            }
-           controller.setMotorPower(port, 0);
+           stopHolding();
         });
     }
     

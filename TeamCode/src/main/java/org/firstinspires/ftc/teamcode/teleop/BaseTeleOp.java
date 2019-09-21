@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.common.util.Profiler;
 import org.firstinspires.ftc.teamcode.common.util.Scheduler;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
 import org.firstinspires.ftc.teamcode.common.util.VMStats;
+import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 
 import java.io.IOException;
@@ -27,6 +28,7 @@ public abstract class BaseTeleOp extends OpMode
     {
         try { Logger.init(); } catch (IOException e) { throw new RuntimeException(e); }
         log = new Logger("Driver Control");
+        GlobalThreadPool.initialize(4);
         robot = Robot.initialize(hardwareMap, new Config(Config.configFile));
     }
 
@@ -37,6 +39,7 @@ public abstract class BaseTeleOp extends OpMode
     public void stop()
     {
         robot.uninitialize();
+        GlobalThreadPool.instance().stopAll();
         Logger.close();
     }
 }

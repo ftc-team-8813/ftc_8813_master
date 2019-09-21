@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.common.actuators;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
+
 public class SwerveWheel
 {
     private PIDMotor upper, lower;
@@ -76,5 +78,27 @@ public class SwerveWheel
     
         upper.getMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lower.getMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+    
+    public void copy(final SwerveWheel other)
+    {
+        GlobalThreadPool.instance().start(() ->
+        {
+            upper.setPower(1);
+            lower.setPower(1);
+            while (true)
+            {
+                upper.hold(other.upper.getCurrentPosition());
+                lower.hold(other.lower.getCurrentPosition());
+                try
+                {
+                    Thread.sleep(20);
+                }
+                catch (InterruptedException e)
+                {
+                    break;
+                }
+            }
+        });
     }
 }

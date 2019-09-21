@@ -67,4 +67,9 @@ public class GlobalThreadPool
     {
         return pool.submit(c);
     }
+    
+    public void stopAll()
+    {
+        pool.shutdownNow();
+    }
 }
