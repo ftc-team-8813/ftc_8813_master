@@ -4,6 +4,8 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.util.Log;
 
+import com.qualcomm.hardware.lynx.LynxController;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -20,6 +22,18 @@ import java.util.Set;
 
 public class Utils
 {
+    
+    public static LynxModule getRevHubForController(HardwareMap hardwareMap, LynxController controller)
+    {
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class))
+        {
+            if (module.getSerialNumber() == controller.getSerialNumber())
+            {
+                return module;
+            }
+        }
+        return null;
+    }
 
     public static boolean floatEquals(double a, double b)
     {
