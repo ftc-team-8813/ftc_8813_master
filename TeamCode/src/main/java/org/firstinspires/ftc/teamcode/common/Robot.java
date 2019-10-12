@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.common.actuators.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
+import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
@@ -25,6 +26,8 @@ public class Robot
     public final SwerveWheel backWheel;
 
     // Sensors
+    public final Switch frontHall;
+    public final Switch backHall;
 
     // Constants
 
@@ -71,12 +74,14 @@ public class Robot
         PIDMotor back_up_pid = new PIDMotor(w2upper);
         PIDMotor back_low_pid = new PIDMotor(w2lower);
         
-        
         frontWheel = new SwerveWheel(front_up_pid, front_low_pid);
         backWheel = new SwerveWheel(back_up_pid, back_low_pid);
 
         
         // Sensors
+        frontHall = new Switch(hardwareMap.digitalChannel.get("front switch"));
+        backHall = new Switch(hardwareMap.digitalChannel.get("back switch"));
+        
 
         
         // Constants
