@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous.util.opencv;
+package org.firstinspires.ftc.teamcode.autonomous.vision;
 
 import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
 import org.opencv.core.Mat;

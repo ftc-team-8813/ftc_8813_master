@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous.util.opencv;
+package org.firstinspires.ftc.teamcode.autonomous.vision;
 
 import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * Shape-based mineral detector and tracker. This is being kept in the repository as a sample
- * CameraStream listener and a great feat of over-engineering.
+ * CameraStream listener.
  * <h3>1: How it works</h3>
  * The detector uses several criteria to detect gold minerals:
  * <ol>
