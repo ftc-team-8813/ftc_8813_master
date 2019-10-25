@@ -1,8 +1,13 @@
 package org.firstinspires.ftc.teamcode.common;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
+import android.text.method.Touch;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.TouchSensor;
+
+import org.firstinspires.ftc.teamcode.common.actuators.Lift;
 import org.firstinspires.ftc.teamcode.common.actuators.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
@@ -24,10 +29,11 @@ public class Robot
     // Actuators
     public final SwerveWheel frontWheel;
     public final SwerveWheel backWheel;
+    public final Lift slide;
 
     // Sensors
-    public final Switch frontHall;
-    public final Switch backHall;
+    public final Switch bottomlimit;
+    public final Switch toplimit;
 
     // Constants
 
@@ -53,21 +59,28 @@ public class Robot
         this.config = config;
         // Motors
 
-        
+
         // PID controllers
 
-        
+
         // Servos
-        
-        
+
+
         // Actuators
+        DcMotor slidemotor = hardwareMap.dcMotor.get("slide lift");
+        DigitalChannel bottomswitch = hardwareMap.digitalChannel.get("bottom limit");
+        DigitalChannel topswitch = hardwareMap.digitalChannel.get("top limit");
+        PIDMotor lift = new PIDMotor(slidemotor);
+        bottomlimit = new Switch(bottomswitch);
+        toplimit = new Switch(topswitch);
+        slide = new Lift(lift, bottomlimit, toplimit);
         
         
         // Swerve wheels
-        DcMotor w1upper = hardwareMap.dcMotor.get("front upper");
-        DcMotor w1lower = hardwareMap.dcMotor.get("front lower");
-        DcMotor w2upper = hardwareMap.dcMotor.get("back upper");
-        DcMotor w2lower = hardwareMap.dcMotor.get("back lower");
+        DcMotor w1upper = hardwareMap.dcMotor.get("lf");
+        DcMotor w1lower = hardwareMap.dcMotor.get("rf");
+        DcMotor w2upper = hardwareMap.dcMotor.get("lb");
+        DcMotor w2lower = hardwareMap.dcMotor.get("rb");
         
         PIDMotor front_up_pid = new PIDMotor(w1upper);
         PIDMotor front_low_pid = new PIDMotor(w1lower);
@@ -79,9 +92,6 @@ public class Robot
 
         
         // Sensors
-        frontHall = new Switch(hardwareMap.digitalChannel.get("front switch"));
-        backHall = new Switch(hardwareMap.digitalChannel.get("back switch"));
-        
 
         
         // Constants
