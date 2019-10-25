@@ -58,6 +58,10 @@ public class PIDMotor implements Closeable
     {
         return motor;
     }
+
+    public void setRunMode(DcMotor.RunMode value){
+        controller.setMotorMode(port, value);
+    }
     
     /**
      * Start holding a position. Returns immediately. Since the default power is zero, this function
@@ -266,7 +270,7 @@ public class PIDMotor implements Closeable
      */
     public boolean isHolding()
     {
-        return controller.getMotorPower(port) > 0;
+        return controller.getMotorMode(port) == DcMotor.RunMode.RUN_TO_POSITION;
     }
 
     /**
