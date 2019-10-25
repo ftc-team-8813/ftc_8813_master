@@ -128,7 +128,7 @@ public class SwerveWheel
                 lower.hold(other.lower.getCurrentPosition());
                 try
                 {
-                    Thread.sleep(20);
+                    Thread.sleep(10);
                 }
                 catch (InterruptedException e)
                 {

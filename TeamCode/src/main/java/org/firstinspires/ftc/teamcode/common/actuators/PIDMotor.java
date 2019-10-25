@@ -70,8 +70,8 @@ public class PIDMotor implements Closeable
      */
     public void hold(int position)
     {
-        controller.setMotorMode(port, DcMotor.RunMode.RUN_TO_POSITION);
         controller.setMotorTargetPosition(port, position, deadband);
+        controller.setMotorMode(port, DcMotor.RunMode.RUN_TO_POSITION);
     }
     
     /**

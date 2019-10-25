@@ -15,12 +15,16 @@ public class SwerveDrive extends BaseTeleOp
     public void init()
     {
         super.init();
+        
+        // CALIBRATION
         robot.frontWheel.resetEncoders();
         robot.backWheel.resetEncoders();
+        // Initialize calibration
         robot.frontWheel.calibrate(robot.frontHall);
         robot.backWheel.calibrate(robot.backHall);
         telemetry.addData("Front calibration", "In progress");
         telemetry.addData("Back calibration", "In progress");
+        // Start a monitor thread
         monitor = GlobalThreadPool.instance().start(() ->
         {
             while (robot.frontWheel.calibrating() || robot.backWheel.calibrating())
@@ -29,7 +33,7 @@ public class SwerveDrive extends BaseTeleOp
                 telemetry.addData("Back calibration", robot.backWheel.calibrating() ? "In progress" : "Done");
                 try
                 {
-                    Thread.sleep(100);
+                    Thread.sleep(100); // This isn't timing-critical
                 }
                 catch (InterruptedException e)
                 {
@@ -46,6 +50,7 @@ public class SwerveDrive extends BaseTeleOp
     @Override
     public void loop()
     {
+        // Don't drive until we're done calibrating
         if (!monitor.isDone())
         {
             return;
