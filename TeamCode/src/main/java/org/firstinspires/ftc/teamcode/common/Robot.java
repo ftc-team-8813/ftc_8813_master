@@ -1,19 +1,21 @@
 package org.firstinspires.ftc.teamcode.common;
 
-import android.text.method.Touch;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 
+import org.firstinspires.ftc.teamcode.common.actuators.Arm;
+import org.firstinspires.ftc.teamcode.common.actuators.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.actuators.Lift;
 import org.firstinspires.ftc.teamcode.common.actuators.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.DataStorage;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
+
+import java.io.File;
 
 /**
  * Robot -- a container for all of the robot hardware interfaces
@@ -27,9 +29,9 @@ public class Robot
     // Servos
     
     // Actuators
-    public final SwerveWheel frontWheel;
-    public final SwerveWheel backWheel;
+    public final Drivetrain drivetrain;
     public final Lift slide;
+    public final Arm arm;
 
     // Sensors
     public final Switch bottomlimit;
@@ -75,21 +77,18 @@ public class Robot
         toplimit = new Switch(topswitch);
         slide = new Lift(lift, bottomlimit, toplimit);
         
+        drivetrain = new Drivetrain(hardwareMap.dcMotor.get("lf"),
+                                    hardwareMap.dcMotor.get("rf"),
+                                    hardwareMap.dcMotor.get("lb"),
+                                    hardwareMap.dcMotor.get("rb"));
+        
+        
+        // DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
+        // arm = new Arm(hardwareMap.servo.get("extension"), hardwareMap.servo.get("claw"), servo_positions);
+        arm = null;
         
         // Swerve wheels
-        DcMotor w1upper = hardwareMap.dcMotor.get("lf");
-        DcMotor w1lower = hardwareMap.dcMotor.get("rf");
-        DcMotor w2upper = hardwareMap.dcMotor.get("lb");
-        DcMotor w2lower = hardwareMap.dcMotor.get("rb");
         
-        PIDMotor front_up_pid = new PIDMotor(w1upper);
-        PIDMotor front_low_pid = new PIDMotor(w1lower);
-        PIDMotor back_up_pid = new PIDMotor(w2upper);
-        PIDMotor back_low_pid = new PIDMotor(w2lower);
-        
-        frontWheel = new SwerveWheel(front_up_pid, front_low_pid);
-        backWheel = new SwerveWheel(back_up_pid, back_low_pid);
-
         
         // Sensors
 
