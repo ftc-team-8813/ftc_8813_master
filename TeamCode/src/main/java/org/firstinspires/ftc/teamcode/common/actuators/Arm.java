@@ -14,12 +14,13 @@ public class Arm
         this.extension = extension;
         this.claw = claw;
         
-        this.extension_min = positions.getDouble("extension_min", 0);
-        this.extension_max = positions.getDouble("extension_max", 1);
-        this.claw_open = positions.getDouble("claw_open", 1);
-        this.claw_closed = positions.getDouble("claw_closed", 0);
+        this.extension_min = positions.getDouble("extension.min", 0);
+        this.extension_max = positions.getDouble("extension.max", 1);
+        this.claw_open = positions.getDouble("claw.open", 1);
+        this.claw_closed = positions.getDouble("claw.closed", 0);
         
         this.extension.scaleRange(extension_min, extension_max);
+        this.extension.setPosition(0);
     }
     
     public void extend(double delta)

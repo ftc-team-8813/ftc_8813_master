@@ -16,14 +16,14 @@ public class Drivetrain
         this.rightBack  = rightBack;
         
         this.rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        this.leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        this.rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
     }
     
     public void drive(double forward, double right, double turn)
     {
-        leftFront.setPower ( forward - right - turn);
-        rightFront.setPower( forward + right + turn);
-        leftBack.setPower  ( forward + right - turn);
-        rightBack.setPower ( forward - right + turn);
+        leftFront.setPower ( forward + right - turn);
+        rightFront.setPower( forward - right + turn);
+        leftBack.setPower  ( forward - right - turn);
+        rightBack.setPower ( forward + right + turn);
     }
 }

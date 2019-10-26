@@ -83,9 +83,8 @@ public class Robot
                                     hardwareMap.dcMotor.get("rb"));
         
         
-        // DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
-        // arm = new Arm(hardwareMap.servo.get("extension"), hardwareMap.servo.get("claw"), servo_positions);
-        arm = null;
+        DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
+        arm = new Arm(hardwareMap.servo.get("extension"), hardwareMap.servo.get("claw"), servo_positions);
         
         // Swerve wheels
         
