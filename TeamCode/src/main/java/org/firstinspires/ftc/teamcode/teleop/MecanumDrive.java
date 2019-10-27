@@ -19,15 +19,16 @@ public class MecanumDrive extends BaseTeleOp
     }
     
     @Override
-    public void loop()
+    public void doLoop()
     {
         if (buttonHelper.pressing(ButtonHelper.x))
             slow = !slow;
-        double mult = 1;
-        if (slow) mult = 0.4;
-        robot.drivetrain.drive(-gamepad1.left_stick_y * mult, gamepad1.left_stick_x * mult, -gamepad1.right_stick_y * mult);
+        if (slow)
+            robot.drivetrain.drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_y);
+        else
+            robot.drivetrain.drive(-gamepad1.left_stick_y * 0.4, gamepad1.left_stick_x * 0.4, -gamepad1.right_stick_y * 0.3);
         robot.slide.raiseLift(-gamepad2.left_stick_y * 0.4);
-        robot.arm.extend(-gamepad2.right_stick_y * 0.005);
+        robot.arm.extend(-gamepad2.right_stick_y * 0.004);
         if (gamepad2.a)
         {
             robot.arm.closeClaw();

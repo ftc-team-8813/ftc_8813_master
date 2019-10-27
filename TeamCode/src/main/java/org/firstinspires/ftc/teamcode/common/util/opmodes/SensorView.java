@@ -65,7 +65,7 @@ public class SensorView extends BaseTeleOp
     }
     
     @Override
-    public void loop()
+    public void doLoop()
     {
         telemetry.clearAll();
         for (DcMotorController module : motorControllers)
