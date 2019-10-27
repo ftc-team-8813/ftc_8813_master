@@ -31,7 +31,7 @@ import java.util.Vector;
  * just make it throw InterruptedException. This makes it so that if the robot tries to stop
  * (e.g. because the 30-second autonomous period has ended or the stop button has been pressed),
  * it stops instead of crashing with a 'The robot is stuck in stop()' message and restarting the
- * robot. **Important**: If you have a while loop, such as this:
+ * robot. **Important**: If you have a while doLoop, such as this:
  * <p>
  * while (condition) {
  * //Stuff
