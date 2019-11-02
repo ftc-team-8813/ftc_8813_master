@@ -94,6 +94,7 @@ public class CameraStream
     private void startProcessing()
     {
         cameraView.setVisibility(View.VISIBLE);
+        cameraView.setCameraPermissionGranted();
         cameraView.setCvCameraViewListener(new CameraBridgeViewBase.CvCameraViewListener2()
         {
             @Override

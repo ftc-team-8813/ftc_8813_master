@@ -32,7 +32,7 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
     @Override
     public void processFrame(Mat bgr)
     {
-        if (currentWorker.isDone())
+        if (currentWorker != null && currentWorker.isDone())
         {
             try
             {
@@ -61,9 +61,21 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
     @Override
     public Mat draw(Mat bgr)
     {
-        return null;
+        draw(bgr.nativeObj);
+        return bgr;
     }
     
+    public boolean found()
+    {
+        if (currentResult == null) return false;
+        return currentResult.detected;
+    }
+    
+    public Rect getArea()
+    {
+        if (!found()) return null;
+        return currentResult.area;
+    }
     
     private class DetectResult
     {
@@ -79,7 +91,7 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
         {
             this.bgr = bgr.clone();
         }
-    
+        
         @Override
         public DetectResult call()
         {
@@ -109,4 +121,7 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
     private native int get_max_x();
     private native int get_min_y();
     private native int get_max_y();
+    
+    private native void draw(long mat_addr);
 }
+

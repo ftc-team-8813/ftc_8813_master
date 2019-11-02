@@ -36,7 +36,7 @@ cv::Mat generate_high_contrast(cv::Mat input)
     cv::Mat bgr[3];
 
     cv::split(input, bgr);
-    cv::add(bgr[2], bgr[1], output, CV_16S);
+    cv::add(bgr[2], bgr[1], output, cv::noArray(), CV_16S);
     cv::Mat blue;
     bgr[0].convertTo(blue, CV_16S);
 
@@ -84,7 +84,7 @@ pair find_skystone(cv::Mat rotated, int step, float threshold)
             p++;
         }
 
-        if (sum(p, rotated.cols - x)/255 < (rotated.cols - x) * threshold)
+        if (sum(p, rotated.cols - x)/255.0 < (rotated.cols - x) * threshold)
         {
             if (current_range.a < 0)
             {
@@ -201,5 +201,14 @@ JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_util_openc
     return crop_area.b;
 }
 
+JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_vision_SkystoneDetector_draw
+    (JNIEnv *env, jobject instance, jlong mat_addr)
+{
+    cv::Mat mat = *((cv::Mat *)mat_addr);
+    cv::line(mat, cv::Point(0, crop_area.a), cv::Point(mat.cols, crop_area.a), cv::Scalar(0, 0, 255), 2);
+    cv::line(mat, cv::Point(0, crop_area.b), cv::Point(mat.cols, crop_area.b), cv::Scalar(255, 0, 0), 2);
+    cv::line(mat, cv::Point(skystone_range.a, 0), cv::Point(skystone_range.a, mat.rows), cv::Scalar(0, 128, 128), 2);
+    cv::line(mat, cv::Point(skystone_range.b, 0), cv::Point(skystone_range.b, mat.rows), cv::Scalar(0, 128, 128), 2);
+}
 
 } // extern "C"
