@@ -95,7 +95,7 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
         @Override
         public DetectResult call()
         {
-            int status = submit(bgr.getNativeObjAddr());
+            int status = submit(bgr.nativeObj);
             bgr.release();
             if (status < 0)
             {

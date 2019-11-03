@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
+import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -24,6 +25,13 @@ import java.util.Vector;
 
 public class CameraStream
 {
+    static
+    {
+        if (!OpenCVLoader.initDebug())
+        {
+            System.exit(0);
+        }
+    }
     
     private JavaCameraView cameraView;
     private Activity activity;

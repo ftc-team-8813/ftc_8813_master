@@ -30,6 +30,8 @@ int sum(uchar *p, int length)
     return total;
 }
 
+cv::Mat prev_hicontrast;
+
 cv::Mat generate_high_contrast(cv::Mat input)
 {
     cv::Mat output;
@@ -44,6 +46,8 @@ cv::Mat generate_high_contrast(cv::Mat input)
 
     output = (output / 4) + 128;
     output.convertTo(output, CV_8U);
+
+    prev_hicontrast = output;
 
     return output;
 }
@@ -128,7 +132,7 @@ pair crop_area;
 pair skystone_range;
 bool found = false;
 
-JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_util_opencv_SkystoneDetector_submit
+JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_vision_SkystoneDetector_submit
     (JNIEnv *env, jobject instance, jlong mat_addr)
 {
   cv::Mat img = *((cv::Mat *)mat_addr);
@@ -146,7 +150,8 @@ JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_util_openc
 
   pair area = find_crop_area(thresh, 5, 1.0/32, 1.0/32);
 
-  if (area.a == 0 && area.b == 0)
+  // If we don't detect anything OR we detect the entire screen, we're just getting garbage
+  if ((area.a == 0 && area.b == 0) || (area.a < 5 && area.b > img.rows - 5))
   {
       found = false;
       return 1;
@@ -159,7 +164,7 @@ JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_util_openc
 
   pair range = find_skystone(rotated, 10, 0.6);
 
-  if (range.a == 0)
+  if (range.a < 0)
   {
       found = false;
       return 2;
@@ -171,38 +176,38 @@ JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_util_openc
   return 0;
 }
 
-JNIEXPORT jboolean JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_util_opencv_SkystoneDetector_detected
+JNIEXPORT jboolean JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_vision_SkystoneDetector_detected
     (JNIEnv *env, jobject instance)
 {
    return (jboolean)found;
 }
 
-JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_util_opencv_SkystoneDetector_get_1min_1x
+JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_vision_SkystoneDetector_get_1min_1x
     (JNIEnv *env, jobject instnace)
 {
     return skystone_range.a;
 }
 
-JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_util_opencv_SkystoneDetector_get_1max_1x
+JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_vision_SkystoneDetector_get_1max_1x
     (JNIEnv *env, jobject instance)
 {
     return skystone_range.b;
 }
 
-JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_util_opencv_SkystoneDetector_get_1min_1y
+JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_vision_SkystoneDetector_get_1min_1y
     (JNIEnv *env, jobject instance)
 {
     return crop_area.a;
 }
 
-JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_util_opencv_SkystoneDetector_get_1max_1y
+JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_vision_SkystoneDetector_get_1max_1y
     (JNIEnv *env, jobject instance)
 {
     return crop_area.b;
 }
 
-JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_vision_SkystoneDetector_draw
-    (JNIEnv *env, jobject instance, jlong mat_addr)
+JNIEXPORT void JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_vision_SkystoneDetector_draw
+    (JNIEnv *env, jobject instance, jlong mat_addr, jboolean )
 {
     cv::Mat mat = *((cv::Mat *)mat_addr);
     cv::line(mat, cv::Point(0, crop_area.a), cv::Point(mat.cols, crop_area.a), cv::Scalar(0, 0, 255), 2);
