@@ -26,7 +26,14 @@ public class MecanumDrive extends BaseTeleOp
         double mult = 1;
         if (slow) mult = 0.4;
         robot.drivetrain.drive(-gamepad1.left_stick_y * mult, gamepad1.left_stick_x * mult, -gamepad1.right_stick_y * mult);
-        robot.slide.raiseLift(-gamepad2.left_stick_y * 0.4);
+        robot.slide.raiseLift(-gamepad2.left_stick_y);
+        if (gamepad2.left_bumper){
+            robot.intake.collectStone(1);
+        }else if (gamepad2.right_bumper){
+            robot.intake.releaseStone(1);
+        }else{
+            robot.intake.stopIntake();
+        }
         robot.arm.extend(-gamepad2.right_stick_y * 0.005);
         if (gamepad2.a)
         {
@@ -34,7 +41,14 @@ public class MecanumDrive extends BaseTeleOp
         }
         else if (gamepad2.y)
         {
+        robot.slide.raiseLift(-gamepad2.left_stick_y);
             robot.arm.openClaw();
+        }
+        if (gamepad2.x){
+            robot.foundationHook.moveHookDown();
+        }
+        if (gamepad2.b){
+            robot.foundationHook.moveHookUp();
         }
     }
 }

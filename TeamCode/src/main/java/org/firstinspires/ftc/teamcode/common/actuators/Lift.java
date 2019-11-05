@@ -7,25 +7,23 @@ import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 public class Lift {
     public PIDMotor slidemotor;
     private Switch bottomswitch;
-    private Switch topswitch;
 
-    public Lift(PIDMotor slidemotor, Switch topswitch, Switch bottomswitch){
+    public Lift(PIDMotor slidemotor, Switch bottomswitch){
         this.slidemotor = slidemotor;
-        this.topswitch = topswitch;
         this.bottomswitch = bottomswitch;
     }
 
     public void raiseLift(double power){
-        if (power > 0 && !topswitch.pressed()){
-            if (slidemotor.isHolding()){
+        if (power > 0 && !bottomswitch.pressed()) {
+            if (slidemotor.isHolding()) {
                 slidemotor.stopHolding();
             }
             slidemotor.getMotor().setPower(power);
-        } else if (power < 0 && !bottomswitch.pressed()){
+        } else if (power < 0){
             if (slidemotor.isHolding()){
                 slidemotor.stopHolding();
             }
-            slidemotor.getMotor().setPower(power);
+            slidemotor.getMotor().setPower(power * 0.5);
         } else {
             if (!slidemotor.isHolding()) {
                 slidemotor.setPower(0.5);

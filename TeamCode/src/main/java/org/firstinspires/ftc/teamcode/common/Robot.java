@@ -3,9 +3,12 @@ package org.firstinspires.ftc.teamcode.common;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.common.actuators.Arm;
 import org.firstinspires.ftc.teamcode.common.actuators.Drivetrain;
+import org.firstinspires.ftc.teamcode.common.actuators.FoundationHook;
+import org.firstinspires.ftc.teamcode.common.actuators.Intake;
 import org.firstinspires.ftc.teamcode.common.actuators.Lift;
 import org.firstinspires.ftc.teamcode.common.actuators.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
@@ -23,10 +26,12 @@ import java.io.File;
 public class Robot
 {
     // Motors
+    public final Intake intake;
 
     // PID-controlled motors
 
     // Servos
+    public final FoundationHook foundationHook;
     
     // Actuators
     public final Drivetrain drivetrain;
@@ -35,7 +40,6 @@ public class Robot
 
     // Sensors
     public final Switch bottomlimit;
-    public final Switch toplimit;
 
     // Constants
 
@@ -60,22 +64,24 @@ public class Robot
     {
         this.config = config;
         // Motors
+        DcMotor leftIntake = hardwareMap.dcMotor.get("l intake");
+        DcMotor rightIntake = hardwareMap.dcMotor.get("r intake");
+        intake = new Intake(leftIntake, rightIntake);
 
 
         // PID controllers
 
 
         // Servos
-
+        Servo hook = hardwareMap.servo.get("hook");
+        foundationHook = new FoundationHook(hook);
 
         // Actuators
         DcMotor slidemotor = hardwareMap.dcMotor.get("slide lift");
         DigitalChannel bottomswitch = hardwareMap.digitalChannel.get("bottom limit");
-        DigitalChannel topswitch = hardwareMap.digitalChannel.get("top limit");
         PIDMotor lift = new PIDMotor(slidemotor);
         bottomlimit = new Switch(bottomswitch);
-        toplimit = new Switch(topswitch);
-        slide = new Lift(lift, bottomlimit, toplimit);
+        slide = new Lift(lift, bottomlimit);
         
         drivetrain = new Drivetrain(hardwareMap.dcMotor.get("lf"),
                                     hardwareMap.dcMotor.get("rf"),
