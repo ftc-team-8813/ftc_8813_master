@@ -77,10 +77,10 @@ public class Robot
         toplimit = new Switch(topswitch);
         slide = new Lift(lift, bottomlimit, toplimit);
         
-        drivetrain = new Drivetrain(hardwareMap.dcMotor.get("lf"),
-                                    hardwareMap.dcMotor.get("rf"),
-                                    hardwareMap.dcMotor.get("lb"),
-                                    hardwareMap.dcMotor.get("rb"));
+        drivetrain = new Drivetrain(new PIDMotor(hardwareMap.dcMotor.get("lf")),
+                                    new PIDMotor(hardwareMap.dcMotor.get("rf")),
+                                    new PIDMotor(hardwareMap.dcMotor.get("lb")),
+                                    new PIDMotor(hardwareMap.dcMotor.get("rb")));
         
         
         DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
