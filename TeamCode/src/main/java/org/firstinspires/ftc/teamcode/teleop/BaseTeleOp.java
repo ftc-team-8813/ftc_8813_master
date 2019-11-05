@@ -22,18 +22,36 @@ public abstract class BaseTeleOp extends OpMode
 {
     protected Robot robot;
     protected Logger log;
+    protected double delta; // Time taken by the last tick
+    
+    private double prev_tick_time;
     
     @Override
     public void init()
     {
         try { Logger.init(); } catch (IOException e) { throw new RuntimeException(e); }
-        log = new Logger("Driver Control");
+        log = new Logger(getClass().getCanonicalName());
         GlobalThreadPool.initialize(4);
         robot = Robot.initialize(hardwareMap, new Config(Config.configFile));
+        prev_tick_time = (double)(System.nanoTime() / 1000000000);
+    }
+    
+    @Override
+    public void start()
+    {
+        prev_tick_time = (double)System.nanoTime() / 1000000000;
+    }
+    
+    @Override
+    public final void loop()
+    {
+        double now = (double)System.nanoTime() / 1000000000;
+        delta = now - prev_tick_time;
+        doLoop();
+        prev_tick_time = now;
     }
 
-    @Override
-    public abstract void loop();
+    public abstract void doLoop();
 
     @Override
     public void stop()
