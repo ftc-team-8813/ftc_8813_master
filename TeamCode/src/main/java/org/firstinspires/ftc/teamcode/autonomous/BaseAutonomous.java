@@ -55,14 +55,6 @@ import java.util.Vector;
 // @Autonomous(name = "Autonomous")
 public abstract class BaseAutonomous extends LinearOpMode
 {
-    
-    static
-    {
-        if (!OpenCVLoader.initDebug())
-        {
-            System.exit(0);
-        }
-    }
 
     //We're making BaseAutonomous a 'singleton' class. This means that there is always only ONE
     //instance in use at a time. This is stored in this static field, which can be retrieved by
