@@ -23,7 +23,7 @@ public class Lift {
             if (slidemotor.isHolding()){
                 slidemotor.stopHolding();
             }
-            slidemotor.getMotor().setPower(power * 0.5);
+            slidemotor.getMotor().setPower(power * 0.1);
         } else {
             if (!slidemotor.isHolding()) {
                 slidemotor.setPower(0.5);
