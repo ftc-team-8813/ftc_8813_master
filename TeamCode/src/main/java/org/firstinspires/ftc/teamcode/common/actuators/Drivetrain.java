@@ -13,6 +13,8 @@ public class Drivetrain
     public PIDMotor leftFront, rightFront;
     public PIDMotor leftBack,  rightBack;
     
+    private Logger log = new Logger("Drivetrain");
+    
     /**
      * Create a drivetrain. Takes PIDMotors for position control ability
      * @param leftFront  The left front motor
@@ -67,8 +69,9 @@ public class Drivetrain
         // Start the motors
         for (int i = 0; i < 4; i++)
         {
-            int dist = distance; // (int)(distance * Math.min(Math.abs(powers[i]), 1) * Math.signum(powers[i]));
-            int target = dist + motors[i].getCurrentPosition();
+            int sign = (motors[i].getMotor().getDirection() == DcMotorSimple.Direction.FORWARD) ? 1 : -1;
+            int dist = distance * (int)Math.signum(powers[i]); // (int)(distance * Math.min(Math.abs(powers[i]), 1) * Math.signum(powers[i]));
+            int target = (dist + motors[i].getCurrentPosition()) * sign;
             if (powers[i] != 0)
             {
                 motors[i].setPower(Math.abs(powers[i]));
@@ -89,6 +92,11 @@ public class Drivetrain
                     break;
                 }
             }
+            log.d("Encoders: %d %d %d %d",
+                    motors[0].getCurrentPosition(),
+                    motors[1].getCurrentPosition(),
+                    motors[2].getCurrentPosition(),
+                    motors[3].getCurrentPosition());
             Thread.sleep(10);
         }
     }

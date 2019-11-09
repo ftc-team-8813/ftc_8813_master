@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Profiler;
@@ -34,6 +35,11 @@ public abstract class BaseTeleOp extends OpMode
         GlobalThreadPool.initialize(4);
         robot = Robot.initialize(hardwareMap, new Config(Config.configFile));
         prev_tick_time = (double)(System.nanoTime() / 1000000000);
+        
+        ((AccelMotor)robot.drivetrain.leftFront.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
+        ((AccelMotor)robot.drivetrain.rightFront.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
+        ((AccelMotor)robot.drivetrain.leftBack.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
+        ((AccelMotor)robot.drivetrain.rightBack.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
     }
     
     @Override

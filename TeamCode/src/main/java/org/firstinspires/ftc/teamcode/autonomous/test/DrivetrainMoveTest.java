@@ -13,14 +13,14 @@ public class DrivetrainMoveTest extends BaseAutonomous
     public void run() throws InterruptedException
     {
         Drivetrain drivetrain = Robot.instance().drivetrain;
-        drivetrain.move(0.5, 0, 0, 2000);
+        drivetrain.move(0.5, 0, 0, 500);
         Thread.sleep(500);
-        drivetrain.move(0, 0.5, 0, 2000);
+        drivetrain.move(0, 0.5, 0, 500);
         Thread.sleep(500);
-        drivetrain.move(0, 0, 0.5, 2000);
+        drivetrain.move(0, 0, 0.5, 500);
         Thread.sleep(500);
-        drivetrain.move(0, -0.5, 0, 2000);
+        drivetrain.move(0, -0.5, 0, 500);
         Thread.sleep(500);
-        drivetrain.move(-0.5, 0, 0, 2000);
+        drivetrain.move(-0.5, 0, 0, 500);
     }
 }
