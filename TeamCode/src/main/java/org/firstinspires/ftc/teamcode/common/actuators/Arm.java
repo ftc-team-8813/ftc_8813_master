@@ -26,6 +26,7 @@ public class Arm
             double temp = extension_max;
             extension_max = extension_min;
             extension_min = temp;
+            ext_reverse = true;
         }
         
         this.extension.scaleRange(extension_min, extension_max);
