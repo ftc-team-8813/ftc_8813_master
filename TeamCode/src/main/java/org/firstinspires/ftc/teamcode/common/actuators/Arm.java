@@ -15,12 +15,12 @@ public class Arm
         this.extension = extension;
         this.claw = claw;
     
-        //this.extension_min = positions.getDouble("extension.min", 0);
-        //this.extension_max = positions.getDouble("extension.max", 1);
+        this.extension_min = positions.getDouble("extension.min", 0);
+        this.extension_max = positions.getDouble("extension.max", 1);
         this.claw_open = positions.getDouble("claw.open", 1);
         this.claw_closed = positions.getDouble("claw.closed", 0);
     
-        /*if (extension_min > extension_max)
+        if (extension_min > extension_max)
         {
             // Swap them
             double temp = extension_max;
@@ -37,12 +37,12 @@ public class Arm
         else
         {
             this.extension.setPosition(0);
-        }*/
+        }
     }
     
     public void extend(double delta)
     {
-        //if (ext_reverse) delta = -delta;
+        if (ext_reverse) delta = -delta;
         extension.setPosition(extension.getPosition() + delta);
     }
 
