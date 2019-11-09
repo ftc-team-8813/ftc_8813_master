@@ -10,7 +10,8 @@ import org.firstinspires.ftc.teamcode.common.actuators.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.actuators.FoundationHook;
 import org.firstinspires.ftc.teamcode.common.actuators.Intake;
 import org.firstinspires.ftc.teamcode.common.actuators.Lift;
-import org.firstinspires.ftc.teamcode.common.actuators.PIDMotor;
+import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
+import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 // import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 import org.firstinspires.ftc.teamcode.common.util.Config;
@@ -83,10 +84,10 @@ public class Robot
         bottomlimit = new Switch(bottomswitch);
         slide = new Lift(lift, bottomlimit);
         
-        drivetrain = new Drivetrain(new PIDMotor(hardwareMap.dcMotor.get("lf")),
-                                    new PIDMotor(hardwareMap.dcMotor.get("rf")),
-                                    new PIDMotor(hardwareMap.dcMotor.get("lb")),
-                                    new PIDMotor(hardwareMap.dcMotor.get("rb")));
+        drivetrain = new Drivetrain(new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lf"))),
+                                    new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rf"))),
+                                    new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lb"))),
+                                    new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rb"))));
         
         
         DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));

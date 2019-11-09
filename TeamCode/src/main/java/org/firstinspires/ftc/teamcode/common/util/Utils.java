@@ -6,10 +6,12 @@ import android.util.Log;
 
 import com.qualcomm.hardware.lynx.LynxController;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 
 import java.io.File;
 import java.util.Locale;
@@ -22,6 +24,13 @@ import java.util.Set;
 
 public class Utils
 {
+    
+    public static String getMotorId(DcMotor motor)
+    {
+        int port = motor.getPortNumber();
+        String hub = motor.getController().getConnectionInfo().split(" ")[3];
+        return String.format(Locale.US, "DcMotor@c%s,p%d", hub, port);
+    }
     
     public static LynxModule getRevHubForController(HardwareMap hardwareMap, LynxController controller)
     {

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.common.actuators;
+package org.firstinspires.ftc.teamcode.common.motor_control;
 
 import com.qualcomm.hardware.lynx.LynxDcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -33,6 +33,8 @@ public class PIDMotor implements Closeable
     
     private double power = 0;
     
+    private Logger log;
+    
     public PIDMotor(DcMotor motor)
     {
         this.motor = motor;
@@ -41,8 +43,9 @@ public class PIDMotor implements Closeable
         {
             throw new IllegalArgumentException("PIDMotor only works with the REV motor controller!");
         }
-        this.controller = (LynxDcMotorController)motor.getController();
+        this.controller = (LynxDcMotorController)controller;
         this.port = motor.getPortNumber();
+        log = new Logger("PIDMotor " + Utils.getMotorId(motor));
     }
     
     public void setDeadband(int deadband)
@@ -74,11 +77,15 @@ public class PIDMotor implements Closeable
      */
     public void hold(int position)
     {
+        log.v("hold(%d) at power %.3f", position, power);
         controller.setMotorTargetPosition(port, position, deadband);
         controller.setMotorMode(port, DcMotor.RunMode.RUN_TO_POSITION);
+        motor.setPower(power);
+        log.v("Motor mode change? Motor says %s, controller says %s", motor.getMode().name(), controller.getMotorMode(port).name());
     }
     
     /**
+     * DOES NOT SET THE MOTOR SPEED!
      * Set the maximum absolute power which can be attained when trying to hold a position.
      * Takes the absolute value of the input, so a power of -1 would be the same as a power of 1.
      *
@@ -86,7 +93,12 @@ public class PIDMotor implements Closeable
      */
     public void setPower(double power)
     {
-        controller.setMotorPower(port, power);
+        log.v("setPower(%.3f)", power);
+        this.power = power;
+        if (controller.getMotorMode(port) == DcMotor.RunMode.RUN_TO_POSITION)
+        {
+            motor.setPower(power);
+        }
     }
     
     /**
@@ -96,7 +108,7 @@ public class PIDMotor implements Closeable
      */
     public int getTargetPosition()
     {
-        return controller.getMotorTargetPosition(port);
+        return motor.getTargetPosition();
     }
     
     /**
@@ -106,7 +118,7 @@ public class PIDMotor implements Closeable
      */
     public int getCurrentPosition()
     {
-        return controller.getMotorCurrentPosition(port);
+        return motor.getCurrentPosition();
     }
     
     /**
@@ -114,7 +126,8 @@ public class PIDMotor implements Closeable
      */
     public void stopHolding()
     {
-        controller.setMotorPower(port, 0);
+        log.v("stopHolding()");
+        motor.setPower(0);
         controller.setMotorMode(port, DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
@@ -123,7 +136,9 @@ public class PIDMotor implements Closeable
      */
     public void resumeHolding()
     {
-        controller.setMotorPower(port, power);
+        log.v("resumeHolding() at power=%.3f", power);
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motor.setPower(power);
     }
     
     /**
@@ -155,7 +170,7 @@ public class PIDMotor implements Closeable
     public void runToPosition(int position, boolean keepHolding) throws InterruptedException
     {
         hold(position);
-        while (controller.isBusy(port))
+        while (motor.getPower() == 0 || controller.isBusy(port))
         {
             Thread.sleep(10);
         }
@@ -173,7 +188,7 @@ public class PIDMotor implements Closeable
         hold(position);
         GlobalThreadPool.instance().start(() ->
         {
-           while (controller.isBusy(port))
+           do
            {
                try
                {
@@ -183,7 +198,7 @@ public class PIDMotor implements Closeable
                {
                    break;
                }
-           }
+           } while (motor.getPower() == 0 || controller.isBusy(port));
            stopHolding();
         });
     }
