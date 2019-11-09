@@ -177,7 +177,7 @@ public abstract class BaseAutonomous extends LinearOpMode
             interrupterThread.start();
             
             // Create our global thread pool for future threads
-            GlobalThreadPool.initialize(10, this);
+            GlobalThreadPool.initialize(16, this);
             
             //Clear the persistent objects since this would be a new round in competition
             Persistent.clear();

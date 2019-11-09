@@ -1,15 +1,17 @@
 package org.firstinspires.ftc.teamcode.common.actuators;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
+import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
+import org.firstinspires.ftc.teamcode.common.util.Logger;
 
 /**
  * The mecanum drivetrain
  */
 public class Drivetrain
 {
-    private PIDMotor leftFront, rightFront;
-    private PIDMotor leftBack,  rightBack;
+    public PIDMotor leftFront, rightFront;
+    public PIDMotor leftBack,  rightBack;
     
     /**
      * Create a drivetrain. Takes PIDMotors for position control ability
@@ -65,11 +67,11 @@ public class Drivetrain
         // Start the motors
         for (int i = 0; i < 4; i++)
         {
-            int dist = (int)(distance * Math.min(Math.abs(powers[i]), 1) * Math.signum(powers[i]));
+            int dist = distance; // (int)(distance * Math.min(Math.abs(powers[i]), 1) * Math.signum(powers[i]));
             int target = dist + motors[i].getCurrentPosition();
-            if (powers[i] > 0)
+            if (powers[i] != 0)
             {
-                motors[i].setPower(powers[i]);
+                motors[i].setPower(Math.abs(powers[i]));
                 motors[i].startRunToPosition(target);
             }
         }
