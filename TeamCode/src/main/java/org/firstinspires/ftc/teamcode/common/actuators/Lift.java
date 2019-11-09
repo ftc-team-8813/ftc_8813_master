@@ -1,12 +1,19 @@
 package org.firstinspires.ftc.teamcode.common.actuators;
 
+import android.provider.ContactsContract;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
+import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.DataStorage;
+
+import java.io.File;
 
 public class Lift {
     public PIDMotor slidemotor;
     private Switch bottomswitch;
+    DataStorage topswitch = new DataStorage(new File(Config.storageDir + "liftencoderpos.txt"));
 
     public Lift(PIDMotor slidemotor, Switch bottomswitch){
         this.slidemotor = slidemotor;
@@ -14,16 +21,16 @@ public class Lift {
     }
 
     public void raiseLift(double power){
-        if (power > 0 && !bottomswitch.pressed()) {
+        if (power < 0 && !bottomswitch.pressed()) {
             if (slidemotor.isHolding()) {
                 slidemotor.stopHolding();
             }
-            slidemotor.getMotor().setPower(power);
-        } else if (power < 0){
+            slidemotor.getMotor().setPower(power * 0.25);
+        } else if (power > 0 && slidemotor.getCurrentPosition() >= -1000 ){
             if (slidemotor.isHolding()){
                 slidemotor.stopHolding();
             }
-            slidemotor.getMotor().setPower(power * 0.1);
+            slidemotor.getMotor().setPower(power);
         } else {
             if (!slidemotor.isHolding()) {
                 slidemotor.setPower(0.5);
@@ -32,8 +39,8 @@ public class Lift {
         }
     }
 
-    public void getCurrentPos(){
-        slidemotor.getCurrentPosition();
+    public double getCurrentPos(){
+        return slidemotor.getCurrentPosition();
     }
 
 

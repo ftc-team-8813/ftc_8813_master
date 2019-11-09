@@ -16,7 +16,6 @@ public class MecanumDrive extends BaseTeleOp
     {
         super.init();
         buttonHelper = new ButtonHelper(gamepad1);
-        robot.arm.zeroExtend();
     }
     
     @Override
@@ -41,14 +40,14 @@ public class MecanumDrive extends BaseTeleOp
             robot.arm.zeroExtend();
         }
 
-        telemetry.addData("Extender Delta", -gamepad2.right_stick_y * 0.000005);
-        telemetry.addData("Current Pos", robot.arm.getExtension().getPosition());
-
+        telemetry.addData("Extender Delta", robot.slide.getCurrentPos());
 
         if (slow)
             robot.drivetrain.drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_y);
         else
             robot.drivetrain.drive(-gamepad1.left_stick_y * 0.4, gamepad1.left_stick_x * 0.4, -gamepad1.right_stick_y * 0.3);
+
+
         robot.slide.raiseLift(-gamepad2.left_stick_y * 0.4);
 
 
