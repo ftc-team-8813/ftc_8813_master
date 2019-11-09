@@ -77,7 +77,7 @@ public class PIDMotor implements Closeable
      */
     public void hold(int position)
     {
-        log.v("hold(%d) at power %.3f", position, power);
+        log.v("hold(%d) at power %.3f (current position %d)", position, power, getCurrentPosition());
         controller.setMotorTargetPosition(port, position, deadband);
         controller.setMotorMode(port, DcMotor.RunMode.RUN_TO_POSITION);
         motor.setPower(power);

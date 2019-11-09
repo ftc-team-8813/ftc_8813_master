@@ -10,11 +10,14 @@ import java.io.File;
 public class Lift {
     public PIDMotor slidemotor;
     private Switch bottomswitch;
-    DataStorage topswitch = new DataStorage(new File(Config.storageDir + "liftencoderpos.txt"));
+    DataStorage topswitch;
+    private int toplimit;
 
     public Lift(PIDMotor slidemotor, Switch bottomswitch){
         this.slidemotor = slidemotor;
         this.bottomswitch = bottomswitch;
+        topswitch = new DataStorage(new File(Config.storageDir + "liftencoderpos.txt"));
+        toplimit = topswitch.getInt("Highest Position", 0);
     }
 
     public void raiseLift(double power){
@@ -23,7 +26,7 @@ public class Lift {
                 slidemotor.stopHolding();
             }
             slidemotor.getMotor().setPower(power * 0.25);
-        } else if (power > 0 && slidemotor.getCurrentPosition() >= topswitch.getInt("Highest Position", 0) ){
+        } else if (power > 0 && slidemotor.getCurrentPosition() <= toplimit){
             if (slidemotor.isHolding()){
                 slidemotor.stopHolding();
             }
