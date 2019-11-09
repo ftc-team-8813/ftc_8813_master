@@ -26,7 +26,7 @@ public class Lift {
                 slidemotor.stopHolding();
             }
             slidemotor.getMotor().setPower(power * 0.25);
-        } else if (power > 0 && slidemotor.getCurrentPosition() >= -1000 ){
+        } else if (power > 0 && slidemotor.getCurrentPosition() >= topswitch.getInt("Highest Position", 0) ){
             if (slidemotor.isHolding()){
                 slidemotor.stopHolding();
             }

@@ -45,10 +45,6 @@ public class Arm
         if (ext_reverse) delta = -delta;
         extension.setPosition(extension.getPosition() + delta);
     }
-
-    public void zeroExtend(){
-        extension.setPosition(extension.getPosition());
-    }
     
     public void closeClaw()
     {

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 
@@ -10,6 +11,7 @@ public class MecanumDrive extends BaseTeleOp
     
     private ButtonHelper buttonHelper;
     private boolean slow;
+    private boolean superslow;
     
     @Override
     public void init()
@@ -23,29 +25,28 @@ public class MecanumDrive extends BaseTeleOp
     {
         if (buttonHelper.pressing(ButtonHelper.x))
             slow = !slow;
+        if (buttonHelper.pressing(ButtonHelper.y))
+            superslow = !superslow;
 
-
-        if (gamepad2.left_bumper){
+        if (gamepad1.left_bumper){
             robot.intake.collectStone(1);
-        }else if (gamepad2.right_bumper){
+        }else if (gamepad1.right_bumper){
             robot.intake.releaseStone(1);
         }else{
             robot.intake.stopIntake();
         }
 
 
-        if (gamepad2.right_stick_y != 0){
-            robot.arm.extend(-gamepad2.right_stick_y * 0.000005);
-        }else{
-            robot.arm.zeroExtend();
-        }
+        robot.arm.extend(-gamepad2.right_stick_y * 0.004);
 
         telemetry.addData("Extender Delta", robot.slide.getCurrentPos());
 
-        if (slow)
-            robot.drivetrain.drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_y);
+        if (!slow)
+            robot.drivetrain.drive(-gamepad1.left_stick_y * 0.5, gamepad1.left_stick_x * 0.5, -gamepad1.right_stick_y * 0.4);
+        else if (!superslow)
+            robot.drivetrain.drive(-gamepad1.left_stick_y * 0.2, gamepad1.left_stick_x * 0.2, -gamepad1.right_stick_y * 0.1);
         else
-            robot.drivetrain.drive(-gamepad1.left_stick_y * 0.4, gamepad1.left_stick_x * 0.4, -gamepad1.right_stick_y * 0.3);
+            robot.drivetrain.drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_y);
 
 
         robot.slide.raiseLift(-gamepad2.left_stick_y * 0.4);
@@ -67,5 +68,12 @@ public class MecanumDrive extends BaseTeleOp
         if (gamepad2.b){
             robot.foundationHook.moveHookUp();
         }
+    }
+
+    public void stop(){
+        robot.slide.slidemotor.getMotor().setTargetPosition(0);
+        robot.slide.slidemotor.setPower(0.25);
+        robot.slide.slidemotor.setRunMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.slide.slidemotor.setPower(0);
     }
 }
