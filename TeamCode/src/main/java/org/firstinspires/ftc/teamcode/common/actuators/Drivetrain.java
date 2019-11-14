@@ -69,9 +69,9 @@ public class Drivetrain
         // Start the motors
         for (int i = 0; i < 4; i++)
         {
-            int sign = (motors[i].getMotor().getDirection() == DcMotorSimple.Direction.FORWARD) ? 1 : -1;
+            // int sign = (motors[i].getMotor().getDirection() == DcMotorSimple.Direction.FORWARD) ? 1 : -1;
             int dist = distance * (int)Math.signum(powers[i]); // (int)(distance * Math.min(Math.abs(powers[i]), 1) * Math.signum(powers[i]));
-            int target = (dist + motors[i].getCurrentPosition()) * sign;
+            int target = (dist + motors[i].getCurrentPosition()); //* sign;
             if (powers[i] != 0)
             {
                 motors[i].setPower(Math.abs(powers[i]));

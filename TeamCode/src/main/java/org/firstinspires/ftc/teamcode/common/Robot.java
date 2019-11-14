@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.common;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -79,6 +80,7 @@ public class Robot
 
         // Actuators
         DcMotor slidemotor = hardwareMap.dcMotor.get("slide lift");
+        slidemotor.setDirection(DcMotorSimple.Direction.REVERSE);
         DigitalChannel bottomswitch = hardwareMap.digitalChannel.get("bottom limit");
         PIDMotor lift = new PIDMotor(slidemotor);
         bottomlimit = new Switch(bottomswitch);

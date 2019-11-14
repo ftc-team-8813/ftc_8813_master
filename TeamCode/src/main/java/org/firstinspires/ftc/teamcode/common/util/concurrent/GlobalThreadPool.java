@@ -6,18 +6,17 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 
 public class GlobalThreadPool
 {
     private ExecutorService pool;
-    private BaseAutonomous autonomous;
     
     private static GlobalThreadPool instance;
     
     private GlobalThreadPool(int nthreads, BaseAutonomous autonomous)
     {
         this(nthreads);
-        this.autonomous = autonomous;
         Thread toInterrupt = new Thread(() ->
         {
             try
@@ -60,12 +59,26 @@ public class GlobalThreadPool
     
     public Future<?> start(Runnable r)
     {
-        return pool.submit(r);
+        try
+        {
+            return pool.submit(r);
+        }
+        catch (RejectedExecutionException e)
+        {
+            return null;
+        }
     }
     
     public <V> Future<V> start(Callable<V> c)
     {
-        return pool.submit(c);
+        try
+        {
+            return pool.submit(c);
+        }
+        catch (RejectedExecutionException e)
+        {
+            return null;
+        }
     }
     
     public void stopAll()

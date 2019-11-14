@@ -20,19 +20,31 @@ public class AccelMotor extends DcMotorImpl
     private double maxSpeed;
     private Future<?> currentJob;
     private Logger log;
+    private final double defaultAcceleration;
+    
+    public AccelMotor(DcMotor motor)
+    {
+        this(motor, motor.getMotorType().getAchieveableMaxTicksPerSecondRounded());
+    }
     
     @SuppressLint("DefaultLocale")
-    public AccelMotor(DcMotor motor)
+    public AccelMotor(DcMotor motor, double acceleration)
     {
         super(motor.getController(), motor.getPortNumber(), motor.getDirection(), motor.getMotorType());
         maxSpeed = motor.getMotorType().getAchieveableMaxTicksPerSecondRounded();
-        acceleration = maxSpeed; // full speed in 1 second
+        this.acceleration = acceleration; // full speed in 1 second
+        this.defaultAcceleration = acceleration;
         log = new Logger("AccelMotor " + Utils.getMotorId(motor));
     }
     
     public void setMaxAcceleration(double acceleration)
     {
         this.acceleration = Math.abs(acceleration);
+    }
+    
+    public void setDefaultAcceleration()
+    {
+        this.acceleration = defaultAcceleration;
     }
     
     public double getMaxSpped()
@@ -43,7 +55,7 @@ public class AccelMotor extends DcMotorImpl
     @Override
     protected synchronized void internalSetPower(double power)
     {
-        if (currentJob != null)
+        if (currentJob != null && !currentJob.isDone())
         {
             currentJob.cancel(true);
         }
@@ -57,9 +69,11 @@ public class AccelMotor extends DcMotorImpl
             controller.setMotorPower(portNumber, 0);
             return;
         }
-        double powerNow = getPower();
+        double powerNow = adjustPower(getPower());
         double v0 = powerNow * maxSpeed;
         double vf = power * maxSpeed;
+        if (v0 == vf) return;
+        
         final long sampleTime = 15;
         double step = acceleration * (sampleTime / 1000.0) * Math.signum(vf - v0);
         log.d("Ramping power from %.3f to %.3f; step=%.3f", v0, vf, step);

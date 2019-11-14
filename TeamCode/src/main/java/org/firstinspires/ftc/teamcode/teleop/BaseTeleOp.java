@@ -32,7 +32,7 @@ public abstract class BaseTeleOp extends OpMode
     {
         try { Logger.init(); } catch (IOException e) { throw new RuntimeException(e); }
         log = new Logger(getClass().getCanonicalName());
-        GlobalThreadPool.initialize(4);
+        GlobalThreadPool.initialize(16);
         robot = Robot.initialize(hardwareMap, new Config(Config.configFile));
         prev_tick_time = (double)(System.nanoTime() / 1000000000);
         
