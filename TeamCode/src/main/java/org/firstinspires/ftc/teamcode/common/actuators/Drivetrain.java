@@ -100,4 +100,11 @@ public class Drivetrain
             Thread.sleep(10);
         }
     }
+
+    public void stop(){
+        leftFront.getMotor().setPower(0);
+        leftBack.getMotor().setPower(0);
+        rightFront.getMotor().setPower(0);
+        rightBack.getMotor().setPower(0);
+    }
 }
