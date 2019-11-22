@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.common.Robot;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
 import java.util.Objects;
 
 @Autonomous(name="Acceleration Control Test")
+@Disabled
 public class AccelMotorTest extends BaseAutonomous
 {
     @Override
