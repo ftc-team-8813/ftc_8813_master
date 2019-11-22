@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.common.actuators.Arm;
 import org.firstinspires.ftc.teamcode.common.actuators.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.actuators.FoundationHook;
 import org.firstinspires.ftc.teamcode.common.actuators.Intake;
+import org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage;
 import org.firstinspires.ftc.teamcode.common.actuators.Lift;
 import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
@@ -35,12 +36,13 @@ public class Robot
     // PID-controlled motors
 
     // Servos
-    public final FoundationHook foundationHook;
+    public final FoundationHook foundationhook;
     
     // Actuators
     public final Drivetrain drivetrain;
     public final Lift slide;
     public final Arm arm;
+    public final IntakeLinkage intakelinkage;
 
     // Sensors
     public final Switch bottomlimit;
@@ -79,7 +81,10 @@ public class Robot
 
         // Servos
         Servo hook = hardwareMap.servo.get("hook");
-        foundationHook = new FoundationHook(hook);
+        foundationhook = new FoundationHook(hook);
+
+        Servo intake_linkage = hardwareMap.servo.get("intake linkage");
+        intakelinkage = new IntakeLinkage(intake_linkage);
 
         // Actuators
         DcMotor slidemotor = hardwareMap.dcMotor.get("slide lift");

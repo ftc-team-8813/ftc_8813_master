@@ -156,4 +156,11 @@ public class Drivetrain
         motors[2].stopHolding();
         motors[3].stopHolding();
     }
+
+    public void stop(){
+        leftFront.getMotor().setPower(0);
+        leftBack.getMotor().setPower(0);
+        rightFront.getMotor().setPower(0);
+        rightBack.getMotor().setPower(0);
+    }
 }
