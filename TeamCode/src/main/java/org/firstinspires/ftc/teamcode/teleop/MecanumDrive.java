@@ -8,10 +8,14 @@ import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 @TeleOp(name="Mecanum Drive")
 public class MecanumDrive extends BaseTeleOp
 {
+    private static final int SPEED_SLOW = 0;
+    private static final int SPEED_FAST = 1;
+    private static final int SPEED_LUDICROUS = 2;
+    private static final String[] speed_modes = {"Slow", "Fast", "Ludicrous"};
+    
     
     private ButtonHelper buttonHelper;
-    private boolean slow;
-    private boolean superslow;
+    private int speed_mode = SPEED_FAST;
     
     @Override
     public void init()
@@ -23,17 +27,16 @@ public class MecanumDrive extends BaseTeleOp
     @Override
     public void doLoop()
     {
-        telemetry.addData("Extender Top Limit", robot.slide.getTopLimit());
-        telemetry.addData("Extender Pos", robot.slide.getCurrentPos());
-        telemetry.addData("Forward Ticks Moved", robot.drivetrain.leftFront.getCurrentPosition());
-        telemetry.addData("Arm Pos", robot.arm.getExtension().getPosition());
-
-
-
-        if (buttonHelper.pressing(ButtonHelper.x))
-            slow = !slow;
         if (buttonHelper.pressing(ButtonHelper.y))
-            superslow = !superslow;
+        {
+            if (speed_mode == SPEED_SLOW) speed_mode = SPEED_FAST;
+            else speed_mode = SPEED_SLOW;
+        }
+        if (buttonHelper.pressing(ButtonHelper.x))
+        {
+            if (speed_mode == SPEED_LUDICROUS) speed_mode = SPEED_FAST;
+            else speed_mode = SPEED_LUDICROUS;
+        }
 
         if (gamepad1.left_bumper){
             robot.intake.collectStone(1);
@@ -45,16 +48,17 @@ public class MecanumDrive extends BaseTeleOp
 
 
         robot.arm.extend(-gamepad2.right_stick_y * 0.004);
-
-
-        if (!slow)
-            robot.drivetrain.drive(-gamepad1.left_stick_y * 0.5, gamepad1.left_stick_x * 0.5, -gamepad1.right_stick_y * 0.4);
-        else if (!superslow)
-            robot.drivetrain.drive(-gamepad1.left_stick_y * 0.2, gamepad1.left_stick_x * 0.2, -gamepad1.right_stick_y * 0.1);
-        else
-            robot.drivetrain.drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_y);
-
-
+        
+        double[] speeds;
+        if (speed_mode == SPEED_SLOW)      speeds = new double[] {0.3, 0.3, 0.15}; // SLOW
+        else if (speed_mode == SPEED_FAST) speeds = new double[] {0.5, 0.5, 0.4 }; // FAST
+        else                               speeds = new double[] {1,   1,   1   }; // LUDICROUS
+        
+        robot.drivetrain.drive(-gamepad1.left_stick_y * speeds[0],
+                                  gamepad1.left_stick_x * speeds[1],
+                                 -gamepad1.right_stick_y * speeds[2]);
+    
+    
         robot.slide.raiseLift(-gamepad2.left_stick_y * 0.4);
 
 
@@ -79,6 +83,12 @@ public class MecanumDrive extends BaseTeleOp
         } else if (gamepad1.dpad_down){
             robot.intakelinkage.moveLinkageIn();
         }
+        
+        telemetry.addData("Speed Mode", speed_modes[speed_mode]);
+        telemetry.addData("Extender Top Limit", robot.slide.getTopLimit());
+        telemetry.addData("Extender Pos", robot.slide.getCurrentPos());
+        telemetry.addData("Forward Ticks Moved", robot.drivetrain.leftFront.getCurrentPosition());
+        telemetry.addData("Arm Pos", robot.arm.getExtension().getPosition());
     }
 
     public void stop(){
