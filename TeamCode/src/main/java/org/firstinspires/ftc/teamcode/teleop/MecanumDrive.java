@@ -23,6 +23,13 @@ public class MecanumDrive extends BaseTeleOp
     @Override
     public void doLoop()
     {
+        telemetry.addData("Extender Top Limit", robot.slide.getTopLimit());
+        telemetry.addData("Extender Pos", robot.slide.getCurrentPos());
+        telemetry.addData("Forward Ticks Moved", robot.drivetrain.leftFront.getCurrentPosition());
+        telemetry.addData("Arm Pos", robot.arm.getExtension().getPosition());
+
+
+
         if (buttonHelper.pressing(ButtonHelper.x))
             slow = !slow;
         if (buttonHelper.pressing(ButtonHelper.y))
@@ -39,7 +46,6 @@ public class MecanumDrive extends BaseTeleOp
 
         robot.arm.extend(-gamepad2.right_stick_y * 0.004);
 
-        telemetry.addData("Extender Delta", robot.slide.getCurrentPos());
 
         if (!slow)
             robot.drivetrain.drive(-gamepad1.left_stick_y * 0.5, gamepad1.left_stick_x * 0.5, -gamepad1.right_stick_y * 0.4);
@@ -63,10 +69,15 @@ public class MecanumDrive extends BaseTeleOp
 
 
         if (gamepad2.x){
-            robot.foundationHook.moveHookDown();
+            robot.foundationhook.moveHookDown();
+        }else if (gamepad2.b){
+            robot.foundationhook.moveHookUp();
         }
-        if (gamepad2.b){
-            robot.foundationHook.moveHookUp();
+
+        if (gamepad1.dpad_up){
+            robot.intakelinkage.moveLinkageOut();
+        } else if (gamepad1.dpad_down){
+            robot.intakelinkage.moveLinkageIn();
         }
     }
 

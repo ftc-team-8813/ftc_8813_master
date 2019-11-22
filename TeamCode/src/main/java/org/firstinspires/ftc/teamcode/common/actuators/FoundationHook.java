@@ -10,7 +10,7 @@ public class FoundationHook {
     }
 
     public void moveHookDown(){
-        hook.setPosition(1);
+        hook.setPosition(0.8);
     }
 
     public void moveHookUp(){

@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.common;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -9,9 +11,12 @@ import org.firstinspires.ftc.teamcode.common.actuators.Arm;
 import org.firstinspires.ftc.teamcode.common.actuators.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.actuators.FoundationHook;
 import org.firstinspires.ftc.teamcode.common.actuators.Intake;
+import org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage;
 import org.firstinspires.ftc.teamcode.common.actuators.Lift;
-import org.firstinspires.ftc.teamcode.common.actuators.PIDMotor;
+import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
+import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 // import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
+import org.firstinspires.ftc.teamcode.common.sensors.IMU;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataStorage;
@@ -31,15 +36,17 @@ public class Robot
     // PID-controlled motors
 
     // Servos
-    public final FoundationHook foundationHook;
+    public final FoundationHook foundationhook;
     
     // Actuators
     public final Drivetrain drivetrain;
     public final Lift slide;
     public final Arm arm;
+    public final IntakeLinkage intakelinkage;
 
     // Sensors
     public final Switch bottomlimit;
+    public final IMU imu;
 
     // Constants
 
@@ -74,19 +81,25 @@ public class Robot
 
         // Servos
         Servo hook = hardwareMap.servo.get("hook");
-        foundationHook = new FoundationHook(hook);
+        foundationhook = new FoundationHook(hook);
+
+        Servo intake_linkage = hardwareMap.servo.get("intake linkage");
+        intakelinkage = new IntakeLinkage(intake_linkage);
 
         // Actuators
         DcMotor slidemotor = hardwareMap.dcMotor.get("slide lift");
+        slidemotor.setDirection(DcMotorSimple.Direction.REVERSE);
         DigitalChannel bottomswitch = hardwareMap.digitalChannel.get("bottom limit");
         PIDMotor lift = new PIDMotor(slidemotor);
         bottomlimit = new Switch(bottomswitch);
         slide = new Lift(lift, bottomlimit);
-        
-        drivetrain = new Drivetrain(new PIDMotor(hardwareMap.dcMotor.get("lf")),
-                                    new PIDMotor(hardwareMap.dcMotor.get("rf")),
-                                    new PIDMotor(hardwareMap.dcMotor.get("lb")),
-                                    new PIDMotor(hardwareMap.dcMotor.get("rb")));
+    
+        imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+    
+        drivetrain = new Drivetrain(new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lf"))),
+                                    new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rf"))),
+                                    new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lb"))),
+                                    new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rb"))), imu);
         
         
         DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
@@ -133,6 +146,7 @@ public class Robot
         // Stop all motors
 
         // Stop external threads and close open files (if any) here
+        imu.stop();
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
