@@ -55,6 +55,7 @@ public class AccelMotor extends DcMotorImpl
     @Override
     protected synchronized void internalSetPower(double power)
     {
+        // Input power is already adjusted for direction
         if (currentJob != null && !currentJob.isDone())
         {
             currentJob.cancel(true);
@@ -76,17 +77,15 @@ public class AccelMotor extends DcMotorImpl
         
         final long sampleTime = 15;
         double step = acceleration * (sampleTime / 1000.0) * Math.signum(vf - v0);
-        log.d("Ramping power from %.3f to %.3f; step=%.3f", v0, vf, step);
-        controller.setMotorPower(portNumber, step / maxSpeed); // Make PIDMotor happy
+        controller.setMotorPower(portNumber, (v0 + step) / maxSpeed); // Make PIDMotor happy
         currentJob = GlobalThreadPool.instance().start(() ->
         {
             for (double v = v0 + step; ; v += step)
             {
-                if ((vf > v0 && v > vf) || (v0 >= vf && vf >= v))
+                if ((vf > v0 && v >= vf) || (v0 > vf && vf >= v))
                 {
                     break;
                 }
-                log.v("power=%.3f", v / maxSpeed);
                 controller.setMotorPower(portNumber, v / maxSpeed);
                 try
                 {

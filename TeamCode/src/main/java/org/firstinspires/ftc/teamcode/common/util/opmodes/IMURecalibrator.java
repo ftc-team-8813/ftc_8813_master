@@ -32,7 +32,7 @@ public class IMURecalibrator extends BaseAutonomous
         }
         log.d("Initializing IMU");
         IMU imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
-        imu.initialize(telemetry);
+        imu.initialize();
     }
     
     @Override
@@ -43,8 +43,9 @@ public class IMURecalibrator extends BaseAutonomous
     }
     
     @Override
-    public void finish()
+    public void finish() throws InterruptedException
     {
+        super.finish();
         imu.stop();
     }
 }

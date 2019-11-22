@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.actuators;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
+
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 import org.firstinspires.ftc.teamcode.common.util.Config;
@@ -34,13 +36,23 @@ public class Lift {
         } else {
             if (!slidemotor.isHolding()) {
                 slidemotor.setPower(0.5);
-                slidemotor.hold(slidemotor.getCurrentPosition());
+                slidemotor.hold(-slidemotor.getCurrentPosition());
             }
         }
     }
 
+    public void raiseLiftEnc(int dist) throws InterruptedException {
+        slidemotor.setRunMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        slidemotor.runToPosition(dist, true);
+
+    }
+
     public double getCurrentPos(){
         return slidemotor.getCurrentPosition();
+    }
+
+    public double getTopLimit(){
+        return toplimit;
     }
 
 

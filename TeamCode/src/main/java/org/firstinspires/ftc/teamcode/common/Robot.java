@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.common;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.teamcode.common.actuators.Lift;
 import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 // import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
+import org.firstinspires.ftc.teamcode.common.sensors.IMU;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataStorage;
@@ -42,6 +44,7 @@ public class Robot
 
     // Sensors
     public final Switch bottomlimit;
+    public final IMU imu;
 
     // Constants
 
@@ -85,11 +88,13 @@ public class Robot
         PIDMotor lift = new PIDMotor(slidemotor);
         bottomlimit = new Switch(bottomswitch);
         slide = new Lift(lift, bottomlimit);
-        
+    
+        imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+    
         drivetrain = new Drivetrain(new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lf"))),
                                     new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rf"))),
                                     new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lb"))),
-                                    new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rb"))));
+                                    new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rb"))), imu);
         
         
         DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
@@ -136,6 +141,7 @@ public class Robot
         // Stop all motors
 
         // Stop external threads and close open files (if any) here
+        imu.stop();
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

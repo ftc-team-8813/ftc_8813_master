@@ -5,52 +5,52 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.common.util.TelemetryWrapper;
+import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
+import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
+import org.firstinspires.ftc.teamcode.common.util.TelemetryWrapper;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
+import java.nio.CharBuffer;
+import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Scanner;
 
 /**
- * Wrapper class for the BNO055 IMU to automatically set up and calibrate the IMU.
+ * Wrapper class for the BNO055 IMU to automatically set up and calibrate the IMU. <br>
+ * NOTE: The gyroscope heading value is positive in the COUNTERCLOCKWISE direction.
  */
-
+// TODO: Fix any possible state handling issues with the CLOSED and ERROR states
 public class IMU
 {
     
     //Modes
     public static final int PRE_INIT = 0;
     public static final int INITIALIZED = 1;
-    public static final int SETUP = 2;
-    public static final int STARTED = 3;
+    public static final int STARTED = 2;
+    public static final int CLOSED = 4;
+    public static final int ERROR = 5;
     
     //The IMU
-    private volatile BNO055IMU imu;
+    private BNO055IMU imu;
     //Its parameters
     private BNO055IMU.Parameters params;
     //The logger
     private Logger log;
-    private boolean autoCalibrating;
-    private Thread worker;
-    private volatile float heading, roll, pitch;
-    private volatile int status = PRE_INIT;
+    private Worker worker;
+    private Thread workerThread;
 
-    private boolean inRadians;
-
-    private float lastAngle;
-    private float angleOffset;
-    private int revolutions;
-
-    private Telemetry telemetry;
     
     public IMU(BNO055IMU imu)
     {
         this.imu = imu;
         log = new Logger("IMU Wrapper");
+        worker = new Worker(); // Just create the worker object here to avoid NPE's when checking state
     }
 
     public BNO055IMU getInternalImu()
@@ -58,58 +58,226 @@ public class IMU
         return imu;
     }
     
-    public void initialize(Telemetry telemetry)
+    /**
+     * Worker Thread --- Even though everyone on Discord was like "NOOOOOOO"
+     * Initializes the IMU asynchronously and then continuously polls the sensor, counting revolutions.
+     */
+    private class Worker implements Runnable
     {
-        this.telemetry = telemetry;
-        //Initialize telemetry
-        TelemetryWrapper.init(telemetry, 5);
+        private Logger log;
+        private File calibrationFile = new File(Config.storageDir + "imu_calibration.json");
+        
+        private volatile boolean inRadians;
+    
+        private float lastAngle;
+        private float angleOffset;
+        private int revolutions;
+        
+        private long lastLog;
+        private int updateCount;
+        private boolean autoCalibrating;
+        
+        private volatile int status = PRE_INIT;
+        private volatile String detailStatus = "";
+        
+        private volatile float heading, roll, pitch;
+    
+        private void update()
+        {
+            Orientation o = imu.getAngularOrientation();
+            float h = o.firstAngle;
+            float r = o.secondAngle;
+            float p = o.thirdAngle;
+            if (inRadians)
+            {
+                h = (float) Math.toDegrees(h);
+                r = (float) Math.toDegrees(roll);
+                p = (float) Math.toDegrees(pitch);
+            }
+            roll = r;
+            pitch = p;
+            float delta = h - lastAngle;
+            if (delta < -300)
+            {
+                //Looped past 180 to -179
+                revolutions++;
+            } else if (delta > 300)
+            {
+                //Looped past -179 to 180
+                revolutions--;
+            }
+            lastAngle = h;
+            heading = h + 360 * revolutions - angleOffset;
+        }
+        
+        @Override
+        public void run()
+        {
+            log = new Logger("IMU Worker Thread");
+            while (status < CLOSED)
+            {
+                switch (status)
+                {
+                    case PRE_INIT:
+                    {
+                        // OK to initialize; user starts this thread with initialize()
+                        log.d("====Initializing IMU====");
+                        log.d("Reading calibration file...");
+                        detailStatus = "Reading calibration";
+                        try (Scanner scan = new Scanner(calibrationFile))
+                        {
+                            if (calibrationFile.exists())
+                            {
+                                String data = scan.useDelimiter("\\Z").next();
+                                params.calibrationData = BNO055IMU.CalibrationData.deserialize(data);
+                            }
+                            else
+                            {
+                                log.d("File does not exist!");
+                                autoCalibrating = true;
+                            }
+                        }
+                        catch (IOException e)
+                        {
+                            log.w("Unable to read calibration file");
+                            log.w(e);
+                            autoCalibrating = true;
+                        }
+                        
+                        log.d("Initializing IMU");
+                        detailStatus = "Initializing";
+                        imu.initialize(params);
+                        
+                        log.d("Running auto-calibration");
+                        while (autoCalibrating)
+                        {
+                            int progress = (imu.getCalibrationStatus().calibrationStatus >> 4) & 3;
+                            detailStatus = "Calibrating--Progress: " + progress;
+                            if (progress == 3)
+                            {
+                                autoCalibrating = false;
+                                try (FileWriter writer = new FileWriter(calibrationFile))
+                                {
+                                    String data = imu.readCalibrationData().serialize();
+                                    writer.write(data);
+                                }
+                                catch (IOException e)
+                                {
+                                    log.e("Unable to write calibration file");
+                                    log.e(e);
+                                }
+                                break;
+                            }
+                            
+                            try
+                            {
+                                Thread.sleep(10);
+                            }
+                            catch (InterruptedException e)
+                            {
+                                status = ERROR;
+                                break;
+                            }
+                        }
+                        detailStatus = "Initialized";
+                        status = INITIALIZED;
+                        break;
+                    }
+                    case STARTED:
+                    {
+                        update();
+                        updateCount++;
+                        if (System.currentTimeMillis() - lastLog > 1000)
+                        {
+                            log.d("Average update rate: %d fps", updateCount);
+                            updateCount = 0;
+                            lastLog = System.currentTimeMillis();
+                        }
+                        break;
+                    }
+                }
+                try
+                {
+                    Thread.sleep(5);
+                }
+                catch (InterruptedException e)
+                {
+                    log.i("Interrupted");
+                    status = CLOSED;
+                    break;
+                }
+            }
+        }
+        
+        public synchronized double getHeading()
+        {
+            return heading;
+        }
+        
+        public synchronized double getRoll()
+        {
+            return roll;
+        }
+        
+        public synchronized double getPitch()
+        {
+            return pitch;
+        }
+        
+        public synchronized void setStatus(int status)
+        {
+            this.status = status;
+        }
+        
+        public synchronized int getStatus()
+        {
+            return status;
+        }
+        
+        public synchronized String getDetailStatus()
+        {
+            return detailStatus;
+        }
+        
+        public synchronized void resetHeading()
+        {
+            angleOffset = lastAngle;
+            revolutions = 0;
+        }
+    }
+    
+    public void initialize()
+    {
         //Set up
         params = new BNO055IMU.Parameters();
         params.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         params.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         params.mode = BNO055IMU.SensorMode.IMU;
-        try
+    
+        workerThread = new Thread(worker, "IMU Worker Thread");
+        workerThread.setDaemon(true);
+        workerThread.start(); // Initialize automatically
+    
+        if (BaseAutonomous.instantiated())
+            BaseAutonomous.instance().addThreadToInterrupt(workerThread);
+    }
+    
+    public void waitForInit(Telemetry telemetry) throws InterruptedException
+    {
+        Telemetry.Item item = null;
+        while (worker.getStatus() < INITIALIZED)
         {
-            File f = new File(Config.storageDir + "imu_calibration.json");
-            if (f.exists())
+            if (telemetry != null)
             {
-                TelemetryWrapper.setLine(0, "Reading calibration file");
-                //Read the entire file into a String so we can then deserialize it
-                FileReader reader = new FileReader(f);
-                char[] buffer = new char[1024];
-                int len;
-                StringBuilder sb = new StringBuilder();
-                while ((len = reader.read(buffer)) > 0)
-                {
-                    if (len == 1024)
-                    {
-                        sb.append(buffer); //Don't copy the array if it's full
-                    } else
-                    {
-                        sb.append(Arrays.copyOfRange(buffer, 0, len)); //Get the non-empty chunk
-                    }
-                }
-                reader.close();
-                params.calibrationData = BNO055IMU.CalibrationData.deserialize(sb.toString());
-            } else
-            {
-                log.w("No calibration file; auto calibration will be used instead.");
-                autoCalibrating = true;
-                
+                item = telemetry.addData("IMU Initialization status", worker.getDetailStatus());
+                telemetry.update();
             }
-        } catch (IOException e)
-        {
-            log.e("Unable to read calibration file; auto calibration will be used instead.");
-            autoCalibrating = true;
+            Thread.sleep(10);
         }
-        params.loggingEnabled = false;
-        params.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-        if (autoCalibrating)
+        if (item != null)
         {
-            TelemetryWrapper.setLine(0, "Calibration required. Please set the robot on a flat " +
-                    "surface");
+            telemetry.removeItem(item);
         }
-        status = INITIALIZED;
     }
     
     public void start()
@@ -119,131 +287,51 @@ public class IMU
     
     public void start(boolean inRadians)
     {
-        this.inRadians = inRadians;
-        if (status < INITIALIZED)
+        worker.inRadians = inRadians;
+        if (worker.getStatus() < INITIALIZED)
         {
             log.f("start() called before initialize()!");
             throw new IllegalStateException("start() called before initialize()!");
         }
-        if (status == STARTED)
+        if (worker.getStatus() == STARTED)
         {
             log.d("Trying to start IMU even though it is already running");
             return;
         }
-        if (status != SETUP)
-        {
-            TelemetryWrapper.setLine(0, "Initializing IMU");
-            imu.initialize(params);
-            while (autoCalibrating && !Thread.interrupted())
-            {
-                if (autoCalibrating)
-                {
-                    TelemetryWrapper.setLine(0, "Calibrating... Please do not disturb the " +
-                            "robot!");
-                    int progress = (imu.getCalibrationStatus().calibrationStatus >> 4) & 3;
-                    TelemetryWrapper.setLine(1, "Progress: " + progress + "/3");
-                    TelemetryWrapper.setLine(2, "Status: " + imu.getSystemStatus().toString());
-                    if (progress == 3)
-                    {
-                        TelemetryWrapper.setLine(1, "Progress: Saving calibration");
-                        autoCalibrating = false;
-                        File f = new File(Config.storageDir + "imu_calibration.json");
-                        try
-                        {
-                            String data = imu.readCalibrationData().serialize();
-                            FileWriter w = new FileWriter(f);
-                            w.write(data);
-                            w.close();
-                        } catch (IOException e)
-                        {
-                            log.e("Unable to write calibration data");
-                        }
-                    }
-                }
-                try
-                {
-                    Thread.sleep(20);
-                } catch (InterruptedException e)
-                {
-                    break;
-                }
-            }
-            status = SETUP;
-            TelemetryWrapper.clear();
-        }
-        status = STARTED;
+        worker.setStatus(STARTED);
     }
 
     public int getStatus()
     {
-        return status;
+        return worker.getStatus();
     }
 
-    public void resetHeading()
+    public String getDetailStatus()
     {
-        update();
-        angleOffset = lastAngle;
-        revolutions = 0;
-    }
-
-    public void update()
-    {
-        Orientation o = imu.getAngularOrientation();
-        float h = o.firstAngle;
-        float r = o.secondAngle;
-        float p = o.thirdAngle;
-        if (inRadians)
-        {
-            h = (float) Math.toDegrees(h);
-            r = (float) Math.toDegrees(roll);
-            p = (float) Math.toDegrees(pitch);
-        }
-        roll = r;
-        pitch = p;
-        float delta = h - lastAngle;
-        if (delta < -300)
-        {
-            //Looped past 180 to -179
-            revolutions++;
-        } else if (delta > 300)
-        {
-            //Looped past -179 to 180
-            revolutions--;
-        }
-        lastAngle = h;
-        heading = h + 360 * revolutions - angleOffset;
-        if (telemetry != null)
-        {
-            telemetry.addData("Heading", heading);
-            telemetry.addData("Roll", roll);
-            telemetry.addData("Pitch", pitch);
-            telemetry.update();
-        }
+        return worker.getDetailStatus();
     }
     
-    public float getHeading()
+    public double getHeading()
     {
-        return heading;
+        return worker.getHeading();
     }
     
-    public float getRoll()
+    public double getRoll()
     {
-        return roll;
+        return worker.getRoll();
     }
     
-    public float getPitch()
+    public double getPitch()
     {
-        return pitch;
+        return worker.getPitch();
     }
     
     public void stop()
     {
-        if (status != STARTED)
+        if (worker.getStatus() < CLOSED)
         {
-            log.d("Trying to stop IMU even though it is not running");
-            return;
+            workerThread.interrupt();
+            worker.setStatus(CLOSED);
         }
-        worker.interrupt();
-        status = SETUP;
     }
 }
