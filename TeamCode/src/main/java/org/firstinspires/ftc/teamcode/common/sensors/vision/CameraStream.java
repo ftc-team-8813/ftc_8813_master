@@ -47,10 +47,15 @@ public class CameraStream
         return new Size(480, 640);
     }
     
+    public void addListener(CameraListener l, int priority)
+    {
+        listeners.add(new CameraListenerWrapper(l, priority));
+        listeners.sort(Comparator.naturalOrder());
+    }
+    
     public void addListener(CameraListener l)
     {
-        listeners.add(new CameraListenerWrapper(l, 0));
-        listeners.sort(Comparator.naturalOrder());
+        addListener(l, 0);
     }
     
     public void removeListener(CameraListener l)
@@ -66,10 +71,15 @@ public class CameraStream
         l.stop();
     }
     
+    public void addModifier(OutputModifier m, int priority)
+    {
+        listeners.add(new CameraListenerWrapper(m, priority));
+        listeners.sort(Comparator.naturalOrder());
+    }
+    
     public void addModifier(OutputModifier m)
     {
-        listeners.add(new CameraListenerWrapper(m, 1000));
-        listeners.sort(Comparator.naturalOrder());
+        addModifier(m, 1000);
     }
 
     public void removeModifier(OutputModifier m)
