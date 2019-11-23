@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
@@ -65,6 +66,9 @@ public abstract class BaseAutonomous extends LinearOpMode
     private CameraStream stream;
     private Logger log;
     public Config config;
+    
+    // Switch for GlobalDataLogger
+    private static final boolean LOGGING_ENABLED = true;
     
     /**
      * Get the current instance of BaseAutonomous. This is set when the OpMode is initialized and
@@ -182,7 +186,8 @@ public abstract class BaseAutonomous extends LinearOpMode
             //Clear the persistent objects since this would be a new round in competition
             Persistent.clear();
             
-            // TelemetryWrapper.init(telemetry, 0);
+            GlobalDataLogger.initialize("autonomous_" + getClass().getSimpleName() + ".log.gz");
+            if (LOGGING_ENABLED) GlobalDataLogger.instance().start(5);
             
             //Set the current instance
             instance = this;
@@ -228,6 +233,7 @@ public abstract class BaseAutonomous extends LinearOpMode
                 else if (exc instanceof IOException) log.e(exc);
                 else throw (InterruptedException) exc;
             }
+            GlobalThreadPool.instance().stopAll();
             Logger.close();
             System.gc();
         }

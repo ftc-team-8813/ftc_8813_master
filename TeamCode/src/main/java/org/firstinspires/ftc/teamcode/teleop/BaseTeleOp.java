@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Profiler;
 import org.firstinspires.ftc.teamcode.common.util.Scheduler;
@@ -27,6 +28,8 @@ public abstract class BaseTeleOp extends OpMode
     
     private double prev_tick_time;
     
+    private static final boolean LOGGING_ENABLED = true;
+    
     @Override
     public void init()
     {
@@ -40,6 +43,15 @@ public abstract class BaseTeleOp extends OpMode
         ((AccelMotor)robot.drivetrain.rightFront.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
         ((AccelMotor)robot.drivetrain.leftBack.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
         ((AccelMotor)robot.drivetrain.rightBack.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
+    
+        try
+        {
+            GlobalDataLogger.initialize(Config.storageDir + "teleop_" + getClass().getSimpleName() + ".log.gz");
+            if (LOGGING_ENABLED) GlobalDataLogger.instance().start(5);
+        } catch (IOException e)
+        {
+            log.e("Failed to initialize logger");
+        }
     }
     
     @Override

@@ -99,6 +99,7 @@ public class Drivetrain
                 motors[i].setPower(Math.abs(powers[i]));
                 motors[i].hold(target);
             }
+            Thread.sleep(6);
         }
         
         double angleOrig;
