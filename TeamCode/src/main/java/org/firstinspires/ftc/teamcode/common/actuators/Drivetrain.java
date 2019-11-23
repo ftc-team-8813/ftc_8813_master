@@ -127,7 +127,7 @@ public class Drivetrain
             if (imu != null && turn == 0)
             {
                 double angleError = imu.getHeading() - angleOrig;
-                double powerOffset = angleError * 0.02;
+                double powerOffset = angleError * 0.02 * Math.signum(distance);
                 
                 if (powerOffset != prevPowerOff)
                 {

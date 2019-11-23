@@ -81,6 +81,13 @@ public class IMU
         private volatile String detailStatus = "";
         
         private volatile float heading, roll, pitch;
+        
+        private boolean immediateStart = false;
+        
+        public void setImmediateStart(boolean immediateStart)
+        {
+            this.immediateStart = immediateStart;
+        }
     
         private void update()
         {
@@ -180,7 +187,8 @@ public class IMU
                             }
                         }
                         detailStatus = "Initialized";
-                        status = INITIALIZED;
+                        if (immediateStart) status = STARTED;
+                        else status = INITIALIZED;
                         break;
                     }
                     case STARTED:
@@ -248,6 +256,11 @@ public class IMU
     
     public void initialize()
     {
+        if (worker.getStatus() >= INITIALIZED)
+        {
+            log.w("Already initialized!");
+            return;
+        }
         //Set up
         params = new BNO055IMU.Parameters();
         params.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -278,6 +291,11 @@ public class IMU
         {
             telemetry.removeItem(item);
         }
+    }
+    
+    public void setImmediateStart(boolean immediateStart)
+    {
+        if (worker.getStatus() < INITIALIZED) worker.setImmediateStart(immediateStart);
     }
     
     public void start()
@@ -330,7 +348,7 @@ public class IMU
     {
         if (worker.getStatus() < CLOSED)
         {
-            workerThread.interrupt();
+            if (worker.getStatus() > PRE_INIT) workerThread.interrupt();
             worker.setStatus(CLOSED);
         }
     }
