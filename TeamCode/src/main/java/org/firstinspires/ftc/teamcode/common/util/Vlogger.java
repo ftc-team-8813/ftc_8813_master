@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.common.util;
 
+import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.videoio.VideoWriter;
 
 import java.io.File;
 
-public class Vlogger
+public class Vlogger implements CameraStream.CameraListener
 {
     private VideoWriter writer;
     private boolean closed;
@@ -43,5 +44,17 @@ public class Vlogger
         {
             Utils.scanFile(new File(Config.storageDir + filename));
         }
+    }
+    
+    @Override
+    public void processFrame(Mat bgr)
+    {
+        put(bgr);
+    }
+    
+    @Override
+    public void stop()
+    {
+        close();
     }
 }

@@ -68,30 +68,6 @@ public class WebcamStream extends CameraStream
     }
 
     @Override
-    public void addListener(CameraListener l)
-    {
-        super.addListener(l);
-    }
-
-    @Override
-    public void removeListener(CameraListener l)
-    {
-        super.removeListener(l);
-    }
-
-    @Override
-    public void addModifier(OutputModifier m)
-    {
-        super.addModifier(m);
-    }
-
-    @Override
-    public void removeModifier(OutputModifier m)
-    {
-        super.removeModifier(m);
-    }
-
-    @Override
     public void stop()
     {
         log.d("Stopping");
@@ -132,24 +108,8 @@ public class WebcamStream extends CameraStream
             Utils.bitmapToMat(frame, mat);
             Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2BGR);
 
-            CameraListener[] currentListeners = listeners.toArray(new CameraListener[0]);
-            for (CameraListener l : currentListeners)
-            {
-                Mat copyFrame = new Mat();
-                mat.copyTo(copyFrame);
-                l.processFrame(copyFrame);
-            }
-            Mat out = mat;
-            OutputModifier[] currentModifiers = modifiers.toArray(new OutputModifier[0]);
-            for (OutputModifier m : currentModifiers)
-            {
-                out = m.draw(out);
-            }
-
-            if (!SMURF_MODE)
-                Imgproc.cvtColor(out, out, Imgproc.COLOR_BGR2RGBA);
-            System.gc();
-
+            Mat out = processFrame(mat);
+            
             final Bitmap outFrame = Bitmap.createBitmap(out.width(), out.height(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(mat, outFrame);
             activity.runOnUiThread(() -> setImageBitmap(outFrame));
@@ -157,7 +117,7 @@ public class WebcamStream extends CameraStream
 
         void onRemove()
         {
-            for (CameraListener l : listeners)
+            for (CameraListenerWrapper l : listeners)
             {
                 l.stop();
             }
