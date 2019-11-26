@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.common.actuators;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
@@ -164,6 +165,34 @@ public class Drivetrain
         motors[3].stopHolding();
         angleOffset = 0;
         state = "Idle";
+    }
+
+    public void moveVishnu(double forward, double right, double turn, int dist){
+        double[] powers = {
+                forward + right - turn,
+                forward - right + turn,
+                forward - right - turn,
+                forward + right + turn
+        };
+
+        PIDMotor[] motors = {leftFront, rightFront, leftBack, rightBack};
+
+        for (int i = 0; i<4; i++){
+            motors[i].setRunMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+
+        for (int i = 0; i<4; i++){
+            motors[i].setTargetPosition(dist*(int)Math.signum(powers[i]) + motors[i].getCurrentPosition());
+
+        }
+        leftFront.setRunMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightFront.setRunMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftBack.setRunMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightBack.setRunMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        for (int i = 0; i<4; i++){
+            motors[i].setPower(powers[i]);
+        }
     }
 
     public void stop(){
