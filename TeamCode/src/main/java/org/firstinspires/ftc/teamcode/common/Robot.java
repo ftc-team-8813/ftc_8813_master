@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.common.actuators.FoundationHook;
 import org.firstinspires.ftc.teamcode.common.actuators.Intake;
 import org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage;
 import org.firstinspires.ftc.teamcode.common.actuators.Lift;
+import org.firstinspires.ftc.teamcode.common.actuators.MotorArm;
 import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 // import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
@@ -41,9 +42,11 @@ public class Robot
     public final Lift slide;
     public final Arm arm;
     public final IntakeLinkage intakelinkage;
+    public final MotorArm newarm;
 
     // Sensors
     public final Switch bottomlimit;
+    public final Switch backSwitch;
 
     // Constants
 
@@ -90,6 +93,11 @@ public class Robot
         PIDMotor lift = new PIDMotor(slidemotor);
         bottomlimit = new Switch(bottomswitch);
         slide = new Lift(lift, bottomlimit);
+
+        DcMotor motorArm = hardwareMap.dcMotor.get("motor arm");
+        DigitalChannel backLimit = hardwareMap.digitalChannel.get("back limit");
+        backSwitch = new Switch(backLimit);
+        newarm = new MotorArm(motorArm, backSwitch);
         
         drivetrain = new Drivetrain(new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lf"))),
                                     new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rf"))),
@@ -103,7 +111,7 @@ public class Robot
         // Swerve wheels
         
         
-        // Sensors
+        // Sensor
 
         
         // Constants

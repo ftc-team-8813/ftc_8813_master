@@ -5,12 +5,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class IntakeLinkage {
     public Servo linkage;
 
-    public IntakeLinkage(Servo hook){
+    public IntakeLinkage(Servo linkage){
         this.linkage = linkage;
     }
 
     public void moveLinkageIn(){
-        linkage.setPosition(0.8);
+        linkage.setPosition(1);
     }
 
     public void moveLinkageOut(){

@@ -103,6 +103,10 @@ public class PIDMotor implements Closeable
             motor.setPower(power);
         }
     }
+
+    public void setTargetPosition(int pos){
+        motor.setTargetPosition(pos);
+    }
     
     /**
      * Return the current position which the controller is trying to hold.
