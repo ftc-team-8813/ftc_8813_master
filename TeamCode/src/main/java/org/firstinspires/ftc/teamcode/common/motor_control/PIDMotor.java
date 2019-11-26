@@ -294,6 +294,15 @@ public class PIDMotor implements Closeable
     {
         return controller.getMotorMode(port) == DcMotor.RunMode.RUN_TO_POSITION;
     }
+    
+    /**
+     * Returns false when the motor reaches its target.
+     * @return Whether the motor is busy
+     */
+    public boolean isBusy()
+    {
+        return controller.isBusy(port);
+    }
 
     /**
      * Access the internal {@link PIDController}. This is irrelevant now.
@@ -312,6 +321,15 @@ public class PIDMotor implements Closeable
     public double getOutput()
     {
         return controller.getMotorVelocity(port);
+    }
+    
+    /**
+     * Get the power of the motor
+     * @return How fast the motor is moving (or its maximum speed when holding a position) on a range from -1 to 1
+     */
+    public double getPower()
+    {
+        return motor.getPower();
     }
     
     

@@ -30,9 +30,9 @@ public class AutoDesigner extends BaseTeleOp
     private static final int STATE_REVERT_OP = 4;
     private static final int STATE_EDIT_OP = 5;
     
-    private static final int OP_FORWARD = 0;
-    private static final int OP_RIGHT = 1;
-    private static final int OP_TURN = 2;
+    public static final int OP_FORWARD = 0;
+    public static final int OP_RIGHT = 1;
+    public static final int OP_TURN = 2;
     
     private static final String[] ops = {"Forward", "Strafe", "Turn"};
     

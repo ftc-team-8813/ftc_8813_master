@@ -7,21 +7,22 @@ import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.common.Robot;
 
 @Autonomous(name="IMU Test")
-@Disabled
 public class IMUTest extends BaseAutonomous
 {
     @Override
     public void run() throws InterruptedException
     {
-        telemetry.addData("ERROR", "No IMU in robot!");
-        telemetry.update();
-//        Robot robot = Robot.instance();
-//        robot.imu.initialize(telemetry);
-//        robot.imu.start();
+        Robot robot = Robot.instance();
+        robot.imu.initialize();
+        robot.imu.waitForInit(telemetry);
+        robot.imu.start();
 
         while (opModeIsActive())
         {
-            // robot.imu.update();
+            telemetry.addData("Heading", robot.imu.getHeading());
+            telemetry.addData("Roll", robot.imu.getRoll());
+            telemetry.addData("Pitch", robot.imu.getPitch());
+            telemetry.update();
             Thread.sleep(50);
         }
     }
