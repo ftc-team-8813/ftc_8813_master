@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.motor_control;
 
 import android.annotation.SuppressLint;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -8,9 +9,11 @@ import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorImpl;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
 import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
+import org.slf4j.helpers.Util;
 
 import java.util.concurrent.Future;
 
@@ -37,6 +40,12 @@ public class AccelMotor extends DcMotorImpl
         this.acceleration = acceleration; // full speed in 1 second
         this.defaultAcceleration = acceleration;
         log = new Logger("AccelMotor " + Utils.getMotorId(motor));
+        
+        GlobalDataLogger.instance().addChannel(Utils.getMotorId(motor) + " speed",
+                () -> String.format("%.3f", getPower()));
+        GlobalDataLogger.instance().addChannel(Utils.getMotorId(motor) + " state",
+                () -> isAccelerating() ? "Accelerating" : "Idle");
+        
     }
     
     public void setMaxAcceleration(double acceleration)

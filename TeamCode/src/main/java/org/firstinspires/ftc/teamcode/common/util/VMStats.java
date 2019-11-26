@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.util;
 
+import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -9,6 +11,7 @@ import java.util.Scanner;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -18,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class VMStats
 {
     private volatile String lastMessage = null;
-    private Thread thread;
+    private Future<?> thread;
     private Logger log = new Logger("VMStat");
     private Process process;
     private int[] lastStats = new int[16];
@@ -54,7 +57,7 @@ public class VMStats
             return;
         }
 
-        thread = new Thread(() ->
+        thread = GlobalThreadPool.instance().start(() ->
         {
             Scanner scan = new Scanner(process.getInputStream());
             while (scan.hasNextLine())
@@ -62,7 +65,7 @@ public class VMStats
                 lastMessage = scan.nextLine();
                 try
                 {
-                    Thread.sleep(50); // We don't want this to use any CPU because that would skew the output
+                    Thread.sleep(delay * 1000);
                 }
                 catch (InterruptedException e)
                 {
@@ -71,8 +74,9 @@ public class VMStats
                 }
             }
         });
-        thread.setDaemon(true);
-        thread.start();
+        GlobalDataLogger.instance().addChannel("CPU (user)", () -> "" + lastStats[CPU_USER]);
+        GlobalDataLogger.instance().addChannel("CPU (system)", () -> "" + lastStats[CPU_SYS]);
+        GlobalDataLogger.instance().addChannel("Memory Free", () -> "" + lastStats[FREE_MEM]);
     }
 
     public int[] getStats()
@@ -84,6 +88,12 @@ public class VMStats
             String stats = lastMessage;
             if (stats == null) return lastStats;
             String[] split = stats.split("\\s+");
+            if (split.length < 16)
+            {
+                log.w("Bad vmstat output. Offending line:");
+                log.w(lastMessage);
+                return lastStats;
+            }
             // log.d("Stats: %s", Arrays.toString(split));
             lastStats = new int[split.length-1];
             for (int i = 1; i < split.length; i++)
@@ -97,6 +107,6 @@ public class VMStats
     public void close()
     {
         process.destroy();
-        thread.interrupt();
+        thread.cancel(true);
     }
 }

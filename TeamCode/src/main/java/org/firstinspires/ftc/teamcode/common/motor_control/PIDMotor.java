@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataLogger;
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.PIDController;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
@@ -46,6 +47,11 @@ public class PIDMotor implements Closeable
         this.controller = (LynxDcMotorController)controller;
         this.port = motor.getPortNumber();
         log = new Logger("PIDMotor " + Utils.getMotorId(motor));
+    
+        GlobalDataLogger.instance().addChannel(Utils.getMotorId(motor) + " position",
+                () -> Integer.toString(motor.getCurrentPosition()));
+        GlobalDataLogger.instance().addChannel(Utils.getMotorId(motor) + " target",
+                () -> isHolding() ? Integer.toString(motor.getTargetPosition()) : "Idle");
     }
     
     public void setDeadband(int deadband)

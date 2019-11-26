@@ -105,10 +105,15 @@ public class GlobalDataLogger
     {
         if (instance != null) instance.stop();
         instance = new GlobalDataLogger(filename);
+        init();
         return instance;
     }
     
-    
+    private static void init()
+    {
+        VMStats stats = new VMStats(1);
+        instance().addChannel("GlobalThreadPool Thread Count", () -> "" + GlobalThreadPool.instance().getTaskCount());
+    }
     
     private final Writer writer;
     private volatile List<Channel> channels;

@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.common.util.concurrent;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 
+import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,6 +13,7 @@ import java.util.concurrent.RejectedExecutionException;
 public class GlobalThreadPool
 {
     private ExecutorService pool;
+    private List<Future<?>> tasks;
     
     private static GlobalThreadPool instance;
     
@@ -37,6 +40,7 @@ public class GlobalThreadPool
     private GlobalThreadPool(int nthreads)
     {
         pool = Executors.newFixedThreadPool(nthreads);
+        tasks = new Vector<>();
     }
     
     public static GlobalThreadPool initialize(int nthreads, BaseAutonomous auton)
@@ -61,7 +65,9 @@ public class GlobalThreadPool
     {
         try
         {
-            return pool.submit(r);
+            Future<?> task = pool.submit(r);
+            tasks.add(task);
+            return task;
         }
         catch (RejectedExecutionException e)
         {
@@ -73,12 +79,20 @@ public class GlobalThreadPool
     {
         try
         {
-            return pool.submit(c);
+            Future<V> task = pool.submit(c);
+            tasks.add(task);
+            return task;
         }
         catch (RejectedExecutionException e)
         {
             return null;
         }
+    }
+    
+    public int getTaskCount()
+    {
+        tasks.removeIf(Future::isDone);
+        return tasks.size();
     }
     
     public void stopAll()

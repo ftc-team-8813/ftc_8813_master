@@ -1,24 +1,17 @@
 package org.firstinspires.ftc.teamcode.common.sensors;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
-import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
-import org.firstinspires.ftc.teamcode.common.util.TelemetryWrapper;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringReader;
-import java.nio.CharBuffer;
-import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -317,6 +310,8 @@ public class IMU
             return;
         }
         worker.setStatus(STARTED);
+    
+        GlobalDataLogger.instance().addChannel("IMU Heading", () -> String.format("%.4f", getHeading()));
     }
 
     public int getStatus()

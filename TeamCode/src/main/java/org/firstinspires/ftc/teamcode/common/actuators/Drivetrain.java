@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 
 /**
@@ -17,6 +18,9 @@ public class Drivetrain
     private Logger log = new Logger("Drivetrain");
     
     private IMU imu;
+    
+    private volatile String state = "Idle";
+    private volatile double angleOffset = 0;
     
     /**
      * Create a drivetrain. Takes PIDMotors for position control ability
@@ -40,6 +44,8 @@ public class Drivetrain
         this.rightFront.setDeadband(20);
         this.leftBack.setDeadband(20);
         this.rightBack.setDeadband(20);
+        GlobalDataLogger.instance().addChannel("Drivetrain State", () -> state);
+        GlobalDataLogger.instance().addChannel("Drivetrain Angle Offset", () -> String.format("%.4f", angleOffset));
     }
     
     /**
@@ -78,6 +84,7 @@ public class Drivetrain
      */
     public void move(double forward, double right, double turn, int distance) throws InterruptedException
     {
+        state = "Move";
         double[] powers = {
                 forward + right - turn,
                 forward - right + turn,
@@ -140,10 +147,9 @@ public class Drivetrain
                     motors[3].setPower(Math.abs(powers[3]) - powerOffset);
                 }
                 
+                angleOffset = angleError; // For logging
             }
             // ----------------------
-            
-            
             
             log.d("Encoders: %d %d %d %d",
                     motors[0].getCurrentPosition(),
@@ -156,6 +162,8 @@ public class Drivetrain
         motors[1].stopHolding();
         motors[2].stopHolding();
         motors[3].stopHolding();
+        angleOffset = 0;
+        state = "Idle";
     }
 
     public void stop(){

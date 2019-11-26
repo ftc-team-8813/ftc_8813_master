@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous.vision;
 
 import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
@@ -27,6 +28,9 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
     public SkystoneDetector()
     {
         worker = Executors.newSingleThreadExecutor();
+    
+        GlobalDataLogger.instance().addChannel("Skystone detected", () -> found() ? "1" : "0");
+        
     }
     
     @Override
