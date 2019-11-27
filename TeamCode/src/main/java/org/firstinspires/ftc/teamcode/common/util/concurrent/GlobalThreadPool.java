@@ -61,7 +61,7 @@ public class GlobalThreadPool
     }
     
     
-    public Future<?> start(Runnable r)
+    public synchronized Future<?> start(Runnable r)
     {
         try
         {
@@ -75,7 +75,7 @@ public class GlobalThreadPool
         }
     }
     
-    public <V> Future<V> start(Callable<V> c)
+    public synchronized <V> Future<V> start(Callable<V> c)
     {
         try
         {
@@ -89,13 +89,13 @@ public class GlobalThreadPool
         }
     }
     
-    public int getTaskCount()
+    public synchronized int getTaskCount()
     {
         tasks.removeIf(Future::isDone);
         return tasks.size();
     }
     
-    public void stopAll()
+    public synchronized void stopAll()
     {
         pool.shutdownNow();
     }

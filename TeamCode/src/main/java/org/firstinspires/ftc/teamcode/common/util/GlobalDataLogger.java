@@ -11,8 +11,10 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.zip.GZIPOutputStream;
@@ -64,7 +66,10 @@ public class GlobalDataLogger
         }
     
         @Override
-        public synchronized void addChannel(String name, Callable<String> callback) { }
+        public synchronized void addChannel(String name, Callable<String> callback)
+        {
+            log.w("Not adding channel: %s", name);
+        }
     
         @Override
         public synchronized void start(int interval) { }
@@ -83,6 +88,7 @@ public class GlobalDataLogger
     {
         if (instance == null)
         {
+            Log.w("GlobalDataLogger", "Returning dummy logger");
             try
             {
                 return new DummyDataLogger();
@@ -118,7 +124,7 @@ public class GlobalDataLogger
     private final Writer writer;
     private volatile List<Channel> channels;
     private Future<?> logDaemon;
-    private Logger log;
+    protected Logger log;
     
     private class Channel
     {
@@ -136,7 +142,8 @@ public class GlobalDataLogger
     private GlobalDataLogger(String filename) throws IOException
     {
         writer = new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(filename)));
-        channels = new ArrayList<>();
+        channels = Collections.synchronizedList(new ArrayList<>());
+        log = new Logger("GlobalDataLogger");
     }
     
     ///////
@@ -169,13 +176,12 @@ public class GlobalDataLogger
                 while (true)
                 {
                     List<String> data = new ArrayList<>();
-                    for (Channel c : channels)
+                    for (Channel c : new Vector<>(channels))
                     {
                         try
                         {
                             data.add(c.callback.call());
-                        }
-                        catch (Exception e)
+                        } catch (Exception e)
                         {
                             data.add("~error " + e.getClass().getSimpleName() + "~");
                         }
@@ -240,6 +246,7 @@ public class GlobalDataLogger
             channels.forEach((channel) -> names.add(channel.name));
             
             writeLogLine(-1, names);
+            writer.flush();
             writer.close();
         }
         catch (IOException e)

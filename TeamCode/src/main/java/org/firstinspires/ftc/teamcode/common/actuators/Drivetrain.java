@@ -23,6 +23,8 @@ public class Drivetrain
     private volatile String state = "Idle";
     private volatile double angleOffset = 0;
     
+    private double acceleration;
+    
     /**
      * Create a drivetrain. Takes PIDMotors for position control ability
      * @param leftFront  The left front motor

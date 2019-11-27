@@ -24,7 +24,7 @@ public class VMStats
     private Future<?> thread;
     private Logger log = new Logger("VMStat");
     private Process process;
-    private int[] lastStats = new int[16];
+    private volatile int[] lastStats = new int[16];
     private long lastCheck;
 
     public static final int RUNNING       =  0;
@@ -74,12 +74,12 @@ public class VMStats
                 }
             }
         });
-        GlobalDataLogger.instance().addChannel("CPU (user)", () -> "" + lastStats[CPU_USER]);
-        GlobalDataLogger.instance().addChannel("CPU (system)", () -> "" + lastStats[CPU_SYS]);
-        GlobalDataLogger.instance().addChannel("Memory Free", () -> "" + lastStats[FREE_MEM]);
+        GlobalDataLogger.instance().addChannel("CPU (user)", () -> "" + getStats()[CPU_USER]);
+        GlobalDataLogger.instance().addChannel("CPU (system)", () -> "" + getStats()[CPU_SYS]);
+        GlobalDataLogger.instance().addChannel("Memory Free", () -> "" + getStats()[FREE_MEM]);
     }
 
-    public int[] getStats()
+    public synchronized int[] getStats()
     {
         // Avoid having to read multiple times from several sequential calls (i.e. for getting several statistics at once)
         if (System.currentTimeMillis() - lastCheck > 200)

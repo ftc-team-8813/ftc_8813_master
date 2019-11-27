@@ -59,10 +59,13 @@ public class AutoDesigner extends BaseTeleOp
         op = -1;
         buttons = new ButtonHelper(gamepad1);
         robot = Robot.instance();
+        
+        /*
         ((AccelMotor)robot.drivetrain.leftFront.getMotor()).setDefaultAcceleration();
         ((AccelMotor)robot.drivetrain.rightFront.getMotor()).setDefaultAcceleration();
         ((AccelMotor)robot.drivetrain.leftBack.getMotor()).setDefaultAcceleration();
         ((AccelMotor)robot.drivetrain.rightBack.getMotor()).setDefaultAcceleration();
+         */
         
         robot.imu.setImmediateStart(true);
         robot.imu.initialize();

@@ -36,14 +36,6 @@ public abstract class BaseTeleOp extends OpMode
         try { Logger.init(); } catch (IOException e) { throw new RuntimeException(e); }
         log = new Logger(getClass().getCanonicalName());
         GlobalThreadPool.initialize(16);
-        robot = Robot.initialize(hardwareMap, new Config(Config.configFile));
-        prev_tick_time = (double)(System.nanoTime() / 1000000000);
-        
-        ((AccelMotor)robot.drivetrain.leftFront.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
-        ((AccelMotor)robot.drivetrain.rightFront.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
-        ((AccelMotor)robot.drivetrain.leftBack.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
-        ((AccelMotor)robot.drivetrain.rightBack.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
-    
         try
         {
             GlobalDataLogger.initialize(Config.storageDir + "teleop_" + getClass().getSimpleName() + ".log.gz");
@@ -52,6 +44,17 @@ public abstract class BaseTeleOp extends OpMode
         {
             log.e("Failed to initialize logger");
         }
+        robot = Robot.initialize(hardwareMap, new Config(Config.configFile));
+        prev_tick_time = (double)(System.nanoTime() / 1000000000);
+        
+        /*
+        ((AccelMotor)robot.drivetrain.leftFront.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
+        ((AccelMotor)robot.drivetrain.rightFront.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
+        ((AccelMotor)robot.drivetrain.leftBack.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
+        ((AccelMotor)robot.drivetrain.rightBack.getMotor()).setMaxAcceleration(Double.POSITIVE_INFINITY);
+         */
+        
+        
     }
     
     @Override

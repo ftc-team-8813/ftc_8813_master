@@ -106,12 +106,20 @@ public class Robot
 
         imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
 
+        // AccelMotor edition
+        /*
         drivetrain = new Drivetrain(new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lf"))),
                                     new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rf"))),
                                     new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lb"))),
                                     new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rb"))), imu);
+        */
         
-        
+        // Non-AccelMotor drivetrain
+        drivetrain = new Drivetrain(new PIDMotor(hardwareMap.dcMotor.get("lf")),
+                                    new PIDMotor(hardwareMap.dcMotor.get("rf")),
+                                    new PIDMotor(hardwareMap.dcMotor.get("lb")),
+                                    new PIDMotor(hardwareMap.dcMotor.get("rb")), imu);
+    
         DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
         arm = new Arm(hardwareMap.servo.get("extension"), hardwareMap.servo.get("claw"), servo_positions);
         
