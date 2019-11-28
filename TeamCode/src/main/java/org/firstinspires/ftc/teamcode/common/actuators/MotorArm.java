@@ -17,8 +17,30 @@ public class MotorArm {
     public void moveArm(double power){
         if (backLimit.pressed() && power<0){
             motorArm.setPower(0);
+        } else if (motorArm.getCurrentPosition()>930 && power>0){
+            motorArm.setPower(0);
         }else{
             motorArm.setPower(power);
         }
+    }
+
+    public void moveArmEnc(double power, int pos){
+        motorArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorArm.setTargetPosition(pos + motorArm.getCurrentPosition());
+        motorArm.setPower(power);
+        motorArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public void resetArm(){
+        while (!backLimit.pressed()){
+            motorArm.setPower(-0.3);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        motorArm.setPower(0);
+        motorArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 }
