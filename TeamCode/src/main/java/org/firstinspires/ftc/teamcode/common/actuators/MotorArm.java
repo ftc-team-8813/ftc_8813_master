@@ -15,6 +15,7 @@ public class MotorArm {
     }
 
     public void moveArm(double power){
+        motorArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         if (backLimit.pressed() && power<0){
             motorArm.setPower(0);
         } else if (motorArm.getCurrentPosition()>930 && power>0){
