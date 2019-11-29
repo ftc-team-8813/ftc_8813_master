@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.actuators;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 public class Intake {
     public DcMotor leftIntake;
@@ -9,6 +10,8 @@ public class Intake {
     public Intake(DcMotor leftIntake, DcMotor rightIntake){
         this.leftIntake = leftIntake;
         this.rightIntake = rightIntake;
+        leftIntake.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightIntake.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     public void collectStone(double power){

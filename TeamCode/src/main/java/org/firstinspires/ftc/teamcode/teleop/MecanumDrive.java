@@ -39,9 +39,9 @@ public class MecanumDrive extends BaseTeleOp
             else speed_mode = SPEED_LUDICROUS;
         }
 
-        if (gamepad1.left_bumper){
-            robot.intake.collectStone(0.5);
-        }else if (gamepad1.right_bumper){
+        if (gamepad1.right_bumper){
+            robot.intake.collectStone(0.4);
+        }else if (gamepad1.left_bumper){
             robot.intake.releaseStone(0.2);
         }else{
             robot.intake.stopIntake();
