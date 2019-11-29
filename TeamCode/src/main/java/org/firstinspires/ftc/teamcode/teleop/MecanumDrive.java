@@ -42,11 +42,11 @@ public class MecanumDrive extends BaseTeleOp
         if (gamepad1.left_bumper){
             robot.intake.collectStone(0.5);
         }else if (gamepad1.right_bumper){
-            robot.intake.releaseStone(0.5);
+            robot.intake.releaseStone(0.2);
         }else{
             robot.intake.stopIntake();
         }
-        robot.newarm.moveArm(-gamepad2.right_stick_y);
+        robot.newarm.moveArm(gamepad2.left_stick_x);
 
         robot.slide.raiseLift(-gamepad2.left_stick_y);
 
