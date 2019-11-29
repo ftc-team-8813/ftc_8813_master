@@ -12,8 +12,8 @@ public class MecanumDrive extends BaseTeleOp
     private static final int SPEED_FAST = 1;
     private static final int SPEED_LUDICROUS = 2;
     private static final String[] speed_modes = {"Slow", "Fast", "Ludicrous"};
-    
-    
+
+
     private ButtonHelper buttonHelper;
     private int speed_mode = SPEED_FAST;
     
@@ -22,6 +22,7 @@ public class MecanumDrive extends BaseTeleOp
     {
         super.init();
         buttonHelper = new ButtonHelper(gamepad1);
+        robot.newarm.resetArm();
     }
     
     @Override
@@ -39,27 +40,24 @@ public class MecanumDrive extends BaseTeleOp
         }
 
         if (gamepad1.left_bumper){
-            robot.intake.collectStone(1);
+            robot.intake.collectStone(0.5);
         }else if (gamepad1.right_bumper){
-            robot.intake.releaseStone(1);
+            robot.intake.releaseStone(0.5);
         }else{
             robot.intake.stopIntake();
         }
+        robot.newarm.moveArm(-gamepad2.right_stick_y);
 
+        robot.slide.raiseLift(-gamepad2.left_stick_y);
 
-        robot.arm.extend(-gamepad2.right_stick_y * 0.004);
-        
         double[] speeds;
         if (speed_mode == SPEED_SLOW)      speeds = new double[] {0.3, 0.3, 0.15}; // SLOW
         else if (speed_mode == SPEED_FAST) speeds = new double[] {0.5, 0.5, 0.4 }; // FAST
         else                               speeds = new double[] {1,   1,   1   }; // LUDICROUS
-        
+
         robot.drivetrain.drive(-gamepad1.left_stick_y * speeds[0],
                                   gamepad1.left_stick_x * speeds[1],
                                  -gamepad1.right_stick_y * speeds[2]);
-    
-    
-        robot.slide.raiseLift(-gamepad2.left_stick_y * 0.4);
 
 
         if (gamepad2.a)
@@ -83,12 +81,14 @@ public class MecanumDrive extends BaseTeleOp
         } else if (gamepad1.dpad_down){
             robot.intakelinkage.moveLinkageIn();
         }
-        
+
         telemetry.addData("Speed Mode", speed_modes[speed_mode]);
         telemetry.addData("Extender Top Limit", robot.slide.getTopLimit());
         telemetry.addData("Extender Pos", robot.slide.getCurrentPos());
         telemetry.addData("Forward Ticks Moved", robot.drivetrain.leftFront.getCurrentPosition());
         telemetry.addData("Arm Pos", robot.arm.getExtension().getPosition());
+        telemetry.addData("Back Limit", robot.backSwitch.pressed());
+        telemetry.addData("Arm Pos", robot.newarm.motorArm.getCurrentPosition());
     }
 
     public void stop(){

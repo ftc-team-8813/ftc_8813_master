@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.common.actuators.FoundationHook;
 import org.firstinspires.ftc.teamcode.common.actuators.Intake;
 import org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage;
 import org.firstinspires.ftc.teamcode.common.actuators.Lift;
+import org.firstinspires.ftc.teamcode.common.actuators.MotorArm;
 import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 // import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
@@ -43,10 +44,13 @@ public class Robot
     public final Lift slide;
     public final Arm arm;
     public final IntakeLinkage intakelinkage;
+    public final MotorArm newarm;
 
     // Sensors
     public final Switch bottomlimit;
+    public final Switch backSwitch;
     public final IMU imu;
+
 
     // Constants
 
@@ -93,15 +97,29 @@ public class Robot
         PIDMotor lift = new PIDMotor(slidemotor);
         bottomlimit = new Switch(bottomswitch);
         slide = new Lift(lift, bottomlimit);
-    
+
+        DcMotor motorArm = hardwareMap.dcMotor.get("motor arm");
+        DigitalChannel backLimit = hardwareMap.digitalChannel.get("back limit");
+        backSwitch = new Switch(backLimit);
+        newarm = new MotorArm(motorArm, backSwitch);
+
+
         imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
-    
+
+        // AccelMotor edition
+        /*
         drivetrain = new Drivetrain(new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lf"))),
                                     new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rf"))),
                                     new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lb"))),
                                     new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rb"))), imu);
+        */
         
-        
+        // Non-AccelMotor drivetrain
+        drivetrain = new Drivetrain(new PIDMotor(hardwareMap.dcMotor.get("lf")),
+                                    new PIDMotor(hardwareMap.dcMotor.get("rf")),
+                                    new PIDMotor(hardwareMap.dcMotor.get("lb")),
+                                    new PIDMotor(hardwareMap.dcMotor.get("rb")), imu);
+    
         DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
         arm = new Arm(hardwareMap.servo.get("extension"), hardwareMap.servo.get("claw"), servo_positions);
         
@@ -146,7 +164,6 @@ public class Robot
         // Stop all motors
 
         // Stop external threads and close open files (if any) here
-        imu.stop();
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
