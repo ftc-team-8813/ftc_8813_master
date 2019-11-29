@@ -19,28 +19,52 @@ public class DummyAutoStones extends BaseAutonomous
         Robot robot = Robot.instance();
         WebcamStream externalCamera = new WebcamStream();
         SkystoneDetector skystone = new SkystoneDetector();
+        externalCamera.addListener(skystone);
+        externalCamera.addModifier(skystone);
+
+        robot.newarm.resetArm();
+
+        robot.intakelinkage.moveLinkageIn();
+
         robot.arm.openClaw();
         Thread.sleep(1000);
 
-        robot.drivetrain.move(0.2, 0, 0, 935);
+        robot.drivetrain.move(0.2, 0, 0, 1100);
         Thread.sleep(1000);
         robot.drivetrain.stop();
 
-        robot.arm.extend(0.53);
+        robot.drivetrain.move(0, 0.2, 0, tickstoInches(4));
+        robot.drivetrain.stop();
+
+        while(!skystone.found()){
+            robot.drivetrain.move(0, 0.2, 0, tickstoInches(8));
+            robot.drivetrain.stop();
+        }
+
+        robot.drivetrain.move(0, 0.2, 0, tickstoInches(7));
+        Thread.sleep(100);
+        robot.drivetrain.stop();
+
+        robot.slide.raiseLift(0.4);
+        Thread.sleep(500);
+        robot.slide.raiseLift(0);
+
+        robot.newarm.moveArmEnc(0.4, 700);
         Thread.sleep(1000);
+        robot.newarm.moveArm(0);
 
         robot.arm.closeClaw();
-        Thread.sleep(1000);
+        Thread.sleep(100);
 
-        robot.drivetrain.move(-0.2, 0, 0, tickstoInches(8));
-        Thread.sleep(1000);
+        robot.drivetrain.move(-0.4, 0, 0, tickstoInches(15));
 
-        robot.drivetrain.move(0, -0.3, 0, tickstoInches(30));
-/*        while(!skystone.found()){
-            robot.drivetrain.move(0, 0.2, 0, tickstoInches(8));
-            Thread.sleep(1000);
-            enumerator += 1;
-        }*/
+        robot.drivetrain.move(0, -0.6, 0, tickstoInches(60));
+
+        robot.arm.openClaw();
+
+        robot.drivetrain.move(0, 0.6, 0, tickstoInches(30));
+
+        externalCamera.stop();
     }
 
     public int tickstoInches(double dist){

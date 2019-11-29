@@ -32,7 +32,7 @@ public class PIDMotor implements Closeable
     
     private int deadband = 20; // For checking if the motor is busy
 
-    private double power = 0.2;
+    private double power = 0.4;
     
     private Logger log;
     

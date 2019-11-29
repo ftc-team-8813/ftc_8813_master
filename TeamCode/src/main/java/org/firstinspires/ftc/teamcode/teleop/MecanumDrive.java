@@ -22,6 +22,7 @@ public class MecanumDrive extends BaseTeleOp
     {
         super.init();
         buttonHelper = new ButtonHelper(gamepad1);
+        robot.newarm.resetArm();
     }
     
     @Override
@@ -59,9 +60,6 @@ public class MecanumDrive extends BaseTeleOp
                                  -gamepad1.right_stick_y * speeds[2]);
 
 
-        robot.slide.raiseLift(-gamepad2.left_stick_y * 0.4);
-
-
         if (gamepad2.a)
         {
             robot.arm.closeClaw();
@@ -89,6 +87,8 @@ public class MecanumDrive extends BaseTeleOp
         telemetry.addData("Extender Pos", robot.slide.getCurrentPos());
         telemetry.addData("Forward Ticks Moved", robot.drivetrain.leftFront.getCurrentPosition());
         telemetry.addData("Arm Pos", robot.arm.getExtension().getPosition());
+        telemetry.addData("Back Limit", robot.backSwitch.pressed());
+        telemetry.addData("Arm Pos", robot.newarm.motorArm.getCurrentPosition());
     }
 
     public void stop(){
