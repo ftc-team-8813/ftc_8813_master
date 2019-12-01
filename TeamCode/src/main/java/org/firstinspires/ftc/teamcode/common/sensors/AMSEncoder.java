@@ -1,16 +1,26 @@
 package org.firstinspires.ftc.teamcode.common.sensors;
 
+import com.qualcomm.robotcore.hardware.ControlSystem;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynchDevice;
+import com.qualcomm.robotcore.hardware.configuration.annotations.DeviceProperties;
+import com.qualcomm.robotcore.hardware.configuration.annotations.I2cDeviceType;
 
 import org.firstinspires.ftc.teamcode.common.util.Logger;
+import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
+
+import java.util.concurrent.Future;
 
 /**
  * I2CDevice wrapper for the AMS AS5048B magnetic encoder.
  * Based on the Arduino library
  */
-public class AMSEncoder
+@I2cDeviceType
+@DeviceProperties(xmlTag="AMSEncoder", name="AMS AS5048B Encoder",
+        compatibleControlSystems=ControlSystem.REV_HUB)
+public class AMSEncoder extends I2cDeviceSynchDevice<I2cDeviceSynch>
 {
     public static final int I2C_ADDRESS = 0x40;
 
@@ -22,7 +32,40 @@ public class AMSEncoder
     private int rotations = 0;
 
     private int zeroPos = 0;
-
+    
+    @Override
+    protected boolean doInitialize()
+    {
+        error = false;
+        int test = read8Timeout(0xFE, 500);
+        if (test < 0)
+        {
+            log.w("Device not connected!");
+            error = true;
+            return false;
+        }
+    
+        device.setReadWindow(
+                new I2cDeviceSynch.ReadWindow(0xFE, 2, I2cDeviceSynch.ReadMode.REPEAT)
+        );
+    
+        device.write8(0x16, 0);
+        device.write8(0x17, 0);
+        return true;
+    }
+    
+    @Override
+    public Manufacturer getManufacturer()
+    {
+        return Manufacturer.AMS;
+    }
+    
+    @Override
+    public String getDeviceName()
+    {
+        return "AS5048B";
+    }
+    
     private class Timeout
     {
         private Thread toInterrupt;
@@ -55,7 +98,6 @@ public class AMSEncoder
                 catch (InterruptedException e)
                 {
                     log.v("Interrupted");
-                    return;
                 }
             });
             timeoutThread.setDaemon(true);
@@ -84,25 +126,12 @@ public class AMSEncoder
 
     public AMSEncoder(I2cDeviceSynch device)
     {
+        super(device, true);
         this.device = device;
         device.setI2cAddress(I2cAddr.create7bit(I2C_ADDRESS));
+        super.registerArmingStateCallback(false);
         device.engage();
         log = new Logger("AMSEncoder");
-
-        int test = read8Timeout(0xFE, 500);
-        if (test < 0)
-        {
-            log.w("Device not connected!");
-            error = true;
-            return;
-        }
-
-        device.setReadWindow(
-                new I2cDeviceSynch.ReadWindow(0xFE, 2, I2cDeviceSynch.ReadMode.REPEAT)
-        );
-
-        device.write8(0x16, 0);
-        device.write8(0x17, 0);
     }
 
     public void resetEncoder()
@@ -129,7 +158,7 @@ public class AMSEncoder
         double angle = (double)((getRawAngle() - zeroPos) * 360) / 0x3FFF;
         long elapsed = System.currentTimeMillis() - prevSampleTime;
 
-        if (elapsed < 100)
+        if (elapsed < 200)
         {
             if (Math.abs(angle - prevAngle) > 180)
             {

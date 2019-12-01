@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.common;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.lynx.LynxDcMotorController;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -17,10 +19,12 @@ import org.firstinspires.ftc.teamcode.common.actuators.MotorArm;
 import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 // import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
+import org.firstinspires.ftc.teamcode.common.sensors.AMSEncoder;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataStorage;
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
 
@@ -50,6 +54,9 @@ public class Robot
     public final Switch bottomlimit;
     public final Switch backSwitch;
     public final IMU imu;
+    
+    public final AMSEncoder fwdEnc;
+    public final AMSEncoder strafeEnc;
 
 
     // Constants
@@ -105,7 +112,10 @@ public class Robot
 
 
         imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
-
+        
+        fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
+        strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
+        
         // AccelMotor edition
         /*
         drivetrain = new Drivetrain(new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lf"))),
@@ -118,7 +128,7 @@ public class Robot
         drivetrain = new Drivetrain(new PIDMotor(hardwareMap.dcMotor.get("lf")),
                                     new PIDMotor(hardwareMap.dcMotor.get("rf")),
                                     new PIDMotor(hardwareMap.dcMotor.get("lb")),
-                                    new PIDMotor(hardwareMap.dcMotor.get("rb")), imu);
+                                    new PIDMotor(hardwareMap.dcMotor.get("rb")), imu, fwdEnc, strafeEnc);
     
         DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
         arm = new Arm(hardwareMap.servo.get("extension"), hardwareMap.servo.get("claw"), servo_positions);
@@ -136,6 +146,11 @@ public class Robot
 
         
         // Reverse motors as necessary
+        
+        
+        // Logging
+        GlobalDataLogger.instance().addChannel("Encoder distance (fwd)", () -> "" + fwdEnc.getAbsoluteAngle());
+        GlobalDataLogger.instance().addChannel("Encoder distance (strafe)", () -> "" + strafeEnc.getAbsoluteAngle());
 
         
         // Reset encoders

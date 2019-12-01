@@ -279,15 +279,26 @@ public class AutoDesigner extends BaseTeleOp
         {
             params = new int[1];
             params[0] = robot.drivetrain.rightBack.getCurrentPosition();
+            robot.fwdEnc.resetEncoder();
+            robot.strafeEnc.resetEncoder();
+            robot.imu.resetHeading();
         }
         
     }
     
     private void finishCreateOp()
     {
-        if (op == OP_FORWARD || op == OP_RIGHT || op == OP_TURN)
+        if (op == OP_FORWARD)
         {
-            params[0] = robot.drivetrain.rightBack.getCurrentPosition() - params[0];
+            params[0] = (int)robot.fwdEnc.getAbsoluteAngle();
+        }
+        else if (op == OP_RIGHT)
+        {
+            params[0] = (int)robot.strafeEnc.getAbsoluteAngle();
+        }
+        else if (op == OP_TURN)
+        {
+            params[0] = (int)robot.imu.getHeading();
         }
         
         JsonObject operation = new JsonObject();

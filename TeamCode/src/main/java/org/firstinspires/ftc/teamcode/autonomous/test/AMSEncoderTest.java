@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.autonomous.test;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
+import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.sensors.AMSEncoder;
 
 @Autonomous(name="AMS Encoder Test", group="test")
@@ -11,7 +12,7 @@ public class AMSEncoderTest extends BaseAutonomous
     @Override
     public void run() throws InterruptedException
     {
-        AMSEncoder encoder = new AMSEncoder(hardwareMap.i2cDeviceSynch.get("encoder"));
+        AMSEncoder encoder = Robot.instance().fwdEnc;
         if (encoder.error())
         {
             telemetry.addLine("I am error");

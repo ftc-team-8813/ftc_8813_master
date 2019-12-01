@@ -339,6 +339,11 @@ public class IMU
         return worker.getPitch();
     }
     
+    public void resetHeading()
+    {
+        worker.resetHeading();
+    }
+    
     public void stop()
     {
         if (worker.getStatus() < CLOSED)

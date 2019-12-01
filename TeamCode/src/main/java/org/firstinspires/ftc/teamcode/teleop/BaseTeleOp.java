@@ -78,6 +78,7 @@ public abstract class BaseTeleOp extends OpMode
     public void stop()
     {
         robot.uninitialize();
+        GlobalDataLogger.instance().stop();
         GlobalThreadPool.instance().stopAll();
         Logger.close();
     }

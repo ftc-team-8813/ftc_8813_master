@@ -20,6 +20,7 @@ public class Lift {
         this.bottomswitch = bottomswitch;
         topswitch = new DataStorage(new File(Config.storageDir + "liftencoderpos.txt"));
         toplimit = topswitch.getInt("Highest Position", 0);
+        slidemotor.getMotor().setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
     public void raiseLift(double power){
@@ -35,6 +36,7 @@ public class Lift {
             slidemotor.getMotor().setPower(power);
         } else {
             if (!slidemotor.isHolding()) {
+                slidemotor.getMotor().setPower(0);
                 slidemotor.setPower(0.5);
                 slidemotor.hold(-slidemotor.getCurrentPosition());
             }

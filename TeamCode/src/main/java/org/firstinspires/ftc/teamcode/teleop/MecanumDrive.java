@@ -52,7 +52,7 @@ public class MecanumDrive extends BaseTeleOp
 
         double[] speeds;
         if (speed_mode == SPEED_SLOW)      speeds = new double[] {0.3, 0.3, 0.15}; // SLOW
-        else if (speed_mode == SPEED_FAST) speeds = new double[] {0.5, 0.5, 0.4 }; // FAST
+        else if (speed_mode == SPEED_FAST) speeds = new double[] {0.5, 0.5, 0.5 }; // FAST
         else                               speeds = new double[] {1,   1,   1   }; // LUDICROUS
 
         robot.drivetrain.drive(-gamepad1.left_stick_y * speeds[0],
@@ -96,5 +96,7 @@ public class MecanumDrive extends BaseTeleOp
         robot.slide.slidemotor.setPower(0.25);
         robot.slide.slidemotor.setRunMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.slide.slidemotor.setPower(0);
+    
+        super.stop();
     }
 }
