@@ -68,6 +68,9 @@ public class DummyAutoStones extends BaseAutonomous
     }
 
     public int tickstoInches(double dist){
-        return (int) ((dist/(3.14*4))*537.6);
+        final double CIRCUMFERENCE = 3.14*2;
+        double degrees = (dist/CIRCUMFERENCE)*360;
+        double ticks = degrees*(537.6 /360);
+        return (int) ticks;
     }
 }

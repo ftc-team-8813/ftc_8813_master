@@ -61,7 +61,7 @@ public class Drivetrain
     /**
      * Create a drivetrain. Takes PIDMotors for position control ability
      * @param leftFront  The left front motor
-     * @param rightFront The right front motor
+     * @param rightFront The right frontI2cDeviceSynch motor
      * @param leftBack   The left rear motor
      * @param rightBack  The right rear motor
      */
@@ -184,32 +184,8 @@ public class Drivetrain
         state = "Idle";
     }
 
-    public void moveVishnu(double forward, double right, double turn, int dist){
-        double[] powers = {
-                forward + right - turn,
-                forward - right + turn,
-                forward - right - turn,
-                forward + right + turn
-        };
-
-        PIDMotor[] motors = {leftFront, rightFront, leftBack, rightBack};
-
-        for (int i = 0; i<4; i++){
-            motors[i].setRunMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-
-        for (int i = 0; i<4; i++){
-            motors[i].setTargetPosition(dist*(int)Math.signum(powers[i]) + motors[i].getCurrentPosition());
-
-        }
-        leftFront.setRunMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightFront.setRunMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftBack.setRunMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightBack.setRunMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        for (int i = 0; i<4; i++){
-            motors[i].setPower(powers[i]);
-        }
+    public AMSEncoder getfrwEnc(){
+        return fwdEnc;
     }
 
     public void stop(){
