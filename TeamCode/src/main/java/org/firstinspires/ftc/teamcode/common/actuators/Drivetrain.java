@@ -124,21 +124,24 @@ public class Drivetrain
             angleOrig = imu.getHeading();
         else
             angleOrig = 0;
-        
+        /*
         if (fwdEnc != null)
         {
             fwdEnc.resetEncoder();
             strafeEnc.resetEncoder();
         }
+         */
+        PIDMotor encMotor = rightBack;
+        int origPos = encMotor.getCurrentPosition();
         
         // Wait for the motors to finish
         boolean busy = true;
         double prevPowerOff = 0;
         while (busy)
         {
-            if (forward != 0 && fwdEnc != null && Math.abs(fwdEnc.getAbsoluteAngle()) >= Math.abs(distance))
+            if (forward != 0 && Math.abs(encMotor.getCurrentPosition() - origPos) >= Math.abs(distance))
                 busy = false;
-            else if (right != 0 && strafeEnc != null && Math.abs(strafeEnc.getAbsoluteAngle()) >= Math.abs(distance))
+            else if (right != 0 && Math.abs(encMotor.getCurrentPosition() - origPos) >= Math.abs(distance))
                 busy = false;
             else if (turn != 0 && imu != null && Math.abs(imu.getHeading() - angleOrig) >= Math.abs(distance))
                 busy = false;
@@ -169,11 +172,11 @@ public class Drivetrain
              */
             // ----------------------
             
-            log.d("Encoders: %d %d %d %d",
-                    motors[0].getCurrentPosition(),
-                    motors[1].getCurrentPosition(),
-                    motors[2].getCurrentPosition(),
-                    motors[3].getCurrentPosition());
+//            log.d("Encoders: %d %d %d %d",
+//                    motors[0].getCurrentPosition(),
+//                    motors[1].getCurrentPosition(),
+//                    motors[2].getCurrentPosition(),
+//                    motors[3].getCurrentPosition());
             Thread.sleep(10);
         }
         motors[0].getMotor().setPower(0);

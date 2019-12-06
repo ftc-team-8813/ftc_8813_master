@@ -31,6 +31,19 @@ public class MotorArm {
         motorArm.setPower(power);
         motorArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
+    
+    public void moveArmTo(double power, int pos) throws InterruptedException
+    {
+        motorArm.setTargetPosition(pos);
+        motorArm.setPower(power);
+        motorArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (Math.abs(motorArm.getCurrentPosition() - pos) > 15)
+        {
+            Thread.sleep(5);
+        }
+        motorArm.setPower(0);
+        motorArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
 
     public void resetArm(){
         while (!backLimit.pressed()){
@@ -43,5 +56,6 @@ public class MotorArm {
         }
         motorArm.setPower(0);
         motorArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 }

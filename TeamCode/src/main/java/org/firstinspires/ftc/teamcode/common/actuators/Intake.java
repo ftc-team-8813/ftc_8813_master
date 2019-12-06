@@ -28,4 +28,9 @@ public class Intake {
         leftIntake.setPower(0);
         rightIntake.setPower(0);
     }
+    
+    public double getPower()
+    {
+        return leftIntake.getPower();
+    }
 }

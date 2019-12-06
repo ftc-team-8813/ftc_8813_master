@@ -10,6 +10,7 @@ public class Arm
     private double extension_min, extension_max;
     private boolean ext_reverse = false;
     private double claw_open, claw_closed;
+    private boolean claw_state;
     public Arm(Servo extension, Servo claw, DataStorage positions)
     {
         this.extension = extension;
@@ -49,11 +50,24 @@ public class Arm
     public void closeClaw()
     {
         claw.setPosition(claw_closed);
+        claw_state = true;
     }
     
     public void openClaw()
     {
         claw.setPosition(claw_open);
+        claw_state = false;
+    }
+    
+    public boolean clawClosed()
+    {
+        return claw_state;
+    }
+    
+    public void toggleClaw()
+    {
+        if (claw_state) openClaw();
+        else closeClaw();
     }
 
     public Servo getExtension(){
