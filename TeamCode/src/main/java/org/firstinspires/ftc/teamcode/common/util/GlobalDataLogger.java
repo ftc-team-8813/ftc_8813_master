@@ -5,6 +5,7 @@ import android.util.Log;
 
 import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
 
+import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -141,7 +142,7 @@ public class GlobalDataLogger
     
     private GlobalDataLogger(String filename) throws IOException
     {
-        writer = new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(filename)));
+        writer = new OutputStreamWriter(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(filename))));
         channels = Collections.synchronizedList(new ArrayList<>());
         log = new Logger("GlobalDataLogger");
     }
