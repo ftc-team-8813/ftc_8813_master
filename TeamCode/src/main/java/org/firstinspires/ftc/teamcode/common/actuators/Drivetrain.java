@@ -89,7 +89,7 @@ public class Drivetrain
      * @param forward  How fast to drive forward
      * @param right    How fast to strafe
      * @param turn     How fast to turn
-     * @param distance How far to move
+     * @param distance How far to oldMove
      * @throws InterruptedException If an interrupt occurs
      */
     public void move(double forward, double right, double turn, int distance) throws InterruptedException
@@ -182,6 +182,87 @@ public class Drivetrain
         motors[3].getMotor().setPower(0);
         angleOffset = 0;
         state = "Idle";
+    }
+
+    public void oldMove(double forward, double right, double turn, int distance) throws InterruptedException
+    {
+        double[] powers = {
+                forward + right - turn,
+                forward - right + turn,
+                forward - right - turn,
+                forward + right + turn
+        };
+
+        PIDMotor[] motors = {leftFront, rightFront, leftBack, rightBack};
+
+        // Start the motors
+        for (int i = 0; i < 4; i++)
+        {
+            int sign = (motors[i].getMotor().getDirection() == DcMotorSimple.Direction.FORWARD) ? 1 : -1;
+            int dist = distance * (int)Math.signum(powers[i]); // (int)(distance * Math.min(Math.abs(powers[i]), 1) * Math.signum(powers[i]));
+            int target = (dist + motors[i].getCurrentPosition()); //* sign;
+            log.d("Motor %d: target %d (distance %d from %d)", i, target, dist, motors[i].getCurrentPosition());
+            if (powers[i] != 0)
+            {
+                motors[i].setPower(Math.abs(powers[i]));
+                motors[i].hold(target);
+            }
+        }
+
+        double angleOrig;
+        if (imu != null)
+            angleOrig = imu.getHeading();
+        else
+            angleOrig = 0;
+
+        // Wait for the motors to finish
+        boolean busy = true;
+        double prevPowerOff = 0;
+        while (busy)
+        {
+            busy = false;
+            for (int i = 0; i < 4; i++)
+            {
+                if (motors[i].isBusy())
+                {
+                    busy = true;
+                    break;
+                }
+            }
+
+            // TODO TEST EXPERIMENTAL CODE
+            // Adjust speed to correct for any rotation
+            if (imu != null && turn == 0)
+            {
+                double angleError = imu.getHeading() - angleOrig;
+                double powerOffset = angleError * 0.02 * Math.signum(distance);
+
+                if (powerOffset != prevPowerOff)
+                {
+                    prevPowerOff = powerOffset;
+                    log.d("Angle offset: %.2f (add %.3f power)", angleError, powerOffset);
+                    motors[0].setPower(Math.abs(powers[0]) + powerOffset);
+                    motors[1].setPower(Math.abs(powers[1]) - powerOffset);
+                    motors[2].setPower(Math.abs(powers[2]) + powerOffset);
+                    motors[3].setPower(Math.abs(powers[3]) - powerOffset);
+                }
+
+            }
+            // ----------------------
+
+
+
+            log.d("Encoders: %d %d %d %d",
+                    motors[0].getCurrentPosition(),
+                    motors[1].getCurrentPosition(),
+                    motors[2].getCurrentPosition(),
+                    motors[3].getCurrentPosition());
+            Thread.sleep(10);
+        }
+        motors[0].stopHolding();
+        motors[1].stopHolding();
+        motors[2].stopHolding();
+        motors[3].stopHolding();
     }
 
     public AMSEncoder getfrwEnc(){
