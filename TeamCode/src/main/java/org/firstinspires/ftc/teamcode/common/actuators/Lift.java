@@ -46,7 +46,15 @@ public class Lift {
     public void raiseLiftEnc(int dist) throws InterruptedException {
         slidemotor.setRunMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slidemotor.runToPosition(dist, true);
+    }
 
+    public void resetLift() throws InterruptedException {
+        slidemotor.setRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        while(!bottomswitch.pressed()){
+            slidemotor.setPower(0.1);
+            Thread.sleep(100);
+        }
+        slidemotor.setPower(0);
     }
 
     public double getCurrentPos(){
