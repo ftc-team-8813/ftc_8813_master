@@ -290,7 +290,7 @@ public class AutoDesigner extends BaseTeleOp
     {
         if (op == OP_FORWARD)
         {
-            params[0] = (int)robot.fwdEnc.getAbsoluteAngle();
+            params[0] = (int)-robot.fwdEnc.getAbsoluteAngle();
         }
         else if (op == OP_RIGHT)
         {

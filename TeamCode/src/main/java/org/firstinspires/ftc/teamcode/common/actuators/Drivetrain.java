@@ -114,7 +114,7 @@ public class Drivetrain
         {
             if (powers[i] != 0)
             {
-                motors[i].getMotor().setPower(powers[i]);
+                motors[i].getMotor().setPower(powers[i] * Math.signum(distance));
             }
             Thread.sleep(6);
         }
