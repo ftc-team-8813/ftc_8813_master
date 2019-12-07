@@ -40,9 +40,9 @@ public class MecanumDrive extends BaseTeleOp
         }
 
         if (gamepad1.right_bumper){
-            robot.intake.collectStone(0.4);
+            robot.intake.collectStone(0.3);
         }else if (gamepad1.left_bumper){
-            robot.intake.releaseStone(0.2);
+            robot.intake.releaseStone(0.3);
         }else{
             robot.intake.stopIntake();
         }
