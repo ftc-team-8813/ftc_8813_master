@@ -8,19 +8,27 @@ import org.firstinspires.ftc.teamcode.autonomous.vision.SkystoneDetector;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.actuators.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
+import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.Utils;
+import org.firstinspires.ftc.teamcode.common.util.Vlogger;
+
+import java.util.Date;
 
 
 @Autonomous(name="DummyAutoStones")
 public class DummyAutoStones extends BaseAutonomous
 {
+    private WebcamStream externalCamera;
     @Override
     public void run() throws InterruptedException
     {
         Robot robot = Robot.instance();
-        WebcamStream externalCamera = new WebcamStream();
+        externalCamera = new WebcamStream();
         SkystoneDetector skystone = new SkystoneDetector();
         externalCamera.addListener(skystone);
         externalCamera.addModifier(skystone);
+        String filename = "videos/stones_" + Utils.getTimestamp() + ".avi";
+        externalCamera.addListener(new Vlogger(filename, 640, 480, 15), 1001);
 
         robot.newarm.resetArm();
 
@@ -63,7 +71,10 @@ public class DummyAutoStones extends BaseAutonomous
         robot.arm.openClaw();
 
         robot.drivetrain.move(0, 0.6, 0, tickstoInches(30));
-
+    }
+    
+    public void finish()
+    {
         externalCamera.stop();
     }
 

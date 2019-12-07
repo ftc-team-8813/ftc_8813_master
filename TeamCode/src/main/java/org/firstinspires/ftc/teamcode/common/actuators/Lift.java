@@ -22,14 +22,20 @@ public class Lift {
         toplimit = topswitch.getInt("Highest Position", 0);
         slidemotor.getMotor().setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
+    
+    public void raiseLift(double power)
+    {
+        if (power <= 0) raiseLift(0, (int)Math.ceil(power));
+        else raiseLift(power, 1);
+    }
 
-    public void raiseLift(double power){
-        if (power < 0 && !bottomswitch.pressed()) {
+    public void raiseLift(double power, int direction){
+        if (direction < 0 && !bottomswitch.pressed()) {
             if (slidemotor.isHolding()) {
                 slidemotor.stopHolding();
             }
             slidemotor.getMotor().setPower(power * 0.25);
-        } else if (power > 0 && slidemotor.getCurrentPosition() <= toplimit){
+        } else if (direction > 0 && slidemotor.getCurrentPosition() <= toplimit){
             if (slidemotor.isHolding()){
                 slidemotor.stopHolding();
             }

@@ -14,6 +14,8 @@ import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +26,11 @@ import java.util.Set;
 
 public class Utils
 {
+    
+    public static String getTimestamp()
+    {
+        return new SimpleDateFormat("yy_MM_dd_HH_mm_ss", Locale.US).format(new Date());
+    }
     
     public static String getMotorId(DcMotor motor)
     {

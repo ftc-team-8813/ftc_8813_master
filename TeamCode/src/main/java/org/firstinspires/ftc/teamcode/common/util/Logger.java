@@ -55,8 +55,7 @@ public class Logger
      */
     public static void init() throws IOException
     {
-        init(new File(Config.storageDir + "logs/" + new SimpleDateFormat
-                ("yy_MM_dd_HH_mm_ss", Locale.US).format(new Date()) + ".log"));
+        init(new File(Config.storageDir + "logs/" + Utils.getTimestamp() + ".log"));
     }
     
     /**
