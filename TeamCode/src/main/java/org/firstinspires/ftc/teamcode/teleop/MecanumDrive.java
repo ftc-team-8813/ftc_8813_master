@@ -48,6 +48,10 @@ public class MecanumDrive extends BaseTeleOp
         }
         robot.newarm.moveArm(-gamepad2.right_stick_y);
 
+        if (gamepad2.dpad_down)
+        {
+            robot.slide.raiseLift(-0.1, -1);
+        }
         robot.slide.raiseLift(-gamepad2.left_stick_y);
 
         double[] speeds;
