@@ -13,24 +13,21 @@ public class DummyAutoFoundationBlueTriangle extends BaseAutonomous
         robot.intakelinkage.moveLinkageIn();
         robot.imu.setImmediateStart(true);
         robot.imu.start();
+        robot.foundationhook.moveHookUp();
     }
 
     @Override
     public void run() throws InterruptedException
     {
         Robot robot = Robot.instance();
-        robot.foundationhook.moveHookUp();
-        robot.intakelinkage.moveLinkageIn();
         telemetry.addData("FwdEncDegrees", robot.drivetrain.getfrwEnc().getRotations());
         telemetry.update();
 
-        robot.drivetrain.oldMove(-0.3, 0, 0, tickToInches(30));
+        robot.drivetrain.oldMove(-0.5, 0, 0, tickToInches(30));
         robot.drivetrain.stop();
-        telemetry.update();
 
         robot.drivetrain.oldMove(0, 0.3, 0, tickToInches(14));
         robot.drivetrain.stop();
-        telemetry.update();
 
         robot.foundationhook.moveHookDown();
         Thread.sleep(2000);
