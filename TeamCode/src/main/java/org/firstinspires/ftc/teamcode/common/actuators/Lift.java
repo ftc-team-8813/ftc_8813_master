@@ -28,7 +28,7 @@ public class Lift {
             if (slidemotor.isHolding()) {
                 slidemotor.stopHolding();
             }
-            slidemotor.getMotor().setPower(power * 0.25);
+            slidemotor.getMotor().setPower(power * 0.125);
         } else if (power > 0 && slidemotor.getCurrentPosition() <= toplimit){
             if (slidemotor.isHolding()){
                 slidemotor.stopHolding();

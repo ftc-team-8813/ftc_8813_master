@@ -1,18 +1,23 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.hardware.configuration.annotations.DigitalIoDeviceType;
 
 import org.firstinspires.ftc.teamcode.autonomous.vision.SkystoneDetector;
 import org.firstinspires.ftc.teamcode.common.Robot;
-import org.firstinspires.ftc.teamcode.common.actuators.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
 
 
 @Autonomous(name="DummyAutoStones")
 public class DummyAutoStones extends BaseAutonomous
 {
+    public void initialize(){
+
+        Robot robot = Robot.instance();
+        robot.intakelinkage.moveLinkageIn();
+        robot.newarm.resetArm();
+        robot.arm.openClaw();
+    }
+
     @Override
     public void run() throws InterruptedException
     {
@@ -22,47 +27,31 @@ public class DummyAutoStones extends BaseAutonomous
         externalCamera.addListener(skystone);
         externalCamera.addModifier(skystone);
 
-        robot.newarm.resetArm();
+        robot.drivetrain.oldMove(0.3, 0, 0, 1100);
 
-        robot.intakelinkage.moveLinkageIn();
-
-        robot.arm.openClaw();
-        Thread.sleep(1000);
-
-        robot.drivetrain.move(0.2, 0, 0, 1100);
-        Thread.sleep(1000);
-        robot.drivetrain.stop();
-
-        robot.drivetrain.move(0, 0.2, 0, tickstoInches(4));
-        robot.drivetrain.stop();
+        robot.drivetrain.oldMove(0, 0.2, 0, tickstoInches(5.25));
 
         while(!skystone.found()){
-            robot.drivetrain.move(0, 0.2, 0, tickstoInches(8));
-            robot.drivetrain.stop();
+            robot.drivetrain.oldMove(0, 0.1, 0, tickstoInches(7.7));
         }
 
-        robot.drivetrain.move(0, 0.2, 0, tickstoInches(7));
-        Thread.sleep(100);
-        robot.drivetrain.stop();
-
-        robot.slide.raiseLift(0.4);
-        Thread.sleep(500);
-        robot.slide.raiseLift(0);
-
-        robot.newarm.moveArmEnc(0.4, 700);
+        robot.newarm.moveArmEnc(0.4, 900);
         Thread.sleep(1000);
         robot.newarm.moveArm(0);
 
         robot.arm.closeClaw();
         Thread.sleep(100);
 
-        robot.drivetrain.move(-0.4, 0, 0, tickstoInches(15));
+        robot.slide.raiseLiftEnc(tickstoInches(2));
+        Thread.sleep(1000);
 
-        robot.drivetrain.move(0, -0.6, 0, tickstoInches(60));
+        robot.drivetrain.oldMove(-0.6, 0, 0, 800);
+
+        robot.drivetrain.oldMove(0, -0.8, 0, tickstoInches(40));
 
         robot.arm.openClaw();
 
-        robot.drivetrain.move(0, 0.6, 0, tickstoInches(30));
+        robot.drivetrain.oldMove(0, 0.6, 0, tickstoInches(10));
 
         externalCamera.stop();
     }

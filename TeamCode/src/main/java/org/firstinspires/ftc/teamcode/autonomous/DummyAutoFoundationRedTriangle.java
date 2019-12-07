@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.common.Robot;
 
 
-@Autonomous(name="DummyAutoFoundationBlueTriangle")
+@Autonomous(name="DummyAutoFoundationRedTriangle")
 public class DummyAutoFoundationRedTriangle extends BaseAutonomous
 {
     public void initialize(){
@@ -26,7 +26,7 @@ public class DummyAutoFoundationRedTriangle extends BaseAutonomous
         robot.drivetrain.stop();
         telemetry.update();
 
-        robot.drivetrain.oldMove(0, -0.3, 0, tickToInches(14));
+        robot.drivetrain.oldMove(0, -0.3, 0, tickToInches(27));
         robot.drivetrain.stop();
         telemetry.update();
 
@@ -47,7 +47,7 @@ public class DummyAutoFoundationRedTriangle extends BaseAutonomous
         robot.drivetrain.oldMove(0, -0.2, 0, tickToInches(4));
         robot.drivetrain.stop();
 
-        robot.drivetrain.oldMove(0.4, 0, 0, tickToInches(9));
+        robot.drivetrain.oldMove(0.4, 0, 0, tickToInches(14));
     }
 
     public int tickToInches(double dist){

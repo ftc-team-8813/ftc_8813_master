@@ -30,7 +30,7 @@ public class PIDMotor implements Closeable
     private LynxDcMotorController controller;
     private int port;
     
-    private int deadband = 20; // For checking if the motor is busy
+    private int deadband = 100; // For checking if the motor is busy
 
     private double power = 0.4;
     
