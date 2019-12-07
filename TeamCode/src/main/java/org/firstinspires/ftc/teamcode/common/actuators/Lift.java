@@ -25,7 +25,7 @@ public class Lift {
     
     public void raiseLift(double power)
     {
-        if (power <= 0) raiseLift(0, (int)Math.ceil(power));
+        if (power <= 0) raiseLift(0.01, (int)Math.floor(power));
         else raiseLift(power, 1);
     }
 
@@ -33,8 +33,9 @@ public class Lift {
         if (direction < 0 && !bottomswitch.pressed()) {
             if (slidemotor.isHolding()) {
                 slidemotor.stopHolding();
+                slidemotor.getMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
-            slidemotor.getMotor().setPower(power * 0.25);
+            slidemotor.getMotor().setPower(power);
         } else if (direction > 0 && slidemotor.getCurrentPosition() <= toplimit){
             if (slidemotor.isHolding()){
                 slidemotor.stopHolding();
