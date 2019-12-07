@@ -23,6 +23,9 @@ public class DummyAutoStones extends BaseAutonomous
     public void run() throws InterruptedException
     {
         Robot robot = Robot.instance();
+        robot.imu.setImmediateStart(true);
+        robot.imu.initialize();
+        
         externalCamera = new WebcamStream();
         SkystoneDetector skystone = new SkystoneDetector();
         externalCamera.addListener(skystone);

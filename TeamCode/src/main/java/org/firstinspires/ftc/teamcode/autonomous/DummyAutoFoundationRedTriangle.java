@@ -11,6 +11,8 @@ public class DummyAutoFoundationRedTriangle extends BaseAutonomous
     public void initialize(){
         Robot robot = Robot.instance();
         robot.intakelinkage.moveLinkageIn();
+        robot.imu.setImmediateStart(true);
+        robot.imu.initialize();
     }
 
     @Override
