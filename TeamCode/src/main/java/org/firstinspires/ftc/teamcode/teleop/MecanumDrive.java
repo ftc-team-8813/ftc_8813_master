@@ -23,6 +23,7 @@ public class MecanumDrive extends BaseTeleOp
         super.init();
         buttonHelper = new ButtonHelper(gamepad1);
         robot.newarm.resetArm();
+        robot.slide.slidemotor.setPower(0.5);
     }
     
     @Override
@@ -49,7 +50,11 @@ public class MecanumDrive extends BaseTeleOp
         {
             robot.intake.stopIntake();
         }
+
         robot.newarm.moveArm(-gamepad2.right_stick_y);
+        if (gamepad2.start){
+            robot.newarm.resetArm();
+        }
     
         if (gamepad2.dpad_down)
         {

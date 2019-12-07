@@ -8,21 +8,12 @@ import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.actuators.Drivetrain;
 
 @Autonomous(name="Encoder Move Test")
-@Disabled
 public class DrivetrainMoveTest extends BaseAutonomous
 {
     @Override
-    public void run() throws InterruptedException
-    {
+    public void run() throws InterruptedException {
         Drivetrain drivetrain = Robot.instance().drivetrain;
-        drivetrain.oldMove(0.5, 0, 0, 500);
+        drivetrain.move(0, 0.2, 0, 2000);
         Thread.sleep(500);
-        drivetrain.oldMove(0, 0.5, 0, 500);
-        Thread.sleep(500);
-        drivetrain.oldMove(0, 0, 0.5, 500);
-        Thread.sleep(500);
-        drivetrain.oldMove(0, -0.5, 0, 500);
-        Thread.sleep(500);
-        drivetrain.oldMove(-0.5, 0, 0, 500);
     }
 }

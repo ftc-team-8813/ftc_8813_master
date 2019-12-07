@@ -55,8 +55,8 @@ public class Robot
     public final Switch backSwitch;
     public final IMU imu;
     
-    public final AMSEncoder fwdEnc;
-    public final AMSEncoder strafeEnc;
+    public final AMSEncoder fwdEnc = null;
+    public final AMSEncoder strafeEnc = null;
 
 
     // Constants
@@ -113,8 +113,8 @@ public class Robot
 
         imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
         
-        fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
-        strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
+        //fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
+        //strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
         
         // AccelMotor edition
         /*

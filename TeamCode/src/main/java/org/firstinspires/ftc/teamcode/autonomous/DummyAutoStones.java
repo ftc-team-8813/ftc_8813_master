@@ -39,13 +39,22 @@ public class DummyAutoStones extends BaseAutonomous
         String filename = "videos/stones_" + Utils.getTimestamp() + ".avi";
         externalCamera.addListener(new Vlogger(filename, 640, 480, 15), 1001);
 
-        robot.drivetrain.oldMove(0.3, 0, 0, 1100);
+        robot.drivetrain.move(0.3, 0, 0, tickstoInches(22));
+        Thread.sleep(2000);
+        robot.drivetrain.stop();
 
-        robot.drivetrain.oldMove(0, 0.2, 0, tickstoInches(5.25));
+        while(!skystone.found() || skystone.getArea().width<300){
+            robot.drivetrain.move(0, 0.2, 0, tickstoInches(7.7));
+            Thread.sleep(1000);
+            robot.drivetrain.stop();
 
-        while(!skystone.found()){
-            robot.drivetrain.oldMove(0, 0.1, 0, tickstoInches(7.7));
+            robot.drivetrain.move(0, 0, 0.1, 1);
+            Thread.sleep(1000);
+            robot.drivetrain.stop();
         }
+
+        robot.drivetrain.move(0, 0.3, 0, tickstoInches(5.25));
+        robot.drivetrain.stop();
 
         robot.newarm.moveArmEnc(0.4, 900);
         Thread.sleep(1000);
@@ -57,13 +66,13 @@ public class DummyAutoStones extends BaseAutonomous
         robot.slide.raiseLiftEnc(tickstoInches(2));
         Thread.sleep(1000);
 
-        robot.drivetrain.oldMove(-0.6, 0, 0, 800);
+        robot.drivetrain.move(-0.4, 0, 0, tickstoInches(23));
 
-        robot.drivetrain.oldMove(0, -0.8, 0, tickstoInches(40));
+        robot.drivetrain.move(0, -0.8, 0, tickstoInches(40));
 
         robot.arm.openClaw();
 
-        robot.drivetrain.oldMove(0, 0.6, 0, tickstoInches(10));
+        robot.drivetrain.move(0, 0.6, 0, tickstoInches(10));
 
         robot.drivetrain.move(0, 0.6, 0, tickstoInches(30));
     }
@@ -74,9 +83,8 @@ public class DummyAutoStones extends BaseAutonomous
     }
 
     public int tickstoInches(double dist){
-        final double CIRCUMFERENCE = 3.14*2;
-        double degrees = (dist/CIRCUMFERENCE)*360;
-        double ticks = degrees*(537.6 /360);
+        final double CIRCUMFERENCE = 3.14*(100/25.4);
+        double ticks = (dist/CIRCUMFERENCE)*537.6;
         return (int) ticks;
     }
 }

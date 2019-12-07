@@ -89,7 +89,7 @@ public class Drivetrain
      * @param forward  How fast to drive forward
      * @param right    How fast to strafe
      * @param turn     How fast to turn
-     * @param distance How far to oldMove
+     * @param distance How far to move
      * @throws InterruptedException If an interrupt occurs
      */
     public void move(double forward, double right, double turn, int distance) throws InterruptedException

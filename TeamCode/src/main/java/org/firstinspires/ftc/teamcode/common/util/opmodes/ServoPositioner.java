@@ -23,7 +23,7 @@ import static org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper.left_bumpe
 import static org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper.x;
 
 /**
- * ServoPositioner - Tool to oldMove specific servos individually to collect positions
+ * ServoPositioner - Tool to move specific servos individually to collect positions
  */
 
 @TeleOp(name = "Servo Positioner")
@@ -69,7 +69,7 @@ public class ServoPositioner extends OpMode
                 if (servos == null)
                 {
                     servos = Utils.allDeviceNames(hardwareMap.servo);
-                    chooser = new Chooser("Choose a servo to oldMove; press B to select", servos, helper, telemetry);
+                    chooser = new Chooser("Choose a servo to move; press B to select", servos, helper, telemetry);
                 } else
                 {
                     chooser.update();
@@ -86,7 +86,7 @@ public class ServoPositioner extends OpMode
                     TelemetryWrapper.setLines(6);
                     TelemetryWrapper.setLine(0, "Use the left joystick up/down to control the servo");
                     TelemetryWrapper.setLine(1, "Use the dpad up/down to choose a preset");
-                    TelemetryWrapper.setLine(2, "Press A to set the preset and X to oldMove to it");
+                    TelemetryWrapper.setLine(2, "Press A to set the preset and X to move to it");
                     TelemetryWrapper.setLine(3, "Press LEFT BUMPER to select a different servo");
                     s = hardwareMap.servo.get(servo);
                     servoPositions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
