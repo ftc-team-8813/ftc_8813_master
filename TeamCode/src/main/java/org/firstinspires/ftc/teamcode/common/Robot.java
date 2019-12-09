@@ -1,32 +1,34 @@
 package org.firstinspires.ftc.teamcode.common;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
-import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.hardware.lynx.LynxDcMotorController;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.common.sensors.RangeSensor;
-import org.firstinspires.ftc.teamcode.common.util.DataStorage;
-import org.firstinspires.ftc.teamcode.common.util.MotorController;
-import org.firstinspires.ftc.teamcode.common.util.Config;
-import org.firstinspires.ftc.teamcode.common.util.DataLogger;
-import org.firstinspires.ftc.teamcode.common.util.Logger;
-import org.firstinspires.ftc.teamcode.common.util.Persistent;
+import org.firstinspires.ftc.teamcode.common.actuators.Arm;
+import org.firstinspires.ftc.teamcode.common.actuators.Drivetrain;
+import org.firstinspires.ftc.teamcode.common.actuators.FoundationHook;
+import org.firstinspires.ftc.teamcode.common.actuators.Intake;
+import org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage;
+import org.firstinspires.ftc.teamcode.common.actuators.Lift;
+import org.firstinspires.ftc.teamcode.common.actuators.MotorArm;
+import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
+import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
+// import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
+import org.firstinspires.ftc.teamcode.common.sensors.AMSEncoder;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
+import org.firstinspires.ftc.teamcode.common.util.Config;
+import org.firstinspires.ftc.teamcode.common.util.DataStorage;
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
+import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Robot -- a container for all of the robot hardware interfaces
@@ -34,12 +36,28 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Robot
 {
     // Motors
+    public final Intake intake;
 
-    // PID controllers
+    // PID-controlled motors
 
     // Servos
+    public final FoundationHook foundationhook;
+    
+    // Actuators
+    public final Drivetrain drivetrain;
+    public final Lift slide;
+    public final Arm arm;
+    public final IntakeLinkage intakelinkage;
+    public final MotorArm newarm;
 
     // Sensors
+    public final Switch bottomlimit;
+    public final Switch backSwitch;
+    public final IMU imu;
+    
+    public final AMSEncoder fwdEnc = null;
+    public final AMSEncoder strafeEnc = null;
+
 
     // Constants
 
@@ -64,19 +82,79 @@ public class Robot
     {
         this.config = config;
         // Motors
+        DcMotor leftIntake = hardwareMap.dcMotor.get("l intake");
+        DcMotor rightIntake = hardwareMap.dcMotor.get("r intake");
+        intake = new Intake(leftIntake, rightIntake);
+
 
         // PID controllers
 
-        // Servos
 
+        // Servos
+        Servo hook = hardwareMap.servo.get("hook");
+        foundationhook = new FoundationHook(hook);
+
+        Servo intake_linkage = hardwareMap.servo.get("intake linkage");
+        intakelinkage = new IntakeLinkage(intake_linkage);
+
+        // Actuators
+        DcMotor slidemotor = hardwareMap.dcMotor.get("slide lift");
+        slidemotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        DigitalChannel bottomswitch = hardwareMap.digitalChannel.get("bottom limit");
+        PIDMotor lift = new PIDMotor(slidemotor);
+        bottomlimit = new Switch(bottomswitch);
+        slide = new Lift(lift, bottomlimit);
+
+        DcMotor motorArm = hardwareMap.dcMotor.get("motor arm");
+        DigitalChannel backLimit = hardwareMap.digitalChannel.get("back limit");
+        backSwitch = new Switch(backLimit);
+        newarm = new MotorArm(motorArm, backSwitch);
+
+
+        imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+        
+        //fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
+        //strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
+        
+        // AccelMotor edition
+        /*
+        drivetrain = new Drivetrain(new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lf"))),
+                                    new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rf"))),
+                                    new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("lb"))),
+                                    new PIDMotor(new AccelMotor(hardwareMap.dcMotor.get("rb"))), imu);
+        */
+        
+        // Non-AccelMotor drivetrain
+        drivetrain = new Drivetrain(new PIDMotor(hardwareMap.dcMotor.get("lf")),
+                                    new PIDMotor(hardwareMap.dcMotor.get("rf")),
+                                    new PIDMotor(hardwareMap.dcMotor.get("lb")),
+                                    new PIDMotor(hardwareMap.dcMotor.get("rb")), imu, fwdEnc, strafeEnc);
+    
+        DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
+        arm = new Arm(hardwareMap.servo.get("extension"), hardwareMap.servo.get("claw"), servo_positions);
+        
+        // Swerve wheels
+        
+        
         // Sensors
 
+        
         // Constants
 
+        
         // Other
 
+        
         // Reverse motors as necessary
+        
+        
+        // Logging
+        GlobalDataLogger.instance().addChannel("Encoder abs. distance (fwd)", () -> "" + fwdEnc.getAbsoluteAngle());
+        GlobalDataLogger.instance().addChannel("Encoder distance (fwd)", () -> "" + fwdEnc.getAngle());
+        GlobalDataLogger.instance().addChannel("Encoder abs. distance (strafe)", () -> "" + strafeEnc.getAbsoluteAngle());
+        GlobalDataLogger.instance().addChannel("Encoder distance (strafe)", () -> "" + strafeEnc.getAngle());
 
+        
         // Reset encoders
         for (String name : Utils.allDeviceNames(hardwareMap.dcMotor))
         {

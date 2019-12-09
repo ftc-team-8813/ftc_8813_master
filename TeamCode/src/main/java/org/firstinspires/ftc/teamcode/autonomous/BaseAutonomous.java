@@ -6,11 +6,13 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.TelemetryWrapper;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Persistent;
+import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
 import org.opencv.android.OpenCVLoader;
 
 import java.io.IOException;
@@ -30,7 +32,7 @@ import java.util.Vector;
  * just make it throw InterruptedException. This makes it so that if the robot tries to stop
  * (e.g. because the 30-second autonomous period has ended or the stop button has been pressed),
  * it stops instead of crashing with a 'The robot is stuck in stop()' message and restarting the
- * robot. **Important**: If you have a while loop, such as this:
+ * robot. **Important**: If you have a while doLoop, such as this:
  * <p>
  * while (condition) {
  * //Stuff
@@ -54,14 +56,6 @@ import java.util.Vector;
 // @Autonomous(name = "Autonomous")
 public abstract class BaseAutonomous extends LinearOpMode
 {
-    
-    static
-    {
-        if (!OpenCVLoader.initDebug())
-        {
-            System.exit(0);
-        }
-    }
 
     //We're making BaseAutonomous a 'singleton' class. This means that there is always only ONE
     //instance in use at a time. This is stored in this static field, which can be retrieved by
@@ -72,6 +66,9 @@ public abstract class BaseAutonomous extends LinearOpMode
     private CameraStream stream;
     private Logger log;
     public Config config;
+    
+    // Switch for GlobalDataLogger
+    private static final boolean LOGGING_ENABLED = true;
     
     /**
      * Get the current instance of BaseAutonomous. This is set when the OpMode is initialized and
@@ -141,7 +138,7 @@ public abstract class BaseAutonomous extends LinearOpMode
 
     private Interrupter interrupter;
 
-    public final void addThread(Thread t)
+    public final void addThreadToInterrupt(Thread t)
     {
         if (interrupter == null)
         {
@@ -183,10 +180,14 @@ public abstract class BaseAutonomous extends LinearOpMode
             interrupterThread.setDaemon(true);
             interrupterThread.start();
             
+            // Create our global thread pool for future threads
+            GlobalThreadPool.initialize(16, this);
+            
             //Clear the persistent objects since this would be a new round in competition
             Persistent.clear();
             
-            TelemetryWrapper.init(telemetry, 0);
+            GlobalDataLogger.initialize(Config.storageDir + "autonomous_" + getClass().getSimpleName() + ".log.gz");
+            if (LOGGING_ENABLED) GlobalDataLogger.instance().start(5);
             
             //Set the current instance
             instance = this;
@@ -232,6 +233,7 @@ public abstract class BaseAutonomous extends LinearOpMode
                 else if (exc instanceof IOException) log.e(exc);
                 else throw (InterruptedException) exc;
             }
+            GlobalThreadPool.instance().stopAll();
             Logger.close();
             System.gc();
         }

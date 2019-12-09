@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Map;
 
 // TODO better error handling
 // We might migrate the configuration to this in the future as it is writable by the program,
@@ -274,6 +275,11 @@ public class DataStorage
             i++;
         }
         return out;
+    }
+    
+    public void clear()
+    {
+        object = new JsonObject();
     }
 
 }

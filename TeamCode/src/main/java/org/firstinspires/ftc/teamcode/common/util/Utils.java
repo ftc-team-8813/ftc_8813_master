@@ -4,12 +4,18 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.util.Log;
 
+import com.qualcomm.hardware.lynx.LynxController;
+import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +26,30 @@ import java.util.Set;
 
 public class Utils
 {
+    
+    public static String getTimestamp()
+    {
+        return new SimpleDateFormat("yy_MM_dd_HH_mm_ss", Locale.US).format(new Date());
+    }
+    
+    public static String getMotorId(DcMotor motor)
+    {
+        int port = motor.getPortNumber();
+        String hub = motor.getController().getConnectionInfo().split(" ")[3];
+        return String.format(Locale.US, "DcMotor@c%s,p%d", hub, port);
+    }
+    
+    public static LynxModule getRevHubForController(HardwareMap hardwareMap, LynxController controller)
+    {
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class))
+        {
+            if (module.getSerialNumber() == controller.getSerialNumber())
+            {
+                return module;
+            }
+        }
+        return null;
+    }
 
     public static boolean floatEquals(double a, double b)
     {

@@ -9,11 +9,13 @@ import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
+import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
 
@@ -24,6 +26,13 @@ import java.util.Vector;
 
 public class CameraStream
 {
+    static
+    {
+        if (!OpenCVLoader.initDebug())
+        {
+            System.exit(0);
+        }
+    }
     
     private JavaCameraView cameraView;
     private Activity activity;
@@ -31,43 +40,67 @@ public class CameraStream
     //Smurf mode -- swap red and blue color channels in the output image for EPIC results :)
     protected static final boolean SMURF_MODE = false;
     
-    protected volatile List<CameraListener> listeners = new Vector<>();
-    protected volatile List<OutputModifier> modifiers = new Vector<>();
+    protected volatile List<CameraListenerWrapper> listeners = new Vector<>();
 
     public Size getSize()
     {
         return new Size(480, 640);
     }
     
+    public void addListener(CameraListener l, int priority)
+    {
+        listeners.add(new CameraListenerWrapper(l, priority));
+        listeners.sort(Comparator.naturalOrder());
+    }
+    
     public void addListener(CameraListener l)
     {
-        listeners.add(l);
+        addListener(l, 0);
     }
     
     public void removeListener(CameraListener l)
     {
-        listeners.remove(l);
+        for (int i = 0; i < listeners.size(); i++)
+        {
+            if (listeners.get(i).listener == l)
+            {
+                listeners.remove(i);
+                break;
+            }
+        }
         l.stop();
+    }
+    
+    public void addModifier(OutputModifier m, int priority)
+    {
+        listeners.add(new CameraListenerWrapper(m, priority));
+        listeners.sort(Comparator.naturalOrder());
     }
     
     public void addModifier(OutputModifier m)
     {
-        modifiers.add(m);
+        addModifier(m, 1000);
     }
 
     public void removeModifier(OutputModifier m)
     {
-        modifiers.remove(m);
+        for (int i = 0; i < listeners.size(); i++)
+        {
+            if (listeners.get(i).modifier == m)
+            {
+                listeners.remove(i);
+                break;
+            }
+        }
     }
     
     public void stop()
     {
-        for (CameraListener l : listeners)
+        for (CameraListenerWrapper l : listeners)
         {
             l.stop();
         }
         listeners.clear();
-        modifiers.clear();
 
         FtcRobotControllerActivity rc = (FtcRobotControllerActivity) activity;
         final LinearLayout cameraLayout = rc.cameraMonitorLayout;
@@ -78,6 +111,54 @@ public class CameraStream
             cameraLayout.removeView(cameraView);
             uiRunning = false;
         });
+    }
+    
+    protected class CameraListenerWrapper implements Comparable<CameraListenerWrapper>
+    {
+        final CameraListener listener;
+        final OutputModifier modifier;
+        int priority;
+        
+        CameraListenerWrapper(CameraListener listener, int priority)
+        {
+            this.listener = listener;
+            this.modifier = null;
+            this.priority = priority;
+        }
+    
+        CameraListenerWrapper(OutputModifier modifier, int priority)
+        {
+            this.modifier = modifier;
+            this.listener = null;
+            this.priority = priority;
+        }
+        
+        void stop()
+        {
+            if (listener != null) listener.stop();
+        }
+        
+        Mat process(Mat bgr)
+        {
+            if (listener != null)
+            {
+                Mat clone = bgr.clone();
+                listener.processFrame(clone);
+                clone.release();
+                return bgr;
+            }
+            else if (modifier != null)
+            {
+                return modifier.draw(bgr);
+            }
+            return null;
+        }
+    
+        @Override
+        public int compareTo(CameraListenerWrapper other)
+        {
+            return Integer.compare(priority, other.priority);
+        }
     }
     
     public static interface CameraListener
@@ -94,6 +175,7 @@ public class CameraStream
     private void startProcessing()
     {
         cameraView.setVisibility(View.VISIBLE);
+        cameraView.setCameraPermissionGranted();
         cameraView.setCvCameraViewListener(new CameraBridgeViewBase.CvCameraViewListener2()
         {
             @Override
@@ -114,30 +196,27 @@ public class CameraStream
                 //Log.i("Image Conversion", "Image type: " + CvType.typeToString(frame.type()));
                 //Convert to BGR to make it a 'normal' image
                 Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGBA2BGR);
-                //Make a copy of the current listeners list to try to be more thread-safe
-                CameraListener[] currentListeners = listeners.toArray(new CameraListener[0]);
-                for (CameraListener l : currentListeners)
-                {
-                    //Make a copy of the frame so that processors cannot modify the image
-                    Mat copyFrame = new Mat();
-                    frame.copyTo(copyFrame);
-                    l.processFrame(copyFrame);
-                }
-                Mat out = frame;
-                OutputModifier[] currentModifiers = modifiers.toArray(new OutputModifier[0]);
-                for (OutputModifier m : currentModifiers)
-                {
-                    out = m.draw(out);
-                }
                 
-                if (!SMURF_MODE)
-                    Imgproc.cvtColor(out, out, Imgproc.COLOR_BGR2RGBA);
-                //Run the garbage collector as fast as possible to delete old images and keep enough
-                //memory for our program to function, avoid blowing up the phone :)
-                System.gc();
-                return out;
+                return processFrame(frame);
             }
         });
+    }
+    
+    protected Mat processFrame(Mat frame)
+    {
+        //Make a copy of the current listeners list to try to be more thread-safe
+        CameraListenerWrapper[] currentListeners = listeners.toArray(new CameraListenerWrapper[0]);
+        for (CameraListenerWrapper l : currentListeners)
+        {
+            frame = l.process(frame);
+        }
+    
+        if (!SMURF_MODE)
+            Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2RGBA);
+        //Run the garbage collector as fast as possible to delete old images and keep enough
+        //memory for our program to function, avoid blowing up the phone :)
+        System.gc();
+        return frame;
     }
 
     protected void init()

@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.common.util.Chooser;
-import org.firstinspires.ftc.teamcode.common.util.MotorController;
+import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
@@ -15,14 +15,14 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * PIDTuner - OpMode to adjust PID constants for the MotorController.
+ * PIDTuner - OpMode to adjust PID constants for the PIDMotor.
  */
 
 @TeleOp(name = "PID Tuner", group = "test")
 public class PIDTuner extends OpMode
 {
     
-    private MotorController controller;
+    private PIDMotor controller;
     private ButtonHelper buttons;
     private int changing = 0;
     private long start;
@@ -73,9 +73,9 @@ public class PIDTuner extends OpMode
             if (chooser.chosen())
             {
                 motorName = (String)chooser.getSelected();
-                controller = new MotorController.MotorControllerFactory(hardwareMap.dcMotor.get((String)chooser.getSelected())).create();
-                controller.setPIDConstants(0, 0, 0);
-                controller.holdStalled(true);
+                controller = new PIDMotor(hardwareMap.dcMotor.get((String)chooser.getSelected()));
+                // controller.setPIDConstants(0, 0, 0);
+                // controller.holdStalled(true);
                 chooser = null;
                 settings_step++;
             }
@@ -214,9 +214,9 @@ public class PIDTuner extends OpMode
                     array[2] = constants[2];
                     array[3] = controller.getTargetPosition();
                     array[4] = controller.getCurrentPosition();
-                    array[5] = controller.getInternalController().getError();
-                    array[6] = controller.getInternalController().getIntegral();
-                    array[7] = controller.getInternalController().getDerivative();
+                    array[5] = 0; // controller.getInternalController().getError();
+                    array[6] = 0; // controller.getInternalController().getIntegral();
+                    array[7] = 0; // controller.getInternalController().getDerivative();
                     array[8] = controller.getOutput();
             });
         }

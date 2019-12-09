@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.util;
 
+import com.qualcomm.robotcore.util.RobotLog;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -53,8 +55,7 @@ public class Logger
      */
     public static void init() throws IOException
     {
-        init(new File(Config.storageDir + "logs/" + new SimpleDateFormat
-                ("yy_MM_dd_HH_mm_ss", Locale.US).format(new Date()) + ".log"));
+        init(new File(Config.storageDir + "logs/" + Utils.getTimestamp() + ".log"));
     }
     
     /**
@@ -127,6 +128,7 @@ public class Logger
         {
             String base = base(level);
             writer.println(base + String.format(fmt, args));
+            RobotLog.dd(tag, String.format(fmt, args));
         }
     }
 
