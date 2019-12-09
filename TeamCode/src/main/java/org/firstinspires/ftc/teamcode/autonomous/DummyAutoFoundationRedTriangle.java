@@ -38,16 +38,14 @@ public class DummyAutoFoundationRedTriangle extends BaseAutonomous
 
         robot.foundationhook.moveHookUp();
 
-        robot.drivetrain.move(0, 0.6, 0, tickToInches(40));
+        robot.drivetrain.move(0, 0.6, 0, tickToInches(30));
         robot.drivetrain.stop();
 
-        robot.drivetrain.move(-0.3, 0, 0, tickToInches(8));
+        robot.drivetrain.move(-0.3, 0, 0, tickToInches(16));
 
-        robot.drivetrain.move(0, -0.4, 0, tickToInches(35));
+        robot.drivetrain.move(0, -0.4, 0, tickToInches(18));
 
-        robot.drivetrain.move(0, 0.4, 0, tickToInches(28));
-
-        robot.drivetrain.move(0.4, 0, 0, tickToInches(10));
+        robot.drivetrain.move(0, 0.3, 0, tickToInches(25));
     }
 
     public int tickToInches(double dist){

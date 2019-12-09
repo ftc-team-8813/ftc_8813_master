@@ -9,6 +9,8 @@ public class JustParking extends BaseAutonomous {
     @Override
     public void run() throws InterruptedException {
         Robot robot = Robot.instance();
+        Thread.sleep(15000);
+
         robot.drivetrain.move(0.4, 0, 0, tickToInches(25));
         robot.drivetrain.stop();
     }

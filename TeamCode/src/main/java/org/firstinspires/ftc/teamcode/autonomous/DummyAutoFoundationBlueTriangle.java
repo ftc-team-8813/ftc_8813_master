@@ -35,7 +35,7 @@ public class DummyAutoFoundationBlueTriangle extends BaseAutonomous
 
         robot.foundationhook.moveHookUp();
 
-        robot.drivetrain.move(0, -0.6, 0, tickToInches(43));
+        robot.drivetrain.move(0, -0.6, 0, tickToInches(35));
         robot.drivetrain.stop();
     }
 
