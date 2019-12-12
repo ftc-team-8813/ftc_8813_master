@@ -118,7 +118,7 @@ public class GlobalDataLogger
     
     private static void init()
     {
-        VMStats stats = new VMStats(1);
+        VMStats stats = new VMStats(1); // Add VMStats logs
         instance().addChannel("GlobalThreadPool Thread Count", () -> "" + GlobalThreadPool.instance().getTaskCount());
     }
     
@@ -142,7 +142,7 @@ public class GlobalDataLogger
     
     private GlobalDataLogger(String filename) throws IOException
     {
-        writer = new OutputStreamWriter(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(filename))));
+        writer = new OutputStreamWriter(new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(filename))));
         channels = Collections.synchronizedList(new ArrayList<>());
         log = new Logger("GlobalDataLogger");
     }
@@ -172,26 +172,40 @@ public class GlobalDataLogger
         logDaemon = GlobalThreadPool.instance().start(() ->
         {
             long start = System.nanoTime();
+            boolean interrupt = false;
             try
             {
                 while (true)
                 {
+                    long loopstart = System.nanoTime();
                     List<String> data = new ArrayList<>();
                     for (Channel c : new Vector<>(channels))
                     {
                         try
                         {
                             data.add(c.callback.call());
-                        } catch (Exception e)
+                        }
+                        catch (InterruptedException e)
+                        {
+                            interrupt = true;
+                            data.add("~interrupt~");
+                        }
+                        catch (Exception e)
                         {
                             data.add("~error " + e.getClass().getSimpleName() + "~");
                         }
                     }
+                    data.add(Double.toString(1000000000.0 / (System.nanoTime() - loopstart)));
                     writeLogLine(System.nanoTime() - start, data);
+                    if (interrupt) break;
                     Thread.sleep(interval);
                 }
             }
             catch (InterruptedException | IOException e)
+            {
+                log.i("Interrupted");
+            }
+            finally
             {
                 close();
             }
@@ -245,6 +259,7 @@ public class GlobalDataLogger
         {
             List<String> names = new ArrayList<>();
             channels.forEach((channel) -> names.add(channel.name));
+            names.add("Frames per second");
             
             writeLogLine(-1, names);
             writer.flush();

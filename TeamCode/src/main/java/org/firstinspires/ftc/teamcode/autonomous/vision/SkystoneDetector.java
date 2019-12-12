@@ -7,6 +7,7 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,7 +42,7 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
             try
             {
                 currentResult = currentWorker.get();
-            } catch (ExecutionException | InterruptedException e)
+            } catch (ExecutionException | CancellationException | InterruptedException e)
             {
                 e.printStackTrace();
             }
