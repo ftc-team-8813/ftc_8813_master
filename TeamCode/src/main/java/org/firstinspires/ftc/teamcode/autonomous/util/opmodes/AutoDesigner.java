@@ -134,12 +134,12 @@ public class AutoDesigner extends BaseTeleOp
                 {
                     op = OP_TURN;
                 }
-                else if (gamepad1.b)
+                else if (buttons.pressing(ButtonHelper.b))
                 {
                     op = OP_HOOK;
                     automatic = true;
                 }
-                else if (gamepad1.left_bumper || gamepad1.right_bumper)
+                else if (buttons.pressing(ButtonHelper.left_bumper) || buttons.pressing(ButtonHelper.right_bumper))
                 {
                     op = OP_INTAKE;
                     automatic = true;
@@ -385,6 +385,7 @@ public class AutoDesigner extends BaseTeleOp
         else if (op == OP_INTAKE)
         {
             params[0] = (int)System.currentTimeMillis() - params[0];
+            robot.intake.stopIntake();
         }
         else if (op == OP_LIFT)
         {

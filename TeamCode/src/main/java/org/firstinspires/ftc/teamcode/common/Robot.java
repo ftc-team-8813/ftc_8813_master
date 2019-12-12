@@ -149,10 +149,12 @@ public class Robot
         
         
         // Logging
+        /*
         GlobalDataLogger.instance().addChannel("Encoder abs. distance (fwd)", () -> "" + fwdEnc.getAbsoluteAngle());
         GlobalDataLogger.instance().addChannel("Encoder distance (fwd)", () -> "" + fwdEnc.getAngle());
         GlobalDataLogger.instance().addChannel("Encoder abs. distance (strafe)", () -> "" + strafeEnc.getAbsoluteAngle());
         GlobalDataLogger.instance().addChannel("Encoder distance (strafe)", () -> "" + strafeEnc.getAngle());
+         */
 
         
         // Reset encoders
@@ -181,6 +183,7 @@ public class Robot
         // Stop all motors
 
         // Stop external threads and close open files (if any) here
+        imu.stop();
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -187,7 +187,7 @@ public abstract class BaseAutonomous extends LinearOpMode
             Persistent.clear();
             
             GlobalDataLogger.initialize(Config.storageDir + "autonomous_" + getClass().getSimpleName() + ".log.gz");
-            if (LOGGING_ENABLED) GlobalDataLogger.instance().start(5);
+            if (LOGGING_ENABLED) GlobalDataLogger.instance().start(1);
             
             //Set the current instance
             instance = this;
