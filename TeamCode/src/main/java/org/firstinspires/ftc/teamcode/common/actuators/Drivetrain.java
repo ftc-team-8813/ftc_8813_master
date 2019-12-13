@@ -186,6 +186,8 @@ public class Drivetrain
         angleOffset = 0;
         state = "Idle";
     }
+    
+    
 
     public void oldMove(double forward, double right, double turn, int distance) throws InterruptedException
     {
@@ -273,9 +275,6 @@ public class Drivetrain
     }
 
     public void stop(){
-        leftFront.getMotor().setPower(0);
-        leftBack.getMotor().setPower(0);
-        rightFront.getMotor().setPower(0);
-        rightBack.getMotor().setPower(0);
+        drive(0, 0, 0);
     }
 }

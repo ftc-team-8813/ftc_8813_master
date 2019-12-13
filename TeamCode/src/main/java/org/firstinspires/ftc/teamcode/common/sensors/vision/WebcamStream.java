@@ -6,8 +6,11 @@ import android.graphics.ImageFormat;
 import android.widget.ImageView;
 
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.Camera;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
@@ -15,6 +18,7 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class WebcamStream extends CameraStream
 {
@@ -81,6 +85,7 @@ public class WebcamStream extends CameraStream
         view = new WebcamStream.FrameView(activity);
         activity.runOnUiThread(() -> activity.cameraMonitorLayout.addView(view));
         camera.startStreaming(view);
+        // GlobalDataLogger.instance().addChannel("Camera Exposure", () -> "" + camera.getCamera().getControl(ExposureControl.class).getExposure(TimeUnit.MILLISECONDS));
     }
 
     private void removeFrameView()
@@ -88,6 +93,11 @@ public class WebcamStream extends CameraStream
         final FtcRobotControllerActivity activity = (FtcRobotControllerActivity) AppUtil.getInstance().getActivity();
         activity.runOnUiThread(() -> activity.cameraMonitorLayout.removeView(view));
         view.onRemove();
+    }
+    
+    public Camera getInternalCamera()
+    {
+        return camera.getCamera();
     }
 
     private class FrameView extends ImageView implements Webcam.FrameCallback

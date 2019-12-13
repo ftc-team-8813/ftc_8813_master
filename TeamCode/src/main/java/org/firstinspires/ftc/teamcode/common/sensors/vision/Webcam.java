@@ -18,6 +18,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraFrame;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraManager;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.firstinspires.ftc.robotcore.internal.system.Misc;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
@@ -122,6 +123,11 @@ public class Webcam
             status = Status.ERROR;
             frameCallback.onClose(status);
         }
+    }
+    
+    public Camera getCamera()
+    {
+        return camera;
     }
 
     public void close()

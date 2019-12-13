@@ -195,7 +195,7 @@ public class GlobalDataLogger
                             data.add("~error " + e.getClass().getSimpleName() + "~");
                         }
                     }
-                    data.add(Double.toString(1000000000.0 / (System.nanoTime() - loopstart)));
+                    data.add(0, Double.toString(1000000000.0 / (System.nanoTime() - loopstart)));
                     writeLogLine(System.nanoTime() - start, data);
                     if (interrupt) break;
                     Thread.sleep(interval);
@@ -258,8 +258,8 @@ public class GlobalDataLogger
         try
         {
             List<String> names = new ArrayList<>();
-            channels.forEach((channel) -> names.add(channel.name));
             names.add("Frames per second");
+            channels.forEach((channel) -> names.add(channel.name));
             
             writeLogLine(-1, names);
             writer.flush();

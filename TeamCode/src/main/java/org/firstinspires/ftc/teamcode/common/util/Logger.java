@@ -127,7 +127,7 @@ public class Logger
         if (level <= maxLevel)
         {
             String base = base(level);
-            writer.println(base + String.format(fmt, args));
+            if (writer != null) writer.println(base + String.format(fmt, args));
             RobotLog.dd(tag, String.format(fmt, args));
         }
     }

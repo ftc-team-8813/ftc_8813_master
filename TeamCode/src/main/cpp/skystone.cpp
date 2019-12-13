@@ -207,13 +207,14 @@ JNIEXPORT jint JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_vision_Sky
 }
 
 JNIEXPORT void JNICALL Java_org_firstinspires_ftc_teamcode_autonomous_vision_SkystoneDetector_draw
-    (JNIEnv *env, jobject instance, jlong mat_addr, jboolean )
+    (JNIEnv *env, jobject instance, jlong mat_addr)
 {
     cv::Mat mat = *((cv::Mat *)mat_addr);
     cv::line(mat, cv::Point(0, crop_area.a), cv::Point(mat.cols, crop_area.a), cv::Scalar(0, 0, 255), 2);
     cv::line(mat, cv::Point(0, crop_area.b), cv::Point(mat.cols, crop_area.b), cv::Scalar(255, 0, 0), 2);
     cv::line(mat, cv::Point(skystone_range.a, 0), cv::Point(skystone_range.a, mat.rows), cv::Scalar(0, 128, 128), 2);
     cv::line(mat, cv::Point(skystone_range.b, 0), cv::Point(skystone_range.b, mat.rows), cv::Scalar(0, 128, 128), 2);
+    cv::circle(mat,cv::Point((skystone_range.b + skystone_range.a)/2, (crop_area.b + crop_area.a)/2), 2, cv::Scalar(0, 0, 255), 2);
 }
 
 } // extern "C"
