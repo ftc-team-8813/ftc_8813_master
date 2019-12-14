@@ -100,6 +100,10 @@ public class Drivetrain
             log.e("Arc turns are not supported");
             return;
         }
+        if (forward == 0 && right == 0 && (turn == 0 || imu == null))
+        {
+            return;
+        }
         double[] powers = {
                 forward + right - turn,
                 forward - right + turn,
@@ -109,15 +113,7 @@ public class Drivetrain
         
         PIDMotor[] motors = {leftFront, rightFront, leftBack, rightBack};
         
-        // Start the motors
-        for (int i = 0; i < 4; i++)
-        {
-            if (powers[i] != 0)
-            {
-                motors[i].getMotor().setPower(powers[i] * Math.signum(distance));
-            }
-            Thread.sleep(6);
-        }
+        
         
         double angleOrig;
         if (imu != null)
@@ -133,20 +129,38 @@ public class Drivetrain
          */
         PIDMotor encMotor = rightBack;
         int origPos = encMotor.getCurrentPosition();
+        double speedScale = 0;
         
         // Wait for the motors to finish
         boolean busy = true;
         double prevPowerOff = 0;
         while (busy)
         {
-            if (forward != 0 && Math.abs(encMotor.getCurrentPosition() - origPos) >= Math.abs(distance))
-                busy = false;
-            else if (right != 0 && Math.abs(encMotor.getCurrentPosition() - origPos) >= Math.abs(distance))
-                busy = false;
-            else if (turn != 0 && imu != null && Math.abs(imu.getHeading() - angleOrig) >= Math.abs(distance))
-                busy = false;
-            else
-                busy = true;
+            int error;
+            if (forward != 0) error = Math.abs(distance) - Math.abs(encMotor.getCurrentPosition() - origPos);
+            else if (right != 0) error = Math.abs(distance) - Math.abs(encMotor.getCurrentPosition() - origPos);
+            else if (turn != 0) error = Math.abs(distance) - (int)Math.abs(imu.getHeading() - angleOrig);
+            else error = 0;
+            
+            if (error <= 0) break;
+            
+            for (int i = 0; i < 4; i++)
+            {
+                if (powers[i] != 0)
+                {
+                    motors[i].getMotor().setPower(powers[i] * Math.signum(distance) * speedScale);
+                }
+                Thread.sleep(6);
+            }
+            
+            if (error < distance / 3)
+            {
+                speedScale *= 0.8;
+            }
+            else if (speedScale < 1)
+            {
+                speedScale += 0.25;
+            }
             
             
             // TODO TEST EXPERIMENTAL CODE
@@ -177,7 +191,7 @@ public class Drivetrain
 //                    motors[1].getCurrentPosition(),
 //                    motors[2].getCurrentPosition(),
 //                    motors[3].getCurrentPosition());
-            Thread.sleep(10);
+            Thread.sleep(1);
         }
         motors[0].getMotor().setPower(0);
         motors[1].getMotor().setPower(0);

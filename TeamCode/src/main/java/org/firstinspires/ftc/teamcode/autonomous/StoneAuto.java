@@ -49,7 +49,7 @@ public class StoneAuto extends BaseAutonomous
         {
             off = detector.getArea().x + detector.getArea().width/2 - 320;
         }
-        drivetrain.move(0, 0.4, 0, -strafe_dist + (int)(off*0.75));
+        drivetrain.move(0, 0.4, 0, -strafe_dist + (int)(off*0.67));
         Thread.sleep(100);
         drivetrain.move(0, 0, 0.4, -turn);
         Thread.sleep(100);
@@ -57,15 +57,13 @@ public class StoneAuto extends BaseAutonomous
         drivetrain.move(0.4, 0, 0, fwd_dist);
         Thread.sleep(400);
         robot.intake.stopIntake();
-        drivetrain.move(0.3, 0, 0, -200);
-        Thread.sleep(200);
         drivetrain.move(0, 0, 0.4, turn);
         Thread.sleep(100);
-        drivetrain.move(0.3, 0, 0, -200);
+        drivetrain.move(0.45, 0, 0, -400);
         robot.intake.collectStone(0.4);
         Thread.sleep(150);
         robot.intake.stopIntake();
-        drivetrain.move(0, 0, 0.6, -((int)robot.imu.getHeading()) + 50);
+        // drivetrain.move(0, 0, 0.6, -((int)robot.imu.getHeading()) + 50);
     }
     
     private int senseBlock() throws InterruptedException
@@ -84,6 +82,10 @@ public class StoneAuto extends BaseAutonomous
                 if (detector.getArea().width > 300)
                 {
                     break;
+                }
+                else if (detector.getArea().width > 240)
+                {
+                    drivetrain.drive(SPD_SLOW, 0, 0);
                 }
                 else if (detector.getArea().width > 200)
                 {
@@ -113,51 +115,59 @@ public class StoneAuto extends BaseAutonomous
     @Override
     public void run() throws InterruptedException
     {
+        /////////////////
+        // Initialization
+        // Robot
         robot = Robot.instance();
         robot.intakelinkage.moveLinkageOut();
+        // Drivetrain
         drivetrain = robot.drivetrain;
+        // Vision
         detector = new SkystoneDetector();
         stream.addListener(detector);
         stream.addModifier(detector);
         stream.addListener(new Vlogger("videos/" + Utils.getTimestamp() + ".avi",  640, 480, 10), 1001);
         GlobalDataLogger.instance().addChannel("Skystone Width", () -> "" + (detector.found() ? detector.getArea().width : 0));
         
+        // Initial forward
         drivetrain.move(0.4, 0, 0, 725);
         Thread.sleep(100);
         
-        
+        // Sense block
         int senseDist = senseBlock();
         drivetrain.move(0, 0, 0.1, -(int)robot.imu.getHeading());
         
-        pickBlock(12, 200, 350);
+        pickBlock(14, 160, 350);
+    
+        drivetrain.move(0, 0, 0.2, -(int)robot.imu.getHeading() - 2); // Medium correction
+        // drivetrain.move(0, 0, 0.2, -(int)robot.imu.getHeading()); // Another fine correction
+        Thread.sleep(100);
         
-        drivetrain.move(0.7, 0, 0, senseDist);
+        drivetrain.move(0, 0.8, 0, -(senseDist + 750));
         Thread.sleep(150);
         robot.intake.collectStone(-0.3);
         Thread.sleep(500);
         robot.intake.stopIntake();
-        drivetrain.move(0.7, 0, 0, -(400 + senseDist));
-        Thread.sleep(100);
-        drivetrain.move(0, 0, 0.5, -(int)robot.imu.getHeading()); // Fast correction
-        drivetrain.move(0, 0, 0.3, -(int)robot.imu.getHeading()); // Medium correction
-        drivetrain.move(0, 0, 0.2, -(int)robot.imu.getHeading()); // Fine correction
-        drivetrain.move(0, 0, 0.1, -(int)robot.imu.getHeading()); // Another fine correction
-        Thread.sleep(100);
-        drivetrain.move(0.6, 0, 0, 1);
-        drivetrain.move(0, 0.5, 0, 600);
+        drivetrain.move(0, 0, 0.1, -(int)robot.imu.getHeading() + 2); // Fine correction
+        drivetrain.move(0, 0.85, 0, 750 + senseDist);
+        Thread.sleep(200);
+        drivetrain.move(0.6, 0, 0, 180);
+        Thread.sleep(500);
+        drivetrain.move(0, 0.5, 0, 700);
+        // drivetrain.move(0, 0, 0.1, -(int)robot.imu.getHeading());
         
         senseBlock();
         // drivetrain.move(0, 0.5, 0, 25);
         drivetrain.move(0, 0, 0.15, -(int)robot.imu.getHeading());
         
         // drivetrain.move(0.6, 0, 0, -1);
-        pickBlock(16, 250, 400);
+        pickBlock(14, 220, 400);
         
-        drivetrain.move(1, 0, 0, 1200);
+        drivetrain.move(0, 1, 0, -1900 - senseDist);
         robot.intake.collectStone(-0.3);
         Thread.sleep(400);
         robot.intake.stopIntake();
-        drivetrain.move(1, 0, 0, -250);
+        drivetrain.move(0, 1, 0, 300);
     }
     
     @Override
