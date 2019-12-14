@@ -42,7 +42,7 @@ public class StoneAuto extends BaseAutonomous
         Robot.instance().imu.initialize();
     }
     
-    private void pickBlock(int turn, int strafe_dist, int fwd_dist) throws InterruptedException
+    private void pickBlock(int turn, int strafe_dist, int fwd_dist, int back_dist) throws InterruptedException
     {
         int off = 0;
         if (detector.found())
@@ -59,7 +59,7 @@ public class StoneAuto extends BaseAutonomous
         robot.intake.stopIntake();
         drivetrain.move(0, 0, 0.4, turn);
         Thread.sleep(100);
-        drivetrain.move(0.45, 0, 0, -400);
+        drivetrain.move(0.45, 0, 0, -back_dist);
         robot.intake.collectStone(0.4);
         Thread.sleep(150);
         robot.intake.stopIntake();
@@ -83,13 +83,9 @@ public class StoneAuto extends BaseAutonomous
                 {
                     break;
                 }
-                else if (detector.getArea().width > 240)
-                {
-                    drivetrain.drive(SPD_SLOW, 0, 0);
-                }
                 else if (detector.getArea().width > 200)
                 {
-                    drivetrain.drive(0, SPD_EXSLOW, 0);
+                    drivetrain.drive(SPD_SLOW, 0, 0);
                 }
                 else if (detector.getArea().width > 80)
                 {
@@ -137,21 +133,21 @@ public class StoneAuto extends BaseAutonomous
         int senseDist = senseBlock();
         drivetrain.move(0, 0, 0.1, -(int)robot.imu.getHeading());
         
-        pickBlock(14, 160, 350);
+        pickBlock(14, 160, 350, 1500);
     
         drivetrain.move(0, 0, 0.2, -(int)robot.imu.getHeading() - 2); // Medium correction
         // drivetrain.move(0, 0, 0.2, -(int)robot.imu.getHeading()); // Another fine correction
         Thread.sleep(100);
         
-        drivetrain.move(0, 0.8, 0, -(senseDist + 750));
+        drivetrain.move(0, 0.8, 0, -(senseDist + 850));
         Thread.sleep(150);
         robot.intake.collectStone(-0.3);
         Thread.sleep(500);
         robot.intake.stopIntake();
         drivetrain.move(0, 0, 0.1, -(int)robot.imu.getHeading() + 2); // Fine correction
-        drivetrain.move(0, 0.85, 0, 750 + senseDist);
+        drivetrain.move(0, 0.85, 0, 850 + senseDist);
         Thread.sleep(200);
-        drivetrain.move(0.6, 0, 0, 180);
+        drivetrain.move(0.6, 0, 0, 550);
         Thread.sleep(500);
         drivetrain.move(0, 0.5, 0, 700);
         // drivetrain.move(0, 0, 0.1, -(int)robot.imu.getHeading());
@@ -161,7 +157,7 @@ public class StoneAuto extends BaseAutonomous
         drivetrain.move(0, 0, 0.15, -(int)robot.imu.getHeading());
         
         // drivetrain.move(0.6, 0, 0, -1);
-        pickBlock(14, 220, 400);
+        pickBlock(12, 220, 400, 700);
         
         drivetrain.move(0, 1, 0, -1900 - senseDist);
         robot.intake.collectStone(-0.3);
