@@ -130,7 +130,7 @@ public class StoneAuto extends BaseAutonomous
         GlobalDataLogger.instance().addChannel("Skystone Width", () -> "" + (detector.found() ? detector.getArea().width : 0));
         
         // Initial forward
-        drivetrain.move(0.4, 0, 0, 725);
+        drivetrain.move(0.4, 0, 0, 650);
         Thread.sleep(100);
         
         // Sense block
