@@ -5,11 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.autonomous.vision.SkystoneDetector;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
-import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
 import org.firstinspires.ftc.teamcode.common.util.Vlogger;
-
-import java.util.Date;
 
 
 @Autonomous(name="DummyAutoStones")
@@ -22,7 +19,7 @@ public class DummyAutoStones extends BaseAutonomous
         Robot robot = Robot.instance();
         robot.intakelinkage.moveLinkageIn();
         robot.newarm.resetArm();
-        robot.arm.openClaw();
+        robot.claw.openClaw();
     }
 
     @Override
@@ -60,7 +57,7 @@ public class DummyAutoStones extends BaseAutonomous
         Thread.sleep(1000);
         robot.newarm.moveArm(0);
 
-        robot.arm.closeClaw();
+        robot.claw.closeClaw();
         Thread.sleep(100);
 
         robot.slide.raiseLiftEnc(tickstoInches(2));
@@ -70,7 +67,7 @@ public class DummyAutoStones extends BaseAutonomous
 
         robot.drivetrain.move(0, -0.8, 0, tickstoInches(40));
 
-        robot.arm.openClaw();
+        robot.claw.openClaw();
 
         robot.drivetrain.move(0, 0.6, 0, tickstoInches(10));
 

@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 
 import java.io.File;
@@ -32,11 +33,18 @@ public class Utils
         return new SimpleDateFormat("yy_MM_dd_HH_mm_ss", Locale.US).format(new Date());
     }
     
-    public static String getMotorId(DcMotor motor)
+    public static String lookupConfigName(HardwareDevice device, HardwareMap hardwareMap)
     {
-        int port = motor.getPortNumber();
-        String hub = motor.getController().getConnectionInfo().split(" ")[3];
-        return String.format(Locale.US, "DcMotor@c%s,p%d", hub, port);
+        Set<String> names = hardwareMap.getNamesOf(device);
+        if (names.size() == 0) return "Unknown " + device.getDeviceName();
+        else return names.toArray(new String[0])[0];
+    }
+    
+    public static String getMotorId(DcMotor motor, HardwareMap hardwareMap)
+    {
+        // int port = motor.getPortNumber();
+        // String hub = motor.getController().getConnectionInfo().split(" ")[3];
+        return lookupConfigName(motor, hardwareMap);
     }
     
     public static LynxModule getRevHubForController(HardwareMap hardwareMap, LynxController controller)

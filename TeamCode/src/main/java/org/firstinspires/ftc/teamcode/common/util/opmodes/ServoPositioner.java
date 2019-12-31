@@ -90,7 +90,7 @@ public class ServoPositioner extends OpMode
                     TelemetryWrapper.setLine(3, "Press LEFT BUMPER to select a different servo");
                     s = hardwareMap.servo.get(servo);
                     servoPositions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
-                    positionNames = presetNames.getStringArray(servo + "_presets");
+                    positionNames = presetNames.getStringArray(servo);
                     if (positionNames != null)
                     {
                         for (int i = 0; i < positionNames.length; i++)

@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorImpl;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
@@ -39,11 +40,11 @@ public class AccelMotor extends DcMotorImpl
         maxSpeed = motor.getMotorType().getAchieveableMaxTicksPerSecondRounded();
         this.acceleration = acceleration; // full speed in 1 second
         this.defaultAcceleration = acceleration;
-        log = new Logger("AccelMotor " + Utils.getMotorId(motor));
+        log = new Logger("AccelMotor " + Utils.lookupConfigName(motor, Robot.instance().hardwareMap));
         
-        GlobalDataLogger.instance().addChannel(Utils.getMotorId(motor) + " speed",
+        GlobalDataLogger.instance().addChannel(Utils.lookupConfigName(motor, Robot.instance().hardwareMap) + " speed",
                 () -> String.format("%.3f", getPower()));
-        GlobalDataLogger.instance().addChannel(Utils.getMotorId(motor) + " state",
+        GlobalDataLogger.instance().addChannel(Utils.lookupConfigName(motor, Robot.instance().hardwareMap) + " state",
                 () -> isAccelerating() ? "Accelerating" : "Idle");
         
     }

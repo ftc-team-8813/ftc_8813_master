@@ -1,14 +1,10 @@
 package org.firstinspires.ftc.teamcode.autonomous.util.opmodes;
 
-import android.provider.Settings;
-
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.common.Robot;
-import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataStorage;
 import org.firstinspires.ftc.teamcode.common.util.TelemetryWrapper;
@@ -39,7 +35,7 @@ public class AutoDesigner extends BaseTeleOp
     public static final int OP_ARM = 6;     // dpad up/down -> left joystick y
     public static final int OP_CLAW = 7;    // dpad left
     
-    private static final String[] ops = {"Forward", "Strafe", "Turn", "Hook", "Intake", "Lift", "Arm", "Claw"};
+    private static final String[] ops = {"Forward", "Strafe", "Turn", "Hook", "Intake", "Lift", "Claw", "Claw"};
     
     private DataStorage data;
     private ButtonHelper buttons;
@@ -208,7 +204,7 @@ public class AutoDesigner extends BaseTeleOp
                 }
                 else if (op == OP_CLAW)
                 {
-                    robot.arm.toggleClaw();
+                    robot.claw.toggleClaw();
                     finished = true;
                 }
                 
@@ -397,7 +393,7 @@ public class AutoDesigner extends BaseTeleOp
         }
         else if (op == OP_CLAW)
         {
-            params[0] = robot.arm.clawClosed() ? 1 : 0;
+            params[0] = robot.claw.clawClosed() ? 1 : 0;
         }
         
         JsonObject operation = new JsonObject();
@@ -472,8 +468,8 @@ public class AutoDesigner extends BaseTeleOp
             {
                 boolean closed = (params[0] == 1);
                 if (direction == -1) closed = !closed;
-                if (closed) robot.arm.closeClaw();
-                else robot.arm.openClaw();
+                if (closed) robot.claw.closeClaw();
+                else robot.claw.openClaw();
             }
         } catch (InterruptedException e) {
             log.w("Interrupted while running");

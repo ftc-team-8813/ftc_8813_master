@@ -106,8 +106,8 @@ public class AutonomousPlayer extends BaseAutonomous
         {
             boolean closed = (params[0] == 1);
             if (direction == -1) closed = !closed;
-            if (closed) robot.arm.closeClaw();
-            else robot.arm.openClaw();
+            if (closed) robot.claw.closeClaw();
+            else robot.claw.openClaw();
         }
     }
 }

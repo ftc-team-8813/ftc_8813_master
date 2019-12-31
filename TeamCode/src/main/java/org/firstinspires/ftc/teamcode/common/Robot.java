@@ -1,26 +1,25 @@
 package org.firstinspires.ftc.teamcode.common;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.lynx.LynxDcMotorController;
-import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.common.actuators.Arm;
+import org.firstinspires.ftc.teamcode.common.actuators.Claw;
 import org.firstinspires.ftc.teamcode.common.actuators.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.actuators.FoundationHook;
 import org.firstinspires.ftc.teamcode.common.actuators.Intake;
 import org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage;
 import org.firstinspires.ftc.teamcode.common.actuators.Lift;
 import org.firstinspires.ftc.teamcode.common.actuators.MotorArm;
-import org.firstinspires.ftc.teamcode.common.motor_control.AccelMotor;
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 // import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
 import org.firstinspires.ftc.teamcode.common.sensors.AMSEncoder;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
+import org.firstinspires.ftc.teamcode.common.sensors.RangeSensor;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataStorage;
@@ -46,7 +45,7 @@ public class Robot
     // Actuators
     public final Drivetrain drivetrain;
     public final Lift slide;
-    public final Arm arm;
+    public final Claw claw;
     public final IntakeLinkage intakelinkage;
     public final MotorArm newarm;
 
@@ -55,14 +54,19 @@ public class Robot
     public final Switch backSwitch;
     public final IMU imu;
     
-    public final AMSEncoder fwdEnc = null;
-    public final AMSEncoder strafeEnc = null;
+    public final AMSEncoder fwdEnc;
+    public final AMSEncoder strafeEnc;
+    
+    public final RangeSensor leftRange;
+    public final RangeSensor centerRange;
+    public final RangeSensor rightRange;
 
 
     // Constants
 
     // Other
     public final Config config;
+    public final HardwareMap hardwareMap;
 
     // Internal
     private final Logger log = new Logger("Robot");
@@ -80,6 +84,8 @@ public class Robot
 
     private Robot(HardwareMap hardwareMap, Config config)
     {
+        instance = this; // Pre-set the instance so other classes can see this
+        this.hardwareMap = hardwareMap;
         this.config = config;
         // Motors
         DcMotor leftIntake = hardwareMap.dcMotor.get("l intake");
@@ -91,11 +97,14 @@ public class Robot
 
 
         // Servos
-        Servo hook = hardwareMap.servo.get("hook");
-        foundationhook = new FoundationHook(hook);
+        DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
+    
+        Servo hookL = hardwareMap.servo.get("hook l");
+        Servo hookR = hardwareMap.servo.get("hook r");
+        foundationhook = new FoundationHook(hookL, hookR, servo_positions);
 
         Servo intake_linkage = hardwareMap.servo.get("intake linkage");
-        intakelinkage = new IntakeLinkage(intake_linkage);
+        intakelinkage = new IntakeLinkage(intake_linkage, servo_positions);
 
         // Actuators
         DcMotor slidemotor = hardwareMap.dcMotor.get("slide lift");
@@ -106,6 +115,7 @@ public class Robot
         slide = new Lift(lift, bottomlimit);
 
         DcMotor motorArm = hardwareMap.dcMotor.get("motor arm");
+        motorArm.setDirection(DcMotorSimple.Direction.REVERSE);
         DigitalChannel backLimit = hardwareMap.digitalChannel.get("back limit");
         backSwitch = new Switch(backLimit);
         newarm = new MotorArm(motorArm, backSwitch);
@@ -113,8 +123,10 @@ public class Robot
 
         imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
         
-        //fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
-        //strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
+        // fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
+        // strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
+        fwdEnc = null;
+        strafeEnc = null;
         
         // AccelMotor edition
         /*
@@ -130,14 +142,15 @@ public class Robot
                                     new PIDMotor(hardwareMap.dcMotor.get("lb")),
                                     new PIDMotor(hardwareMap.dcMotor.get("rb")), imu, fwdEnc, strafeEnc);
     
-        DataStorage servo_positions = new DataStorage(new File(Config.storageDir + "servo_positions.json"));
-        arm = new Arm(hardwareMap.servo.get("extension"), hardwareMap.servo.get("claw"), servo_positions);
+        claw = new Claw(hardwareMap.servo.get("claw"), servo_positions);
         
         // Swerve wheels
         
         
         // Sensors
-
+        leftRange = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "l distance"));
+        centerRange = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "c distance"));
+        rightRange = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "r distance"));
         
         // Constants
 
@@ -154,7 +167,11 @@ public class Robot
         GlobalDataLogger.instance().addChannel("Encoder distance (fwd)", () -> "" + fwdEnc.getAngle());
         GlobalDataLogger.instance().addChannel("Encoder abs. distance (strafe)", () -> "" + strafeEnc.getAbsoluteAngle());
         GlobalDataLogger.instance().addChannel("Encoder distance (strafe)", () -> "" + strafeEnc.getAngle());
-         */
+        */
+        
+        GlobalDataLogger.instance().addChannel("Left Range", () -> String.format("%.4f", leftRange.getDistance()));
+        GlobalDataLogger.instance().addChannel("Center Range", () -> String.format("%.4f", centerRange.getDistance()));
+        GlobalDataLogger.instance().addChannel("Right Range", () -> String.format("%.4f", rightRange.getDistance()));
 
         
         // Reset encoders
@@ -169,7 +186,7 @@ public class Robot
     public static Robot initialize(HardwareMap hardwareMap, Config config)
     {
         if (instance != null) instance.uninitialize();
-        instance = new Robot(hardwareMap, config);
+        instance = new Robot(hardwareMap, config); // Redundant assignment but looks better
         return instance;
     }
 
@@ -183,7 +200,7 @@ public class Robot
         // Stop all motors
 
         // Stop external threads and close open files (if any) here
-        imu.stop();
+        if (imu != null) imu.stop();
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

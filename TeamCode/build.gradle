@@ -43,6 +43,11 @@ allprojects {
     }
 }
 
+exec {
+    workingDir '.'
+    commandLine 'python3', 'generator.py'
+}
+
 dependencies {
     implementation project(':opencv-sdk')
     implementation 'com.android.support:support-annotations:28.0.0'

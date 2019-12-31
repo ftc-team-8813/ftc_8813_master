@@ -54,6 +54,18 @@ public class Drivetrain
         this.rightFront.setDeadband(20);
         this.leftBack.setDeadband(20);
         this.rightBack.setDeadband(20);
+        GlobalDataLogger.instance().addChannel("Left Front position", () -> Integer.toString(this.leftFront.getCurrentPosition()));
+        GlobalDataLogger.instance().addChannel("Right Front position", () -> Integer.toString(this.rightFront.getCurrentPosition()));
+        GlobalDataLogger.instance().addChannel("Left Rear position", () -> Integer.toString(this.leftBack.getCurrentPosition()));
+        GlobalDataLogger.instance().addChannel("Right Rear position", () -> Integer.toString(this.rightBack.getCurrentPosition()));
+        
+        GlobalDataLogger.instance().addChannel("Drivetrain Power", () ->
+        {
+            double power = this.leftFront.getPower() + this.rightFront.getCurrentPosition()
+                            + this.leftBack.getPower() + this.rightBack.getPower();
+            return String.format("%.4f", power/4);
+        });
+        
         GlobalDataLogger.instance().addChannel("Drivetrain State", () -> state);
         GlobalDataLogger.instance().addChannel("Drivetrain Angle Offset", () -> String.format("%.4f", angleOffset));
     }

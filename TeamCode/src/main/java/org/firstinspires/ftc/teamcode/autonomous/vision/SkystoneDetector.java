@@ -31,7 +31,18 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
         worker = Executors.newSingleThreadExecutor();
     
         GlobalDataLogger.instance().addChannel("Skystone detected", () -> found() ? "1" : "0");
-        
+        GlobalDataLogger.instance().addChannel("Skystone width", () -> {
+            if (found())
+                return Integer.toString(getArea().width);
+            else
+                return "0";
+        });
+        GlobalDataLogger.instance().addChannel("Skystone height", () -> {
+            if (found())
+                return Integer.toString(getArea().height);
+            else
+                return "0";
+        });
     }
     
     @Override

@@ -167,17 +167,14 @@ public class AMSEncoder extends I2cDeviceSynchDevice<I2cDeviceSynch>
             angle = prevAngle;
         }
 
-        if (elapsed < 200)
-        {
-            if (Math.abs(angle - prevAngle) > 180
-            )
-            {
-                rotations += Math.signum(prevAngle - angle);
-            }
-        }
-        else
+        if (elapsed > 200)
         {
             log.w("Too much time between samples (" + elapsed + "); some rotations may have been missed");
+        }
+        
+        if (Math.abs(angle - prevAngle) > 180)
+        {
+            rotations += Math.signum(prevAngle - angle);
         }
         prevAngle = angle;
         prevSampleTime = System.nanoTime()/1000000L;

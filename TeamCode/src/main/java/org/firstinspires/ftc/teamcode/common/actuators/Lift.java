@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.common.actuators;
 
+import android.provider.Settings;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataStorage;
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 
 import java.io.File;
 
@@ -21,6 +24,11 @@ public class Lift {
         topswitch = new DataStorage(new File(Config.storageDir + "liftencoderpos.txt"));
         toplimit = topswitch.getInt("Highest Position", 0);
         slidemotor.getMotor().setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+    
+        GlobalDataLogger.instance().addChannel("Lift Position", () -> Integer.toString(this.slidemotor.getCurrentPosition()));
+        GlobalDataLogger.instance().addChannel("Lift Target", () -> Integer.toString(this.slidemotor.getTargetPosition()));
+        GlobalDataLogger.instance().addChannel("Lift Power", () -> Double.toString(this.slidemotor.getPower()));
+        GlobalDataLogger.instance().addChannel("Lift Limit State", () -> this.bottomswitch.pressed() ? "1" : "0");
     }
     
     public void raiseLift(double power)
@@ -45,7 +53,7 @@ public class Lift {
             if (!slidemotor.isHolding()) {
                 slidemotor.getMotor().setPower(0);
                 slidemotor.setPower(0.5);
-                slidemotor.hold(-slidemotor.getCurrentPosition());
+                slidemotor.hold(slidemotor.getCurrentPosition() + 35);
             }
         }
     }

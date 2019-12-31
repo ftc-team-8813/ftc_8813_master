@@ -77,11 +77,11 @@ public class MecanumDrive extends BaseTeleOp
 
         if (gamepad2.a)
         {
-            robot.arm.closeClaw();
+            robot.claw.closeClaw();
         }
         else if (gamepad2.y)
         {
-            robot.arm.openClaw();
+            robot.claw.openClaw();
         }
 
 
@@ -101,9 +101,9 @@ public class MecanumDrive extends BaseTeleOp
         telemetry.addData("Extender Top Limit", robot.slide.getTopLimit());
         telemetry.addData("Extender Pos", robot.slide.getCurrentPos());
         telemetry.addData("Forward Ticks Moved", robot.drivetrain.leftFront.getCurrentPosition());
-        telemetry.addData("Arm Pos", robot.arm.getExtension().getPosition());
+        // telemetry.addData("Claw Pos", robot.claw.getExtension().getPosition());
         telemetry.addData("Back Limit", robot.backSwitch.pressed());
-        telemetry.addData("Arm Pos", robot.newarm.motorArm.getCurrentPosition());
+        telemetry.addData("Claw Pos", robot.newarm.motorArm.getCurrentPosition());
     }
 
     public void stop(){
