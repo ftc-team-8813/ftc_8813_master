@@ -18,6 +18,11 @@ public class MotorArm {
         motorArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         if (backLimit.pressed() && power<0){
             motorArm.setPower(0);
+            if (motorArm.getCurrentPosition() != 0)
+            {
+                motorArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                motorArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
         } else if (motorArm.getCurrentPosition()>930 && power>0){
             motorArm.setPower(0);
         }else{

@@ -6,6 +6,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.Exposur
 import org.firstinspires.ftc.teamcode.autonomous.vision.SkystoneDetector;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.actuators.Drivetrain;
+import org.firstinspires.ftc.teamcode.common.sensors.RangeSensor;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.CameraStream;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.Webcam;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
@@ -22,6 +23,8 @@ public class StoneAuto extends BaseAutonomous
     private WebcamStream stream;
     private SkystoneDetector detector;
     private Drivetrain drivetrain;
+    private static final int LEFT_RANGE = 1;
+    private static final int RIGHT_RANGE = 2;
     
     @Override
     public void initialize() throws InterruptedException
@@ -108,6 +111,22 @@ public class StoneAuto extends BaseAutonomous
         return drivetrain.rightBack.getCurrentPosition() - startPos;
     }
     
+    public void moveToRange(double dist, double speed, int sensor)
+    {
+        drivetrain.drive(speed, 0, 0);
+        RangeSensor sens;
+        if (sensor == LEFT_RANGE) sens = robot.leftRange;
+        else sens = robot.rightRange;
+        while (true)
+        {
+            double range = sens.getDistance();
+            double off = (range - dist) * Math.signum(speed);
+            if (off <= 0) break;
+            if (off < 200) speed *= 0.5;
+        }
+        drivetrain.stop();
+    }
+    
     @Override
     public void run() throws InterruptedException
     {
@@ -126,8 +145,9 @@ public class StoneAuto extends BaseAutonomous
         GlobalDataLogger.instance().addChannel("Skystone Width", () -> "" + (detector.found() ? detector.getArea().width : 0));
         
         // Initial forward
-        drivetrain.move(0.4, 0, 0, 650);
+        moveToRange(300, 0.4, RIGHT_RANGE); // TODO swap for red side
         Thread.sleep(100);
+        if (true) return; // Break here
         
         // Sense block
         int senseDist = senseBlock();

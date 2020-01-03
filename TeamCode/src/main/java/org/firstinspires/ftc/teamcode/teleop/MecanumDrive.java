@@ -1,8 +1,13 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.lynx.LynxNackException;
+import com.qualcomm.hardware.lynx.commands.standard.LynxSetModuleLEDColorCommand;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.common.util.Utils;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 
 @TeleOp(name="Mecanum Drive")
@@ -17,6 +22,11 @@ public class MecanumDrive extends BaseTeleOp
     private ButtonHelper buttonHelper;
     private int speed_mode = SPEED_FAST;
     
+    private boolean intakeTrigger = false;
+    private int timeTrigger = 0;
+    
+    private long start;
+    
     @Override
     public void init()
     {
@@ -24,6 +34,12 @@ public class MecanumDrive extends BaseTeleOp
         buttonHelper = new ButtonHelper(gamepad1);
         robot.newarm.resetArm();
         robot.slide.slidemotor.setPower(0.5);
+    }
+    
+    public void start()
+    {
+        super.start();
+        start = System.currentTimeMillis();
     }
     
     @Override
@@ -39,16 +55,43 @@ public class MecanumDrive extends BaseTeleOp
             if (speed_mode == SPEED_LUDICROUS) speed_mode = SPEED_FAST;
             else speed_mode = SPEED_LUDICROUS;
         }
-    
+        
         if (gamepad1.right_bumper)
         {
             robot.intake.collectStone(0.3);
-        } else if (gamepad1.left_bumper)
+        }
+        else if (gamepad1.left_bumper)
         {
             robot.intake.releaseStone(0.3);
-        } else
+        }
+        
+        // Automation
+        else if (robot.centerRange.getDistance() < 60)
         {
+            robot.leftLed.setColor(255, 0, 0);
             robot.intake.stopIntake();
+            if (!intakeTrigger)
+            {
+                intakeTrigger = true;
+                
+                robot.claw.closeClaw();
+                robot.intakelinkage.moveLinkageIn();
+            }
+        }
+        else if (robot.centerRange.getDistance() < 140)
+        {
+            int greenAmt = (int)((robot.centerRange.getDistance() - 60) * 255 / 80);
+            greenAmt = Range.clip(greenAmt, 0, 255);
+            robot.leftLed.setColor(255, greenAmt, 0);
+            robot.intake.collectStone(0.3);
+        }
+        else
+        {
+            int redAmt = (int)((240 - robot.centerRange.getDistance()) * 255 / 100);
+            redAmt = Range.clip(redAmt, 0, 255);
+            robot.leftLed.setColor(redAmt, 255, 0);
+            robot.intake.stopIntake();
+            intakeTrigger = false;
         }
 
         robot.newarm.moveArm(-gamepad2.right_stick_y);
@@ -95,6 +138,31 @@ public class MecanumDrive extends BaseTeleOp
             robot.intakelinkage.moveLinkageOut();
         } else if (gamepad1.dpad_down){
             robot.intakelinkage.moveLinkageIn();
+        }
+        
+        
+        telemetry.addData("Time", Utils.elapsedTime(System.currentTimeMillis() - start));
+        // 2 min == 120s == 120000ms
+        long remaining = 120000 - (System.currentTimeMillis() - start);
+        if (remaining < 60000 && timeTrigger <= 0)
+        {
+            timeTrigger = 1;
+            log.i("1 minute remaining");
+        }
+        else if (remaining < 30000 && timeTrigger <= 1)
+        {
+            timeTrigger = 2;
+            log.i("30 seconds remaining");
+        }
+        else if (remaining < 10000 && timeTrigger <= 2)
+        {
+            timeTrigger = 3;
+            log.i("10 seconds remaining");
+        }
+        else if (remaining < 0 && timeTrigger <= 3)
+        {
+            timeTrigger = 4;
+            log.e("Time!!!");
         }
 
         telemetry.addData("Speed Mode", speed_modes[speed_mode]);

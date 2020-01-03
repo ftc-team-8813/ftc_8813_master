@@ -90,11 +90,11 @@ public class Utils
      */
     public static String elapsedTime(long millis)
     {
-        int hundredths = (int) ((millis / 10) % 100);
+        // int hundredths = (int) ((millis / 10) % 100);
         int seconds = (int) ((millis / 1000) % 60);
         int minutes = (int) ((millis / 60000) % 60);
         int hours = (int) ((millis / 3600000));
-        return String.format(Locale.US, "%02d:%02d:%02d.%03d", hours, minutes, seconds, hundredths);
+        return String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds);
     }
     
     /**

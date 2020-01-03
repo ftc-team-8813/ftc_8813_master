@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.common;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -25,6 +26,7 @@ import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataStorage;
 import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
+import org.firstinspires.ftc.teamcode.common.util.RevHubLED;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
 
 import java.io.File;
@@ -67,6 +69,8 @@ public class Robot
     // Other
     public final Config config;
     public final HardwareMap hardwareMap;
+    
+    public final RevHubLED leftLed, rightLed;
 
     // Internal
     private final Logger log = new Logger("Robot");
@@ -156,7 +160,8 @@ public class Robot
 
         
         // Other
-
+        leftLed = new RevHubLED(hardwareMap.get(LynxModule.class, "Expansion Hub left"));
+        rightLed = new RevHubLED(hardwareMap.get(LynxModule.class, "Expansion Hub right"));
         
         // Reverse motors as necessary
         

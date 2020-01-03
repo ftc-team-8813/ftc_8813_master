@@ -5,23 +5,24 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.common.sensors.RangeSensor;
+import org.firstinspires.ftc.teamcode.teleop.BaseTeleOp;
 
 @TeleOp(name="Range Sensor Test")
-@Disabled
-public class RangeTest extends OpMode
+public class RangeTest extends BaseTeleOp
 {
-    private RangeSensor sensor;
-
     @Override
     public void init()
     {
-        sensor = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "range 1"));
+        super.init();
     }
-
+    
     @Override
-    public void loop()
+    public void doLoop()
     {
-        telemetry.addData("Distance", sensor.getDistance());
+        telemetry.addData("L range", robot.leftRange.getDistance());
+        telemetry.addData("C range", robot.centerRange.getDistance());
+        telemetry.addData("R range", robot.rightRange.getDistance());
     }
 }

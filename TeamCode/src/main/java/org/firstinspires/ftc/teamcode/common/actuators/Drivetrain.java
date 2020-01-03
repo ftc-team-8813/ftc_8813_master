@@ -61,8 +61,8 @@ public class Drivetrain
         
         GlobalDataLogger.instance().addChannel("Drivetrain Power", () ->
         {
-            double power = this.leftFront.getPower() + this.rightFront.getCurrentPosition()
-                            + this.leftBack.getPower() + this.rightBack.getPower();
+            double power = Math.abs(this.leftFront.getPower()) + Math.abs(this.rightFront.getPower())
+                            + Math.abs(this.leftBack.getPower()) + Math.abs(this.rightBack.getPower());
             return String.format("%.4f", power/4);
         });
         
