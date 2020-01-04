@@ -152,9 +152,11 @@ public class Robot
         
         
         // Sensors
-        leftRange = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "l distance"));
+        // leftRange = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "l distance"));
+        leftRange = null;
         centerRange = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "c distance"));
-        rightRange = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "r distance"));
+        // rightRange = new RangeSensor(hardwareMap.get(Rev2mDistanceSensor.class, "r distance"));
+        rightRange = null;
         
         // Constants
 
@@ -174,9 +176,9 @@ public class Robot
         GlobalDataLogger.instance().addChannel("Encoder distance (strafe)", () -> "" + strafeEnc.getAngle());
         */
         
-        GlobalDataLogger.instance().addChannel("Left Range", () -> String.format("%.4f", leftRange.getDistance()));
+        // GlobalDataLogger.instance().addChannel("Left Range", () -> String.format("%.4f", leftRange.getDistance()));
         GlobalDataLogger.instance().addChannel("Center Range", () -> String.format("%.4f", centerRange.getDistance()));
-        GlobalDataLogger.instance().addChannel("Right Range", () -> String.format("%.4f", rightRange.getDistance()));
+        // GlobalDataLogger.instance().addChannel("Right Range", () -> String.format("%.4f", rightRange.getDistance()));
 
         
         // Reset encoders

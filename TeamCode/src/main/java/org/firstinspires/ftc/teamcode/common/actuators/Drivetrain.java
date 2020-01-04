@@ -91,9 +91,10 @@ public class Drivetrain
     public void drive(double forward, double right, double turn)
     {
         leftFront.getMotor().setPower ( forward + right - turn);
+        rightBack.getMotor().setPower ( forward + right + turn);
+        
         rightFront.getMotor().setPower( forward - right + turn);
         leftBack.getMotor().setPower  ( forward - right - turn);
-        rightBack.getMotor().setPower ( forward + right + turn);
     }
     
     /**
@@ -116,14 +117,6 @@ public class Drivetrain
         {
             return;
         }
-        double[] powers = {
-                forward + right - turn,
-                forward - right + turn,
-                forward - right - turn,
-                forward + right + turn
-        };
-        
-        PIDMotor[] motors = {leftFront, rightFront, leftBack, rightBack};
         
         
         
@@ -144,9 +137,9 @@ public class Drivetrain
         double speedScale = 0;
         
         // Wait for the motors to finish
-        boolean busy = true;
+        // boolean busy = true;
         double prevPowerOff = 0;
-        while (busy)
+        while (true)
         {
             int error;
             if (forward != 0) error = Math.abs(distance) - Math.abs(encMotor.getCurrentPosition() - origPos);
@@ -156,14 +149,9 @@ public class Drivetrain
             
             if (error <= 0) break;
             
-            for (int i = 0; i < 4; i++)
-            {
-                if (powers[i] != 0)
-                {
-                    motors[i].getMotor().setPower(powers[i] * Math.signum(distance) * speedScale);
-                }
-                Thread.sleep(6);
-            }
+            drive(forward * Math.signum(distance) * speedScale,
+                    right * Math.signum(distance) * speedScale,
+                    turn * Math.signum(distance) * speedScale);
             
             if (error < distance / 3)
             {
@@ -205,10 +193,7 @@ public class Drivetrain
 //                    motors[3].getCurrentPosition());
             Thread.sleep(1);
         }
-        motors[0].getMotor().setPower(0);
-        motors[1].getMotor().setPower(0);
-        motors[2].getMotor().setPower(0);
-        motors[3].getMotor().setPower(0);
+        stop();
         angleOffset = 0;
         state = "Idle";
     }

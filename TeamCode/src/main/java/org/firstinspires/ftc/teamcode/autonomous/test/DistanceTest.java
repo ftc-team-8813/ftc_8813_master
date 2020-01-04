@@ -1,79 +1,73 @@
 package org.firstinspires.ftc.teamcode.autonomous.test;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.actuators.Drivetrain;
+import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.sensors.RangeSensor;
+import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 
-@Autonomous(name="Distance Test")
+@TeleOp(name="Acceleration Curve Test")
 public class DistanceTest extends BaseAutonomous
 {
     
     private Robot robot;
     private Drivetrain drivetrain;
-    private Logger log = new Logger("Distance Test");
+    private PIDMotor senseWheel;
+    private Logger log = new Logger("Acceleration Test");
+    private volatile String status = "Waiting";
     
-    private static final int LEFT_RANGE = 1;
-    private static final int RIGHT_RANGE = 2;
+    private static final int FORWARD = 0;
+    private static final int STRAFE = 1;
+    private static final int TURN = 2;
     
-    public void moveToRange(double dist, double speed, int sensor) throws InterruptedException
+    private void waitForKey() throws InterruptedException
     {
-        double origSpeed = speed;
-        drivetrain.drive(speed, 0, 0);
-        RangeSensor sens;
-        if (sensor == LEFT_RANGE) sens = robot.leftRange;
-        else sens = robot.rightRange;
-        int prev_enc = 0;
-        double prev_off = Double.POSITIVE_INFINITY;
-        while (true)
+        status = "Waiting";
+        while (!gamepad1.b)
         {
-            double range = sens.getDistance();
-            double off = (range - dist) * Math.signum(origSpeed);
-            if (off <= 0 && off > -20)
-            {
-                drivetrain.stop();
-                int enc = drivetrain.rightBack.getCurrentPosition();
-                log.v("Overshoot correction: overshoot=%.0f, speed=%.3f, enc delta=%d", -off, speed, enc - prev_enc);
-                if (Math.abs(enc - prev_enc) < 5 && off != prev_off) break;
-                prev_enc = enc;
-                prev_off = off;
-            }
-            else if (off < 0)
-            {
-                speed = origSpeed * (off / 200);
-                if (speed < -0.05) drivetrain.drive(speed, 0, 0);
-            }
-            else if (off < 300)
-            {
-                speed = origSpeed * (off / 300);
-                if (speed > 0.1) drivetrain.drive(speed, 0, 0);
-                else drivetrain.drive(0.06, 0, 0);
-            }
-            Thread.sleep(1);
+            Thread.sleep(10);
         }
+    }
+    
+    private void returnHome(int direction) throws InterruptedException
+    {
+        status = "Return Home";
+        if (direction == FORWARD)
+        {
+            robot.drivetrain.move(0.2, 0, 0, -senseWheel.getCurrentPosition());
+        }
+        else if (direction == STRAFE)
+        {
+            robot.drivetrain.move(0, 0.2, 0, -senseWheel.getCurrentPosition());
+        }
+        else if (direction == TURN)
+        {
+            robot.drivetrain.move(0, 0, 0.2, -senseWheel.getCurrentPosition());
+        }
+        Thread.sleep(1000);
+    }
+    
+    private void curveTurn(double speed, long msecs) throws InterruptedException
+    {
+        drivetrain.drive(speed, 0, -speed*1.3);
+        Thread.sleep(msecs);
         drivetrain.stop();
     }
     
     @Override
     public void run() throws InterruptedException
     {
-        double dist = 200;
-        double speed = .3;
-        
         robot = Robot.instance();
         drivetrain = robot.drivetrain;
-        long start = System.currentTimeMillis();
-        moveToRange(dist, speed, RIGHT_RANGE);
-        long elapsed = System.currentTimeMillis() - start;
-        while (opModeIsActive())
-        {
-            telemetry.addData("Range", robot.rightRange.getDistance());
-            telemetry.addData("Elapsed time (ms)", elapsed);
-            telemetry.update();
-            Thread.sleep(200);
-        }
+        senseWheel = drivetrain.leftBack;
+        
+        GlobalDataLogger.instance().addChannel("Test Status", () -> status);
+        status = "Curve Turn";
+        curveTurn(0.3, 250);
+        
     }
 }

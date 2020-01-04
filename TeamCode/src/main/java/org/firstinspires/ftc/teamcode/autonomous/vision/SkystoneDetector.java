@@ -26,6 +26,8 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
     
     private DetectResult currentResult;
     
+    private boolean enabled;
+    
     public SkystoneDetector()
     {
         worker = Executors.newSingleThreadExecutor();
@@ -43,6 +45,8 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
             else
                 return "0";
         });
+        
+        enabled = true;
     }
     
     @Override
@@ -58,7 +62,7 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
                 e.printStackTrace();
             }
         }
-        if (currentWorker == null || currentWorker.isDone())
+        if ((currentWorker == null || currentWorker.isDone()) && enabled)
         {
             currentWorker = worker.submit(new Worker(bgr));
         }
@@ -77,7 +81,7 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
     @Override
     public Mat draw(Mat bgr)
     {
-        draw(bgr.nativeObj);
+        if (enabled) draw(bgr.nativeObj);
         return bgr;
     }
     
@@ -129,6 +133,21 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
             
             return result;
         }
+    }
+    
+    public void enable()
+    {
+        enabled = true;
+    }
+    
+    public void disable()
+    {
+        enabled = false;
+    }
+    
+    public boolean isEnabled()
+    {
+        return enabled;
     }
     
     private native int submit(long mat_addr);

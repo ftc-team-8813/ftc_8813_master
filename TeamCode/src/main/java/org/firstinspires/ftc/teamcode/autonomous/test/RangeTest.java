@@ -21,8 +21,8 @@ public class RangeTest extends BaseTeleOp
     @Override
     public void doLoop()
     {
-        telemetry.addData("L range", robot.leftRange.getDistance());
+        // telemetry.addData("L range", robot.leftRange.getDistance());
         telemetry.addData("C range", robot.centerRange.getDistance());
-        telemetry.addData("R range", robot.rightRange.getDistance());
+        // telemetry.addData("R range", robot.rightRange.getDistance());
     }
 }

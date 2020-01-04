@@ -15,14 +15,16 @@ public class MecanumDrive extends BaseTeleOp
 {
     private static final int SPEED_SLOW = 0;
     private static final int SPEED_FAST = 1;
-    private static final int SPEED_LUDICROUS = 2;
-    private static final String[] speed_modes = {"Slow", "Fast", "Ludicrous"};
+    private static final int SPEED_FASTER = 2;
+    private static final int SPEED_LUDICROUS = 3;
+    private static final String[] speed_modes = {"Slow", "Fast", "Faster", "Ludicrous"};
 
 
     private ButtonHelper buttonHelper;
     private int speed_mode = SPEED_FAST;
     
     private boolean intakeTrigger = false;
+    private long intakeTime = 0;
     private int timeTrigger = 0;
     
     private long start;
@@ -52,6 +54,11 @@ public class MecanumDrive extends BaseTeleOp
         }
         if (buttonHelper.pressing(ButtonHelper.x))
         {
+            if (speed_mode == SPEED_FASTER) speed_mode = SPEED_FAST;
+            else speed_mode = SPEED_FASTER;
+        }
+        if (buttonHelper.pressing(ButtonHelper.start) && gamepad1.x)
+        {
             if (speed_mode == SPEED_LUDICROUS) speed_mode = SPEED_FAST;
             else speed_mode = SPEED_LUDICROUS;
         }
@@ -66,10 +73,9 @@ public class MecanumDrive extends BaseTeleOp
         }
         
         // Automation
-        else if (robot.centerRange.getDistance() < 60)
+        else if (robot.centerRange.getDistance() < 50)
         {
             robot.leftLed.setColor(255, 0, 0);
-            robot.intake.stopIntake();
             if (!intakeTrigger)
             {
                 intakeTrigger = true;
@@ -77,13 +83,22 @@ public class MecanumDrive extends BaseTeleOp
                 robot.claw.closeClaw();
                 robot.intakelinkage.moveLinkageIn();
             }
+            if (System.currentTimeMillis() - intakeTime < 120)
+            {
+                robot.intake.collectStone(0.3);
+            }
+            else
+            {
+                robot.intake.stopIntake();
+            }
         }
-        else if (robot.centerRange.getDistance() < 140)
+        else if (robot.centerRange.getDistance() < 100)
         {
             int greenAmt = (int)((robot.centerRange.getDistance() - 60) * 255 / 80);
             greenAmt = Range.clip(greenAmt, 0, 255);
             robot.leftLed.setColor(255, greenAmt, 0);
             robot.intake.collectStone(0.3);
+            intakeTime = System.currentTimeMillis();
         }
         else
         {
@@ -109,9 +124,10 @@ public class MecanumDrive extends BaseTeleOp
         }
 
         double[] speeds;
-        if (speed_mode == SPEED_SLOW)      speeds = new double[] {0.3, 0.3, 0.15}; // SLOW
-        else if (speed_mode == SPEED_FAST) speeds = new double[] {0.5, 0.5, 0.5 }; // FAST
-        else                               speeds = new double[] {1,   1,   1   }; // LUDICROUS
+        if (speed_mode == SPEED_SLOW)        speeds = new double[] {0.3, 0.3, 0.15}; // SLOW
+        else if (speed_mode == SPEED_FAST)   speeds = new double[] {0.5, 0.5, 0.5 }; // FAST
+        else if (speed_mode == SPEED_FASTER) speeds = new double[] {0.8, 0.8, 0.8 }; // FASTER
+        else                                 speeds = new double[] {1,   1,   1   }; // LUDICROUS
 
         robot.drivetrain.drive(-gamepad1.left_stick_y * speeds[0],
                                   gamepad1.left_stick_x * speeds[1],
