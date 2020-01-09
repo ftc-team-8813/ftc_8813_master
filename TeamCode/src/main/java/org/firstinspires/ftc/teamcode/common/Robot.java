@@ -107,8 +107,10 @@ public class Robot
         Servo hookR = hardwareMap.servo.get("hook r");
         foundationhook = new FoundationHook(hookL, hookR, servo_positions);
 
-        Servo intake_linkage = hardwareMap.servo.get("intake linkage");
-        intakelinkage = new IntakeLinkage(intake_linkage, servo_positions);
+        Servo intake_l = hardwareMap.servo.get("intake l");
+        Servo intake_r = hardwareMap.servo.get("intake r");
+        
+        intakelinkage = new IntakeLinkage(intake_l, intake_r, servo_positions);
 
         // Actuators
         DcMotor slidemotor = hardwareMap.dcMotor.get("slide lift");

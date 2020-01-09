@@ -19,6 +19,9 @@ import org.firstinspires.ftc.teamcode.common.util.Vlogger;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage.MED;
+import static org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage.OUT;
+
 @Autonomous(name="Stones")
 public class StoneAuto extends BaseAutonomous
 {
@@ -62,7 +65,7 @@ public class StoneAuto extends BaseAutonomous
         drivetrain.move(0.3, 0, 0, 10);
         Thread.sleep(100);
     
-        drivetrain.move(0, 0.3, 0, off - 110);
+        drivetrain.move(0, 0.3, 0, off + 190 + strafe_dist);
         // drivetrain.move(0.4, 0, 0, strafe_dist);
         /*
         turnToAngle(-turn, 0.4);
@@ -71,14 +74,57 @@ public class StoneAuto extends BaseAutonomous
         drivetrain.move(0.4, 0, 0, fwd_dist);
         Thread.sleep(400);
          */
+        robot.intakelinkage.moveLinkage(MED, OUT);
+        Thread.sleep(350);
         robot.intake.collectStone(0.4);
-        Thread.sleep(100);
-        curveTurn(0.2, 800);
+        drivetrain.drive(0.3, 0, 0);
         Thread.sleep(400);
+        robot.intakelinkage.moveLinkage(OUT, OUT);
+        // curveTurn(0.2, 800);
+        Thread.sleep(400);
+        drivetrain.stop();
         robot.intake.stopIntake();
-        turnToAngle(0, 0.4);
+        turnToAngle(0, 0.3);
         Thread.sleep(100);
-        drivetrain.move(0.5, 0, 0, -back_dist  - 10);
+        drivetrain.move(0.5, 0, 0, -back_dist  - 8);
+        robot.intake.collectStone(0.4);
+        Thread.sleep(150);
+        robot.intake.stopIntake();
+        // drivetrain.move(0, 0, 0.6, -((int)robot.imu.getHeading()) + 50);
+    }
+    
+    private void pickBlock2(int turn, int strafe_dist, int fwd_dist, int back_dist) throws InterruptedException
+    {
+        int off = 0;
+        if (detector.found())
+        {
+            off = detector.getArea().x + detector.getArea().width/2 - 320;
+        }
+        drivetrain.move(0.3, 0, 0, 10);
+        Thread.sleep(100);
+        
+        drivetrain.move(0, 0.3, 0, off - 190 - strafe_dist);
+        // drivetrain.move(0.4, 0, 0, strafe_dist);
+        /*
+        turnToAngle(-turn, 0.4);
+        Thread.sleep(100);
+        robot.intake.collectStone(0.4);
+        drivetrain.move(0.4, 0, 0, fwd_dist);
+        Thread.sleep(400);
+         */
+        robot.intakelinkage.moveLinkage(OUT, MED);
+        Thread.sleep(350);
+        robot.intake.collectStone(0.4);
+        drivetrain.drive(0.3, 0, 0.2);
+        Thread.sleep(700);
+        robot.intakelinkage.moveLinkage(OUT, OUT);
+        // curveTurn(0.2, 800);
+        Thread.sleep(400);
+        drivetrain.stop();
+        robot.intake.stopIntake();
+        turnToAngle(0, 0.3);
+        Thread.sleep(100);
+        drivetrain.move(0.5, 0, 0, -back_dist  - 8);
         robot.intake.collectStone(0.4);
         Thread.sleep(150);
         robot.intake.stopIntake();
@@ -92,28 +138,31 @@ public class StoneAuto extends BaseAutonomous
         int startPos = drivetrain.rightBack.getCurrentPosition();
         drivetrain.drive(0, 0.3, 0);
         final double SPD_NORMAL = 0.3;
-        final double SPD_SLOW   = 0.1;
+        final double SPD_SLOW   = 0.12;
         final double SPD_EXSLOW = 0.05;
+        double speed = 0;
     
         while (drivetrain.rightBack.getCurrentPosition() - startPos < 1800)
         {
             if (detector.found())
             {
-                if (detector.getArea().width > 350)
-                {
-                    break;
-                }
-                else if (detector.getArea().width > 300)
+                if (detector.getArea().width > 120 && detector.getArea().height < 240)
                 {
                     drivetrain.drive(SPD_SLOW, 0, 0);
                 }
-                else if (detector.getArea().width > 250)
+                else if (detector.getArea().width > 350)
                 {
-                    drivetrain.drive(0, SPD_SLOW, 0);
+                    break;
+                }
+                else if (detector.getArea().width > 100)
+                {
+                    speed -= (speed - SPD_SLOW) * 0.4;
+                    drivetrain.drive(0, speed, 0);
                 }
                 else
                 {
-                    drivetrain.drive(0, SPD_NORMAL, 0);
+                    speed -= (speed - SPD_NORMAL) * 0.4;
+                    drivetrain.drive(0, speed, 0);
                 }
             }
             else
@@ -155,7 +204,7 @@ public class StoneAuto extends BaseAutonomous
             return;
         }
         
-        dist += 110; // Center range sensor offset
+        // dist += 110; // Center range sensor offset
         int prev_enc = 0;
         double prev_off = Double.POSITIVE_INFINITY;
         int count = 0;
@@ -168,7 +217,7 @@ public class StoneAuto extends BaseAutonomous
             {
                 drivetrain.stop();
                 int enc = drivetrain.rightBack.getCurrentPosition();
-                log.v("Overshoot correction: overshoot=%.0f, speed=%.3f, enc delta=%d", -off, speed, enc - prev_enc);
+                // log.v("Overshoot correction: overshoot=%.0f, speed=%.3f, enc delta=%d", -off, speed, enc - prev_enc);
                 if (Math.abs(enc - prev_enc) < 5 && off != prev_off) break;
                 prev_enc = enc;
                 prev_off = off;
@@ -214,7 +263,7 @@ public class StoneAuto extends BaseAutonomous
             }
             else
             {
-                drivetrain.drive(0, 0, -(error / 30) * speed + 0.05 * Math.signum(-error));
+                drivetrain.drive(0, 0, -(error / 35) * speed + 0.05 * Math.signum(-error));
             }
             Thread.sleep(1);
         }
@@ -223,7 +272,7 @@ public class StoneAuto extends BaseAutonomous
     
     private void curveTurn(double speed, long msecs) throws InterruptedException
     {
-        drivetrain.drive(speed, 0, -speed);
+        drivetrain.drive(speed*1.4, 0, -speed*0.9);
         Thread.sleep(msecs);
         drivetrain.stop();
     }
@@ -244,49 +293,48 @@ public class StoneAuto extends BaseAutonomous
         stream.addListener(detector);
         stream.addModifier(detector);
         stream.addListener(new Vlogger("videos/" + Utils.getTimestamp() + ".avi",  640, 480, 10), 1001);
-        GlobalDataLogger.instance().addChannel("Skystone Width", () -> "" + (detector.found() ? detector.getArea().width : 0));
+        // GlobalDataLogger.instance().addChannel("Skystone Width", () -> "" + (detector.found() ? detector.getArea().width : 0));
         
         // Initial forward
-        moveToRange(280, 0.4, RIGHT_RANGE); // TODO swap for red side
+        // moveToRange(280, 0.5, RIGHT_RANGE);
+        drivetrain.move(0.4, 0, 0, 500);
         Thread.sleep(100);
-        drivetrain.move(0, 0.4, 0, -150);
+        drivetrain.move(0, 0.4, 0, -200);
+        Thread.sleep(100);
         
         // Sense block
         int senseDist = senseBlock();
         
-        turnToAngle(0, 0.4);
-        pickBlock(25, 20, 350, 75);
+        // turnToAngle(0, 0.35);
+        pickBlock(25, 0, 350, 175);
         // drivetrain.move(0.3, 0, 0, 50);
     
         // drivetrain.move(0, 0, 0.2, -(int)robot.imu.getHeading()); // Another fine correction
         Thread.sleep(100);
         
-        drivetrain.move(0, 0.8, 0, -(int)(senseDist * 0.85 + 1000));
+        drivetrain.move(0, 0.8, 0, -(int)(senseDist + 1100));
         Thread.sleep(150);
-        robot.intake.collectStone(-0.3);
-        Thread.sleep(500);
+        robot.intake.collectStone(-0.4);
+        Thread.sleep(700);
         robot.intake.stopIntake();
-        if (true) return;
-        drivetrain.move(0, 0, 0.1, -(int)robot.imu.getHeading() + 2); // Fine correction
-        drivetrain.move(0, 0.85, 0, 850 + senseDist);
-        Thread.sleep(200);
-        drivetrain.move(0.6, 0, 0, 550);
-        Thread.sleep(500);
-        drivetrain.move(0, 0.5, 0, 700);
+        turnToAngle(0, 0.4);
+        drivetrain.move(0.4, 0, 0, -50);
+        drivetrain.move(0, 0.8, 0, 3000);
+        // moveToRange(280, 0.5, RIGHT_RANGE);
         // drivetrain.move(0, 0, 0.1, -(int)robot.imu.getHeading());
         
-        senseBlock();
+        senseDist = senseBlock();
         // drivetrain.move(0, 0.5, 0, 25);
-        drivetrain.move(0, 0, 0.15, -(int)robot.imu.getHeading());
+        turnToAngle(0, 0.4);
         
         // drivetrain.move(0.6, 0, 0, -1);
-        pickBlock(12, 220, 400, 700);
+        pickBlock(25, -200, 350, 300);
         
-        drivetrain.move(0, 1, 0, -1900 - senseDist);
+        drivetrain.move(0, 1, 0, -(int)(senseDist + 1500));
         robot.intake.collectStone(-0.3);
         Thread.sleep(400);
         robot.intake.stopIntake();
-        drivetrain.move(0, 1, 0, 300);
+        drivetrain.move(0, 1, 0, 500);
     }
     
     @Override

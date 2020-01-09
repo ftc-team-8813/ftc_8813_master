@@ -1,4 +1,5 @@
 claw:fullUp,open,closed
-intake linkage:in,out
-hook l:up,down
-hook r:up,down
+intake\ l:in,med,out
+intake\ r:in,med,out
+hook\ l:up,down
+hook\ r:up,down

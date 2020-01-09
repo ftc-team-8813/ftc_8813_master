@@ -45,6 +45,18 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
             else
                 return "0";
         });
+        GlobalDataLogger.instance().addChannel("Skystone center X", () -> {
+            if (found())
+                return Integer.toString((int)getCenter().x);
+            else
+                return "0";
+        });
+        GlobalDataLogger.instance().addChannel("Skystone center Y", () -> {
+            if (found())
+                return Integer.toString((int)getCenter().y);
+            else
+                return "0";
+        });
         
         enabled = true;
     }
@@ -95,6 +107,13 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
     {
         if (!found()) return null;
         return currentResult.area;
+    }
+    
+    public Point getCenter()
+    {
+        if (!found()) return null;
+        return new Point(currentResult.area.x + currentResult.area.width/2,
+                currentResult.area.y + currentResult.area.height/2);
     }
     
     private class DetectResult

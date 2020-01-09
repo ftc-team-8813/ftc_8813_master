@@ -54,13 +54,14 @@ public class MecanumDrive extends BaseTeleOp
         }
         if (buttonHelper.pressing(ButtonHelper.x))
         {
-            if (speed_mode == SPEED_FASTER) speed_mode = SPEED_FAST;
-            else speed_mode = SPEED_FASTER;
-        }
-        if (buttonHelper.pressing(ButtonHelper.start) && gamepad1.x)
-        {
-            if (speed_mode == SPEED_LUDICROUS) speed_mode = SPEED_FAST;
-            else speed_mode = SPEED_LUDICROUS;
+            if (speed_mode == SPEED_FASTER || speed_mode == SPEED_LUDICROUS) speed_mode = SPEED_FAST;
+            else
+            {
+                if (gamepad1.start)
+                    speed_mode = SPEED_LUDICROUS;
+                else
+                    speed_mode = SPEED_FASTER;
+            }
         }
         
         if (gamepad1.right_bumper)
