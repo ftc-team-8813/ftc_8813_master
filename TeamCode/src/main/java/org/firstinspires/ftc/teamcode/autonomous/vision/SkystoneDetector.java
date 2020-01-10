@@ -162,6 +162,7 @@ public class SkystoneDetector implements CameraStream.CameraListener, CameraStre
     public void disable()
     {
         enabled = false;
+        currentResult = null;
     }
     
     public boolean isEnabled()
