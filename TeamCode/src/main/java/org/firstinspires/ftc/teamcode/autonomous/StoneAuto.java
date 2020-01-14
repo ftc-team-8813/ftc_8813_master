@@ -67,7 +67,7 @@ public class StoneAuto extends BaseAutonomous
         Thread.sleep(100);
 
         // drivetrain.move(0.4, 0, 0, strafe_dist);
-        /*
+        /*  
         turnToAngle(-turn, 0.4);
         Thread.sleep(100);
         robot.intake.collectStone(0.4);

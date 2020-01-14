@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.sensors;
 
 import com.qualcomm.robotcore.hardware.ControlSystem;
+import com.qualcomm.robotcore.hardware.HardwareDeviceHealth;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
@@ -12,6 +13,8 @@ import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
 
 import java.util.concurrent.Future;
+
+import static com.qualcomm.robotcore.hardware.HardwareDeviceHealth.HealthStatus.HEALTHY;
 
 /**
  * I2CDevice wrapper for the AMS AS5048B magnetic encoder.
@@ -160,14 +163,22 @@ public class AMSEncoder extends I2cDeviceSynchDevice<I2cDeviceSynch>
         
         if (elapsed > 5)
         {
-            angle = (double)((getRawAngle() - zeroPos) * 360) / 0x3FFF;
+            double raw = getRawAngle();
+            if (device.getHealthStatus() == HEALTHY && raw != 0)
+            {
+                angle = ((raw - zeroPos) * 360) / 0x3FFF;
+            }
+            else
+            {
+                angle = prevAngle;
+            }
         }
         else
         {
             angle = prevAngle;
         }
 
-        if (elapsed > 200)
+        if (elapsed > 750)
         {
             log.w("Too much time between samples (" + elapsed + "); some rotations may have been missed");
         }
@@ -197,4 +208,6 @@ public class AMSEncoder extends I2cDeviceSynchDevice<I2cDeviceSynch>
     {
         return error;
     }
+    
+    
 }

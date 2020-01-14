@@ -20,20 +20,21 @@ public class RangeSensor
         this.sensor = sensor;
         daemon = GlobalThreadPool.instance().start(() ->
         {
-            double[] window = new double[20];
+            int winsize = 10;
+            double[] window = new double[winsize];
             int idx = 0;
             while (true)
             {
                 window[idx] = sensor.getDistance(DistanceUnit.MM);
                 double avg = 0;
-                for (int i = 0; i < 20; i++)
+                for (int i = 0; i < winsize; i++)
                 {
                     avg += window[i];
                 }
-                avg /= 20;
+                avg /= winsize;
                 currentValue = avg;
                 idx++;
-                idx %= 20;
+                idx %= winsize;
                 try
                 {
                     Thread.sleep(7);

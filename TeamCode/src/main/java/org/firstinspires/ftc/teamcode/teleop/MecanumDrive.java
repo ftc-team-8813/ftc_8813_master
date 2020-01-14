@@ -36,6 +36,7 @@ public class MecanumDrive extends BaseTeleOp
         buttonHelper = new ButtonHelper(gamepad1);
         robot.newarm.resetArm();
         robot.slide.slidemotor.setPower(0.5);
+        // robot.drivetrain.enableAngleCorrection();
     }
     
     public void start()
@@ -189,6 +190,7 @@ public class MecanumDrive extends BaseTeleOp
         // telemetry.addData("Claw Pos", robot.claw.getExtension().getPosition());
         telemetry.addData("Back Limit", robot.backSwitch.pressed());
         telemetry.addData("Claw Pos", robot.newarm.motorArm.getCurrentPosition());
+        telemetry.addData("Heading", robot.imu.getHeading());
     }
 
     public void stop(){

@@ -13,7 +13,15 @@ public class AMSEncoderTest extends BaseAutonomous
     public void run() throws InterruptedException
     {
         AMSEncoder encoder = Robot.instance().fwdEnc;
-        if (encoder.error())
+        AMSEncoder encoder2 = Robot.instance().strafeEnc;
+        if (encoder == null || encoder2 == null)
+        {
+            telemetry.addLine("Encoder not connected!");
+            telemetry.update();
+            Thread.sleep(3000);
+            return;
+        }
+        if (encoder.error() || encoder2.error())
         {
             telemetry.addLine("I am error");
             telemetry.update();
@@ -23,10 +31,10 @@ public class AMSEncoderTest extends BaseAutonomous
         encoder.resetEncoder();
         while (opModeIsActive())
         {
-            telemetry.addData("Raw angle", encoder.getRawAngle());
-            telemetry.addData("Angle", encoder.getAngle());
-            telemetry.addData("Absolute angle", encoder.getAbsoluteAngle());
-            telemetry.addData("Rotations", encoder.getRotations());
+            telemetry.addData("Fwd: Absolute angle", encoder.getAbsoluteAngle());
+            telemetry.addData("Fwd: Rotations", encoder.getRotations());
+            telemetry.addData("Strafe: Absolute angle", encoder2.getAbsoluteAngle());
+            telemetry.addData("Strafe: Rotations", encoder2.getRotations());
             telemetry.update();
 
             Thread.sleep(5);

@@ -13,7 +13,17 @@ public class DrivetrainMoveTest extends BaseAutonomous
     @Override
     public void run() throws InterruptedException {
         Drivetrain drivetrain = Robot.instance().drivetrain;
-        drivetrain.move(0, 0.2, 0, 2000);
+        drivetrain.enableAngleCorrection();
+        
+        double start = Robot.instance().strafeEnc.getAbsoluteAngle();
+        drivetrain.move(0, 0.4, 0, 100);
         Thread.sleep(500);
+        while (opModeIsActive())
+        {
+            telemetry.addData("Done", Robot.instance().strafeEnc.getAbsoluteAngle() - start);
+            telemetry.addData("Absolute angle", Robot.instance().strafeEnc.getAbsoluteAngle());
+            telemetry.update();
+            Thread.sleep(100);
+        }
     }
 }

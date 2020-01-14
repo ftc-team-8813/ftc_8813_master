@@ -129,10 +129,10 @@ public class Robot
 
         imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
         
-        // fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
-        // strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
-        fwdEnc = null;
-        strafeEnc = null;
+        fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
+        strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
+        // fwdEnc = null;
+        // strafeEnc = null;
         
         // AccelMotor edition
         /*
@@ -171,12 +171,12 @@ public class Robot
         
         
         // Logging
-        /*
+        
         GlobalDataLogger.instance().addChannel("Encoder abs. distance (fwd)", () -> "" + fwdEnc.getAbsoluteAngle());
         GlobalDataLogger.instance().addChannel("Encoder distance (fwd)", () -> "" + fwdEnc.getAngle());
         GlobalDataLogger.instance().addChannel("Encoder abs. distance (strafe)", () -> "" + strafeEnc.getAbsoluteAngle());
         GlobalDataLogger.instance().addChannel("Encoder distance (strafe)", () -> "" + strafeEnc.getAngle());
-        */
+        
         
         // GlobalDataLogger.instance().addChannel("Left Range", () -> String.format("%.4f", leftRange.getDistance()));
         GlobalDataLogger.instance().addChannel("Center Range", () -> String.format("%.4f", centerRange.getDistance()));

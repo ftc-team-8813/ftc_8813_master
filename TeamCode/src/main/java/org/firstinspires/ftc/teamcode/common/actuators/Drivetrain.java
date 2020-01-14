@@ -1,14 +1,15 @@
 package org.firstinspires.ftc.teamcode.common.actuators;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.sensors.AMSEncoder;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
 import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
+import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
+import org.opencv.tracking.TrackerGOTURN;
 
 /**
  * The mecanum drivetrain
@@ -28,6 +29,9 @@ public class Drivetrain
     private volatile double angleOffset = 0;
     
     private double acceleration;
+    
+    private SpeedController controller;
+    private boolean correctAngle;
     
     /**
      * Create a drivetrain. Takes PIDMotors for position control ability
@@ -67,7 +71,8 @@ public class Drivetrain
         });
         
         GlobalDataLogger.instance().addChannel("Drivetrain State", () -> state);
-        GlobalDataLogger.instance().addChannel("Drivetrain Angle Offset", () -> String.format("%.4f", angleOffset));
+        controller = new SpeedController(imu, fwdEnc, strafeEnc);
+        GlobalThreadPool.instance().start(controller);
     }
     
     /**
@@ -86,15 +91,16 @@ public class Drivetrain
      * Run the drivetrain at a constant power
      * @param forward How fast to drive forward (negative for backwards)
      * @param right   How fast to strafe to the right (negative for left)
-     * @param turn    How fast to turn clockwise (negative for counterclockwise)
+     * @param turn    How fast to turn counterclockwise (negative for clockwise)
      */
     public void drive(double forward, double right, double turn)
     {
-        leftFront.getMotor().setPower ( forward + right - turn);
-        rightBack.getMotor().setPower ( forward + right + turn);
-        
-        rightFront.getMotor().setPower( forward - right + turn);
-        leftBack.getMotor().setPower  ( forward - right - turn);
+        if (correctAngle)
+        {
+            if (turn == 0 && controller.getAngleInfluence() != 0) internalEnableCorrection();
+            else if (turn != 0) controller.setAngleInfluence(0);
+        }
+        controller.drive(forward, right, turn);
     }
     
     /**
@@ -105,7 +111,7 @@ public class Drivetrain
      * @param distance How far to move
      * @throws InterruptedException If an interrupt occurs
      */
-    public void move(double forward, double right, double turn, int distance) throws InterruptedException
+    public void move(double forward, double right, double turn, double distance) throws InterruptedException
     {
         state = "Move";
         if (turn != 0 && (forward != 0 || right != 0))
@@ -118,83 +124,12 @@ public class Drivetrain
             return;
         }
         
-        
-        
-        double angleOrig;
-        if (imu != null)
-            angleOrig = imu.getHeading();
-        else
-            angleOrig = 0;
-        /*
-        if (fwdEnc != null)
+        controller.move(distance * Math.signum(forward), forward, distance * Math.signum(right), right);
+        while (controller.busy)
         {
-            fwdEnc.resetEncoder();
-            strafeEnc.resetEncoder();
+            Thread.sleep(50);
         }
-         */
-        PIDMotor encMotor = rightBack;
-        int origPos = encMotor.getCurrentPosition();
-        double speedScale = 0;
         
-        // Wait for the motors to finish
-        // boolean busy = true;
-        double prevPowerOff = 0;
-        while (true)
-        {
-            int error;
-            if (forward != 0) error = Math.abs(distance) - Math.abs(encMotor.getCurrentPosition() - origPos);
-            else if (right != 0) error = Math.abs(distance) - Math.abs(encMotor.getCurrentPosition() - origPos);
-            else if (turn != 0) error = Math.abs(distance) - (int)Math.abs(imu.getHeading() - angleOrig);
-            else error = 0;
-            
-            if (error <= 0) break;
-            
-            drive(forward * Math.signum(distance) * speedScale,
-                    right * Math.signum(distance) * speedScale,
-                    turn * Math.signum(distance) * speedScale);
-            
-            if (error < distance / 3)
-            {
-                speedScale *= 0.8;
-            }
-            else if (speedScale < 1)
-            {
-                speedScale += 0.25;
-            }
-            
-            
-            // TODO TEST EXPERIMENTAL CODE
-            // Adjust speed to correct for any rotation
-            /*
-            if (imu != null && turn == 0)
-            {
-                double angleError = imu.getHeading() - angleOrig;
-                double powerOffset = angleError * 0.005 * Math.signum(distance);
-                
-                if (powerOffset != prevPowerOff)
-                {
-                    prevPowerOff = powerOffset;
-                    log.d("Angle offset: %.2f (add %.3f power)", angleError, powerOffset);
-                    motors[0].getMotor().setPower(Math.abs(powers[0]) + powerOffset);
-                    motors[1].getMotor().setPower(Math.abs(powers[1]) - powerOffset);
-                    motors[2].getMotor().setPower(Math.abs(powers[2]) + powerOffset);
-                    motors[3].getMotor().setPower(Math.abs(powers[3]) - powerOffset);
-                }
-                
-                angleOffset = angleError; // For logging
-            }
-             */
-            // ----------------------
-            
-//            log.d("Encoders: %d %d %d %d",
-//                    motors[0].getCurrentPosition(),
-//                    motors[1].getCurrentPosition(),
-//                    motors[2].getCurrentPosition(),
-//                    motors[3].getCurrentPosition());
-            Thread.sleep(1);
-        }
-        stop();
-        angleOffset = 0;
         state = "Idle";
     }
     
@@ -302,4 +237,151 @@ public class Drivetrain
     public void stop(){
         drive(0, 0, 0);
     }
+    
+    
+    ////////////////////////////////////
+    // Angle Correction
+    
+    private class SpeedController implements Runnable
+    {
+        private IMU imu;
+        private AMSEncoder fwdEnc, strafeEnc;
+        private volatile double targetAngle = 0;
+        // private volatile double targetPos;
+        private volatile double forward, strafe, turn;
+        
+        private volatile double fwdTarget, strafeTarget;
+        private volatile boolean holdPosition;
+        private volatile boolean busy;
+        
+        private volatile double angleInfluence = 0;
+        
+        public SpeedController(IMU imu, AMSEncoder fwdEnc, AMSEncoder strafeEnc)
+        {
+            this.imu = imu;
+            this.targetAngle = 0;
+            
+            this.fwdEnc = fwdEnc;
+            this.strafeEnc = strafeEnc;
+            
+            this.imu.setImmediateStart(true);
+            this.imu.initialize();
+        }
+        
+        public synchronized void setAngle(double angle)
+        {
+            this.targetAngle = angle;
+        }
+        
+        public synchronized void setAngleInfluence(double power)
+        {
+            this.angleInfluence = Math.abs(power);
+        }
+        
+        public double getAngle()
+        {
+            return targetAngle;
+        }
+        
+        public double getAngleError()
+        {
+            return imu.getHeading() - targetAngle;
+        }
+        
+        public double getAngleInfluence()
+        {
+            return angleInfluence;
+        }
+        
+        public synchronized void drive(double forward, double strafe, double turn)
+        {
+            this.holdPosition = false;
+            this.forward = forward;
+            this.strafe = strafe;
+            this.turn = turn;
+        }
+        
+        public synchronized void move(double fwdDist, double fwdPower, double strafeDist, double strafePower)
+        {
+            moveTo(fwdDist + fwdEnc.getAbsoluteAngle(), fwdPower, strafeDist + strafeEnc.getAbsoluteAngle(), strafePower);
+        }
+        
+        public synchronized void moveTo(double fwdPos, double fwdPower, double strafePos, double strafePower)
+        {
+            fwdTarget = fwdPos;
+            strafeTarget = strafePos;
+            holdPosition = true;
+            busy = true;
+            forward = Math.abs(fwdPower);
+            strafe = Math.abs(strafePower);
+            log.d("moveTo fwd=%.3f strafe=%.3f power=%.3f,%.3f", fwdPos, strafePos, fwdPower, strafePower);
+        }
+    
+        @Override
+        public void run()
+        {
+            double prevFwd = 0, prevStrafe = 0, prevTurn = 0;
+            while (true)
+            {
+                double forward = this.forward;
+                double strafe = this.strafe;
+                double turn = this.turn;
+                
+                if (angleInfluence > 0)
+                {
+                    turn -= getAngleError() / 50 * angleInfluence;
+                }
+                
+                if (holdPosition)
+                {
+                    double fwdError = fwdEnc.getAbsoluteAngle() - fwdTarget;
+                    double strafeError = strafeEnc.getAbsoluteAngle() - strafeTarget;
+                    
+                    forward *= -Range.clip(fwdError / 120, -1, 1);
+                    strafe *= -Range.clip(strafeError / 100, -1, 1);
+                    if (Math.abs(forward) < 0.05 && Math.abs(strafe) < 0.05) busy = false;
+                }
+                
+                if (prevFwd != forward || prevStrafe != strafe || prevTurn != turn)
+                {
+                    prevFwd = forward;
+                    prevStrafe = strafe;
+                    prevTurn = turn;
+    
+                    leftFront.getMotor().setPower ( forward + strafe - turn);
+                    rightBack.getMotor().setPower ( forward + strafe + turn);
+                    rightFront.getMotor().setPower( forward - strafe + turn);
+                    leftBack.getMotor().setPower  ( forward - strafe - turn);
+                }
+    
+                try
+                {
+                    Thread.sleep(1);
+                } catch (InterruptedException e)
+                {
+                    break;
+                }
+            }
+        }
+    }
+    
+    public void enableAngleCorrection()
+    {
+        internalEnableCorrection();
+        correctAngle = true;
+    }
+    
+    private void internalEnableCorrection()
+    {
+        controller.setAngleInfluence(0.65);
+        controller.setAngle(imu.getHeading());
+    }
+    
+    public void disableAngleCorrection()
+    {
+        correctAngle = false;
+        controller.setAngleInfluence(0);
+    }
+    
+    
 }
