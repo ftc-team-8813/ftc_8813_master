@@ -23,7 +23,7 @@ import static com.qualcomm.robotcore.hardware.HardwareDeviceHealth.HealthStatus.
 @I2cDeviceType
 @DeviceProperties(xmlTag="AMSEncoder", name="AMS AS5048B Encoder",
         compatibleControlSystems=ControlSystem.REV_HUB)
-public class AMSEncoder extends I2cDeviceSynchDevice<I2cDeviceSynch>
+public class AMSEncoder extends I2cDeviceSynchDevice<I2cDeviceSynch> implements OdometryEncoder
 {
     public static final int I2C_ADDRESS = 0x40;
 
@@ -183,7 +183,7 @@ public class AMSEncoder extends I2cDeviceSynchDevice<I2cDeviceSynch>
             log.w("Too much time between samples (" + elapsed + "); some rotations may have been missed");
         }
         
-        if (Math.abs(angle - prevAngle) > 180)
+        if (Math.abs(angle - prevAngle) > 240)
         {
             rotations += Math.signum(prevAngle - angle);
         }
@@ -193,7 +193,7 @@ public class AMSEncoder extends I2cDeviceSynchDevice<I2cDeviceSynch>
         return angle;
     }
 
-    public double getAbsoluteAngle()
+    public double getPosition()
     {
         if (error) return -1;
         return getAngle() + 360 * rotations;

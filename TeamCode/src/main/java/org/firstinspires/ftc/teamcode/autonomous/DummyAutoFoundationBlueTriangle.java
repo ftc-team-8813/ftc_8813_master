@@ -21,19 +21,19 @@ public class DummyAutoFoundationBlueTriangle extends BaseAutonomous
     {
         Robot robot = Robot.instance();
 
-        robot.drivetrain.oldMove(-0.5, 0, 0, tickToInches(25));
+        robot.drivetrain.oldMove(-0.5, 0, 0, tickToInches(20));
         robot.drivetrain.stop();
 
-        robot.drivetrain.oldMove(0, 0.3, 0, tickToInches(30));
+        robot.drivetrain.oldMove(0, 0.3, 0, tickToInches(25));
         robot.drivetrain.stop();
 
-        robot.drivetrain.oldMove(-0.2, 0, 0, tickToInches(2));
+        robot.drivetrain.oldMove(-0.2, 0, 0, tickToInches(4));
         robot.drivetrain.stop();
 
         robot.foundationhook.moveHookDown();
         Thread.sleep(2000);
 
-        robot.drivetrain.oldMove(0.25, 0, 0, tickToInches(35));
+        robot.drivetrain.oldMove(0.25, 0, 0, tickToInches(38));
         robot.drivetrain.stop();
 
         robot.foundationhook.moveHookUp();
@@ -42,6 +42,8 @@ public class DummyAutoFoundationBlueTriangle extends BaseAutonomous
         robot.drivetrain.stop();
 
         robot.drivetrain.oldMove(-0.3, 0, 0, tickToInches(8));
+        
+        robot.intakelinkage.moveLinkageOut();
 
         robot.drivetrain.oldMove(0, 0.4, 0, tickToInches(35));
 

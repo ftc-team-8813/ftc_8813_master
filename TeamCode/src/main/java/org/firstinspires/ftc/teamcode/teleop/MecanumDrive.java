@@ -37,6 +37,7 @@ public class MecanumDrive extends BaseTeleOp
         robot.newarm.resetArm();
         robot.slide.slidemotor.setPower(0.5);
         // robot.drivetrain.enableAngleCorrection();
+        robot.drivetrain.enableAsyncLoop();
     }
     
     public void start()
@@ -134,6 +135,7 @@ public class MecanumDrive extends BaseTeleOp
         robot.drivetrain.drive(-gamepad1.left_stick_y * speeds[0],
                                   gamepad1.left_stick_x * speeds[1],
                                  -gamepad1.right_stick_y * speeds[2]);
+        // robot.drivetrain.manualLoop(); // Manually update the drivetrain
 
 
         if (gamepad2.a)
@@ -143,6 +145,10 @@ public class MecanumDrive extends BaseTeleOp
         else if (gamepad2.y)
         {
             robot.claw.openClaw();
+        }
+        else if (gamepad2.right_trigger > .75)
+        {
+            robot.claw.setClawUp();
         }
 
 

@@ -19,7 +19,9 @@ import org.firstinspires.ftc.teamcode.common.actuators.MotorArm;
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 // import org.firstinspires.ftc.teamcode.common.actuators.SwerveWheel;
 import org.firstinspires.ftc.teamcode.common.sensors.AMSEncoder;
+import org.firstinspires.ftc.teamcode.common.sensors.AndyMarkEncoder;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
+import org.firstinspires.ftc.teamcode.common.sensors.OdometryEncoder;
 import org.firstinspires.ftc.teamcode.common.sensors.RangeSensor;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 import org.firstinspires.ftc.teamcode.common.util.Config;
@@ -56,8 +58,8 @@ public class Robot
     public final Switch backSwitch;
     public final IMU imu;
     
-    public final AMSEncoder fwdEnc;
-    public final AMSEncoder strafeEnc;
+    public final OdometryEncoder fwdEnc;
+    public final OdometryEncoder strafeEnc;
     
     public final RangeSensor leftRange;
     public final RangeSensor centerRange;
@@ -129,8 +131,10 @@ public class Robot
 
         imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
         
-        fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
-        strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
+        // fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
+        // strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
+        fwdEnc = new AndyMarkEncoder(leftIntake);
+        strafeEnc = new AndyMarkEncoder(rightIntake);
         // fwdEnc = null;
         // strafeEnc = null;
         
@@ -172,11 +176,8 @@ public class Robot
         
         // Logging
         
-        GlobalDataLogger.instance().addChannel("Encoder abs. distance (fwd)", () -> "" + fwdEnc.getAbsoluteAngle());
-        GlobalDataLogger.instance().addChannel("Encoder distance (fwd)", () -> "" + fwdEnc.getAngle());
-        GlobalDataLogger.instance().addChannel("Encoder abs. distance (strafe)", () -> "" + strafeEnc.getAbsoluteAngle());
-        GlobalDataLogger.instance().addChannel("Encoder distance (strafe)", () -> "" + strafeEnc.getAngle());
-        
+        GlobalDataLogger.instance().addChannel("Encoder abs. distance (fwd)", () -> "" + fwdEnc.getPosition());
+        GlobalDataLogger.instance().addChannel("Encoder abs. distance (strafe)", () -> "" + strafeEnc.getPosition());
         
         // GlobalDataLogger.instance().addChannel("Left Range", () -> String.format("%.4f", leftRange.getDistance()));
         GlobalDataLogger.instance().addChannel("Center Range", () -> String.format("%.4f", centerRange.getDistance()));

@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.autonomous.BaseAutonomous;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.sensors.AMSEncoder;
+import org.firstinspires.ftc.teamcode.common.sensors.OdometryEncoder;
 
 @Autonomous(name="AMS Encoder Test", group="test")
 public class AMSEncoderTest extends BaseAutonomous
@@ -12,8 +13,8 @@ public class AMSEncoderTest extends BaseAutonomous
     @Override
     public void run() throws InterruptedException
     {
-        AMSEncoder encoder = Robot.instance().fwdEnc;
-        AMSEncoder encoder2 = Robot.instance().strafeEnc;
+        OdometryEncoder encoder = Robot.instance().fwdEnc;
+        OdometryEncoder encoder2 = Robot.instance().strafeEnc;
         if (encoder == null || encoder2 == null)
         {
             telemetry.addLine("Encoder not connected!");
@@ -31,10 +32,8 @@ public class AMSEncoderTest extends BaseAutonomous
         encoder.resetEncoder();
         while (opModeIsActive())
         {
-            telemetry.addData("Fwd: Absolute angle", encoder.getAbsoluteAngle());
-            telemetry.addData("Fwd: Rotations", encoder.getRotations());
-            telemetry.addData("Strafe: Absolute angle", encoder2.getAbsoluteAngle());
-            telemetry.addData("Strafe: Rotations", encoder2.getRotations());
+            telemetry.addData("Fwd: Absolute angle", encoder.getPosition());
+            telemetry.addData("Strafe: Absolute angle", encoder2.getPosition());
             telemetry.update();
 
             Thread.sleep(5);

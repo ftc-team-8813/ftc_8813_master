@@ -6,10 +6,10 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.sensors.AMSEncoder;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
+import org.firstinspires.ftc.teamcode.common.sensors.OdometryEncoder;
 import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
-import org.opencv.tracking.TrackerGOTURN;
 
 /**
  * The mecanum drivetrain
@@ -23,7 +23,7 @@ public class Drivetrain
     
     private IMU imu;
     
-    private AMSEncoder fwdEnc, strafeEnc;
+    private OdometryEncoder fwdEnc, strafeEnc;
     
     private volatile String state = "Idle";
     private volatile double angleOffset = 0;
@@ -31,6 +31,7 @@ public class Drivetrain
     private double acceleration;
     
     private SpeedController controller;
+    private boolean controllerEnabled;
     private boolean correctAngle;
     
     /**
@@ -40,7 +41,7 @@ public class Drivetrain
      * @param leftBack   The left rear motor
      * @param rightBack  The right rear motor
      */
-    public Drivetrain(PIDMotor leftFront, PIDMotor rightFront, PIDMotor leftBack, PIDMotor rightBack, IMU imu, AMSEncoder fwdEnc, AMSEncoder strafeEnc)
+    public Drivetrain(PIDMotor leftFront, PIDMotor rightFront, PIDMotor leftBack, PIDMotor rightBack, IMU imu, OdometryEncoder fwdEnc, OdometryEncoder strafeEnc)
     {
         this.leftFront  = leftFront;
         this.rightFront = rightFront;
@@ -72,7 +73,6 @@ public class Drivetrain
         
         GlobalDataLogger.instance().addChannel("Drivetrain State", () -> state);
         controller = new SpeedController(imu, fwdEnc, strafeEnc);
-        GlobalThreadPool.instance().start(controller);
     }
     
     /**
@@ -125,6 +125,7 @@ public class Drivetrain
         }
         
         controller.move(distance * Math.signum(forward), forward, distance * Math.signum(right), right);
+        Thread.sleep(1);
         while (controller.busy)
         {
             Thread.sleep(50);
@@ -230,7 +231,7 @@ public class Drivetrain
         state = "Idle";
     }
 
-    public AMSEncoder getfrwEnc(){
+    public OdometryEncoder getfrwEnc(){
         return fwdEnc;
     }
 
@@ -245,18 +246,24 @@ public class Drivetrain
     private class SpeedController implements Runnable
     {
         private IMU imu;
-        private AMSEncoder fwdEnc, strafeEnc;
+        private OdometryEncoder fwdEnc, strafeEnc;
         private volatile double targetAngle = 0;
         // private volatile double targetPos;
         private volatile double forward, strafe, turn;
         
+        private double prevFwd, prevStrafe, prevTurn;
+        
         private volatile double fwdTarget, strafeTarget;
+        private volatile boolean initTarget = true;
         private volatile boolean holdPosition;
         private volatile boolean busy;
         
         private volatile double angleInfluence = 0;
         
-        public SpeedController(IMU imu, AMSEncoder fwdEnc, AMSEncoder strafeEnc)
+        private int updateCount;
+        private long lastLog;
+        
+        public SpeedController(IMU imu, OdometryEncoder fwdEnc, OdometryEncoder strafeEnc)
         {
             this.imu = imu;
             this.targetAngle = 0;
@@ -296,6 +303,7 @@ public class Drivetrain
         public synchronized void drive(double forward, double strafe, double turn)
         {
             this.holdPosition = false;
+            this.busy = false;
             this.forward = forward;
             this.strafe = strafe;
             this.turn = turn;
@@ -303,7 +311,13 @@ public class Drivetrain
         
         public synchronized void move(double fwdDist, double fwdPower, double strafeDist, double strafePower)
         {
-            moveTo(fwdDist + fwdEnc.getAbsoluteAngle(), fwdPower, strafeDist + strafeEnc.getAbsoluteAngle(), strafePower);
+            if (initTarget)
+            {
+                fwdTarget = fwdEnc.getPosition();
+                strafeTarget = strafeEnc.getPosition();
+                initTarget = false;
+            }
+            moveTo(fwdDist + fwdTarget, fwdPower, strafeDist + strafeEnc.getPosition(), strafePower);
         }
         
         public synchronized void moveTo(double fwdPos, double fwdPower, double strafePos, double strafePower)
@@ -316,44 +330,22 @@ public class Drivetrain
             strafe = Math.abs(strafePower);
             log.d("moveTo fwd=%.3f strafe=%.3f power=%.3f,%.3f", fwdPos, strafePos, fwdPower, strafePower);
         }
+        
+        public synchronized double[] updateTarget()
+        {
+            double fwdOff = fwdEnc.getPosition() - fwdTarget;
+            double strafeOff = strafeEnc.getPosition() - strafeTarget;
+            fwdTarget = fwdEnc.getPosition();
+            strafeTarget = strafeEnc.getPosition();
+            return new double[] {fwdOff, strafeOff};
+        }
     
         @Override
         public void run()
         {
-            double prevFwd = 0, prevStrafe = 0, prevTurn = 0;
             while (true)
             {
-                double forward = this.forward;
-                double strafe = this.strafe;
-                double turn = this.turn;
-                
-                if (angleInfluence > 0)
-                {
-                    turn -= getAngleError() / 50 * angleInfluence;
-                }
-                
-                if (holdPosition)
-                {
-                    double fwdError = fwdEnc.getAbsoluteAngle() - fwdTarget;
-                    double strafeError = strafeEnc.getAbsoluteAngle() - strafeTarget;
-                    
-                    forward *= -Range.clip(fwdError / 120, -1, 1);
-                    strafe *= -Range.clip(strafeError / 100, -1, 1);
-                    if (Math.abs(forward) < 0.05 && Math.abs(strafe) < 0.05) busy = false;
-                }
-                
-                if (prevFwd != forward || prevStrafe != strafe || prevTurn != turn)
-                {
-                    prevFwd = forward;
-                    prevStrafe = strafe;
-                    prevTurn = turn;
-    
-                    leftFront.getMotor().setPower ( forward + strafe - turn);
-                    rightBack.getMotor().setPower ( forward + strafe + turn);
-                    rightFront.getMotor().setPower( forward - strafe + turn);
-                    leftBack.getMotor().setPower  ( forward - strafe - turn);
-                }
-    
+                loop();
                 try
                 {
                     Thread.sleep(1);
@@ -363,6 +355,75 @@ public class Drivetrain
                 }
             }
         }
+        
+        public void loop()
+        {
+            double forward = this.forward;
+            double strafe = this.strafe;
+            double turn = this.turn;
+        
+            if (angleInfluence > 0)
+            {
+                turn -= getAngleError() / 50 * angleInfluence;
+            }
+        
+            if (holdPosition)
+            {
+                double fwdError = fwdEnc.getPosition() - fwdTarget;
+                double strafeError = strafeEnc.getPosition() - strafeTarget;
+            
+                forward *= -Range.clip(fwdError / 120, -1, 1);
+                strafe *= -Range.clip(strafeError / 100, -1, 1);
+                if (Math.abs(forward) < 0.05 && Math.abs(strafe) < 0.05 && busy)
+                {
+                    log.d("Done");
+                    busy = false;
+                }
+            }
+        
+            if (prevFwd != forward || prevStrafe != strafe || prevTurn != turn)
+            {
+                prevFwd = forward;
+                prevStrafe = strafe;
+                prevTurn = turn;
+            
+                leftFront.getMotor().setPower ( forward + strafe - turn);
+                rightBack.getMotor().setPower ( forward + strafe + turn);
+                rightFront.getMotor().setPower( forward - strafe + turn);
+                leftBack.getMotor().setPower  ( forward - strafe - turn);
+            }
+            
+            updateCount++;
+            if (System.currentTimeMillis() - lastLog > 1000)
+            {
+                log.d("FPS: %d", updateCount);
+                updateCount = 0;
+                lastLog = System.currentTimeMillis();
+            }
+        }
+    
+    }
+    
+    /**
+     * Manually update the speed controller. This should be used instead of enableAsyncLoop() when a
+     * reasonably tight loop is available (i.e. in TeleOp). Should take about 1-2 ms to execute unless
+     * USB communication is blocked up
+     */
+    public void manualLoop()
+    {
+        if (controllerEnabled) return;
+        controller.loop();
+    }
+    
+    /**
+     * Enable the asynchronous speed controller. If this is not called, the drivetrain must be updated
+     * using manualLoop()
+     */
+    public void enableAsyncLoop()
+    {
+        if (controllerEnabled) return;
+        GlobalThreadPool.instance().start(controller);
+        controllerEnabled = true;
     }
     
     public void enableAngleCorrection()
@@ -383,5 +444,9 @@ public class Drivetrain
         controller.setAngleInfluence(0);
     }
     
+    public double[] updateTarget()
+    {
+        return controller.updateTarget();
+    }
     
 }

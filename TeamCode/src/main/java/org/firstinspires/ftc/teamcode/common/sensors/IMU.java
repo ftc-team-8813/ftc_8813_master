@@ -187,6 +187,7 @@ public class IMU
                     case STARTED:
                     {
                         update();
+                        /*
                         updateCount++;
                         if (System.currentTimeMillis() - lastLog > 1000)
                         {
@@ -194,6 +195,7 @@ public class IMU
                             updateCount = 0;
                             lastLog = System.currentTimeMillis();
                         }
+                         */
                         break;
                     }
                 }

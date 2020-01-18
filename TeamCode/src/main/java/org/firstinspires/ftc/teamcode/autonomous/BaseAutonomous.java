@@ -193,6 +193,7 @@ public abstract class BaseAutonomous extends LinearOpMode
             instance = this;
 
             Robot.initialize(hardwareMap, config);
+            Robot.instance().drivetrain.enableAsyncLoop();
             initialize();
             
             //Must wait for start, otherwise the robot will run as soon as it is initialized, which can
