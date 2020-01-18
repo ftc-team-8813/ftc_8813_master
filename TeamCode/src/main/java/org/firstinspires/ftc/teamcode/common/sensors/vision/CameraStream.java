@@ -215,7 +215,7 @@ public class CameraStream
             Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2RGBA);
         //Run the garbage collector as fast as possible to delete old images and keep enough
         //memory for our program to function, avoid blowing up the phone :)
-        System.gc();
+        // System.gc();
         return frame;
     }
 

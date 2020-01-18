@@ -105,6 +105,8 @@ public class Profiler
         log.d("Profiling summary");
         log.d("-----------------------------------");
         printItem(root);
+        root = new Item("");
+        curr = root;
     }
 
     private void printItem(Item i)

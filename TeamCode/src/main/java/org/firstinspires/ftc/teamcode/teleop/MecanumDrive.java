@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.common.util.Profiler;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
 import org.firstinspires.ftc.teamcode.teleop.util.ButtonHelper;
 
@@ -29,6 +30,13 @@ public class MecanumDrive extends BaseTeleOp
     
     private long start;
     
+    private int updateCount;
+    private long lastLog;
+    
+    private long lastTelemetry;
+    
+    private Profiler profiler;
+    
     @Override
     public void init()
     {
@@ -36,8 +44,11 @@ public class MecanumDrive extends BaseTeleOp
         buttonHelper = new ButtonHelper(gamepad1);
         robot.newarm.resetArm();
         robot.slide.slidemotor.setPower(0.5);
+        // robot.imu.stop();
         // robot.drivetrain.enableAngleCorrection();
         robot.drivetrain.enableAsyncLoop();
+        
+        profiler = new Profiler();
     }
     
     public void start()
@@ -49,6 +60,8 @@ public class MecanumDrive extends BaseTeleOp
     @Override
     public void doLoop()
     {
+        // profiler.start("loop()");
+        // profiler.start("speed");
         if (buttonHelper.pressing(ButtonHelper.y))
         {
             if (speed_mode == SPEED_SLOW) speed_mode = SPEED_FAST;
@@ -65,7 +78,10 @@ public class MecanumDrive extends BaseTeleOp
                     speed_mode = SPEED_FASTER;
             }
         }
+        // profiler.end();
         
+        // profiler.start("intake");
+        double dist = robot.centerRange.getDistance();
         if (gamepad1.right_bumper)
         {
             robot.intake.collectStone(0.3);
@@ -76,7 +92,7 @@ public class MecanumDrive extends BaseTeleOp
         }
         
         // Automation
-        else if (robot.centerRange.getDistance() < 50)
+        else if (dist < 50)
         {
             robot.leftLed.setColor(255, 0, 0);
             if (!intakeTrigger)
@@ -95,9 +111,9 @@ public class MecanumDrive extends BaseTeleOp
                 robot.intake.stopIntake();
             }
         }
-        else if (robot.centerRange.getDistance() < 100)
+        else if (dist < 100)
         {
-            int greenAmt = (int)((robot.centerRange.getDistance() - 60) * 255 / 80);
+            int greenAmt = (int)((dist - 60) * 255 / 80);
             greenAmt = Range.clip(greenAmt, 0, 255);
             robot.leftLed.setColor(255, greenAmt, 0);
             robot.intake.collectStone(0.3);
@@ -105,18 +121,22 @@ public class MecanumDrive extends BaseTeleOp
         }
         else
         {
-            int redAmt = (int)((240 - robot.centerRange.getDistance()) * 255 / 100);
+            int redAmt = (int)((240 - dist) * 255 / 100);
             redAmt = Range.clip(redAmt, 0, 255);
             robot.leftLed.setColor(redAmt, 255, 0);
             robot.intake.stopIntake();
             intakeTrigger = false;
         }
-
+        // profiler.end();
+        
+        // profiler.start("arm");
         robot.newarm.moveArm(-gamepad2.right_stick_y);
-        if (gamepad2.start){
+        if (gamepad2.start && !gamepad2.b){
             robot.newarm.resetArm();
         }
+        // profiler.end();
     
+        // profiler.start("lift");
         if (gamepad2.dpad_down)
         {
             robot.slide.raiseLift(0, -1);
@@ -125,7 +145,9 @@ public class MecanumDrive extends BaseTeleOp
         {
             robot.slide.raiseLift(-gamepad2.left_stick_y);
         }
+        // profiler.end();
 
+        // profiler.start("drivetrain");
         double[] speeds;
         if (speed_mode == SPEED_SLOW)        speeds = new double[] {0.3, 0.3, 0.15}; // SLOW
         else if (speed_mode == SPEED_FAST)   speeds = new double[] {0.5, 0.5, 0.5 }; // FAST
@@ -135,9 +157,11 @@ public class MecanumDrive extends BaseTeleOp
         robot.drivetrain.drive(-gamepad1.left_stick_y * speeds[0],
                                   gamepad1.left_stick_x * speeds[1],
                                  -gamepad1.right_stick_y * speeds[2]);
+        // profiler.end();
         // robot.drivetrain.manualLoop(); // Manually update the drivetrain
 
 
+        // profiler.start("claw");
         if (gamepad2.a)
         {
             robot.claw.closeClaw();
@@ -150,53 +174,70 @@ public class MecanumDrive extends BaseTeleOp
         {
             robot.claw.setClawUp();
         }
-
-
+        // profiler.end();
+    
+    
+        // profiler.start("hook");
         if (gamepad2.x){
             robot.foundationhook.moveHookDown();
         }else if (gamepad2.b){
             robot.foundationhook.moveHookUp();
         }
+        // profiler.end();
 
+        // profiler.start("linkage");
         if (gamepad1.dpad_up){
             robot.intakelinkage.moveLinkageOut();
         } else if (gamepad1.dpad_down){
             robot.intakelinkage.moveLinkageIn();
         }
+        // profiler.end();
         
+        // profiler.start("telemetry");
+        if (System.currentTimeMillis() - lastTelemetry > 500)
+        {
+            lastTelemetry = System.currentTimeMillis();
+            telemetry.addData("Time", Utils.elapsedTime(System.currentTimeMillis() - start));
+            // 2 min == 120s == 120000ms
+            long remaining = 120000 - (System.currentTimeMillis() - start);
+            if (remaining < 60000 && timeTrigger <= 0)
+            {
+                timeTrigger = 1;
+                log.i("1 minute remaining");
+            } else if (remaining < 30000 && timeTrigger <= 1)
+            {
+                timeTrigger = 2;
+                log.i("30 seconds remaining");
+            } else if (remaining < 10000 && timeTrigger <= 2)
+            {
+                timeTrigger = 3;
+                log.i("10 seconds remaining");
+            } else if (remaining < 0 && timeTrigger <= 3)
+            {
+                timeTrigger = 4;
+                log.e("Time!!!");
+            }
+    
+            telemetry.addData("Speed Mode", speed_modes[speed_mode]);
+            telemetry.addData("Extender Top Limit", robot.slide.getTopLimit());
+            telemetry.addData("Extender Pos", robot.slide.getCurrentPos());
+            telemetry.addData("Forward Ticks Moved", robot.drivetrain.leftFront.getCurrentPosition());
+            // telemetry.addData("Claw Pos", robot.claw.getExtension().getPosition());
+            telemetry.addData("Back Limit", robot.backSwitch.pressed());
+            telemetry.addData("Claw Pos", robot.newarm.motorArm.getCurrentPosition());
+            telemetry.addData("Heading", robot.imu.getHeading());
+        }
+        // profiler.end();
         
-        telemetry.addData("Time", Utils.elapsedTime(System.currentTimeMillis() - start));
-        // 2 min == 120s == 120000ms
-        long remaining = 120000 - (System.currentTimeMillis() - start);
-        if (remaining < 60000 && timeTrigger <= 0)
+        // profiler.finish();
+    
+        updateCount++;
+        if (System.currentTimeMillis() - lastLog > 1000)
         {
-            timeTrigger = 1;
-            log.i("1 minute remaining");
+            log.d("FPS: %d", updateCount);
+            updateCount = 0;
+            lastLog = System.currentTimeMillis();
         }
-        else if (remaining < 30000 && timeTrigger <= 1)
-        {
-            timeTrigger = 2;
-            log.i("30 seconds remaining");
-        }
-        else if (remaining < 10000 && timeTrigger <= 2)
-        {
-            timeTrigger = 3;
-            log.i("10 seconds remaining");
-        }
-        else if (remaining < 0 && timeTrigger <= 3)
-        {
-            timeTrigger = 4;
-            log.e("Time!!!");
-        }
-
-        telemetry.addData("Speed Mode", speed_modes[speed_mode]);
-        telemetry.addData("Extender Top Limit", robot.slide.getTopLimit());
-        telemetry.addData("Extender Pos", robot.slide.getCurrentPos());
-        telemetry.addData("Forward Ticks Moved", robot.drivetrain.leftFront.getCurrentPosition());
-        // telemetry.addData("Claw Pos", robot.claw.getExtension().getPosition());
-        telemetry.addData("Back Limit", robot.backSwitch.pressed());
-        telemetry.addData("Claw Pos", robot.newarm.motorArm.getCurrentPosition());
-        telemetry.addData("Heading", robot.imu.getHeading());
     }
 
     public void stop(){

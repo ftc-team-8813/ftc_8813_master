@@ -348,7 +348,7 @@ public class Drivetrain
                 loop();
                 try
                 {
-                    Thread.sleep(1);
+                    Thread.sleep(10);
                 } catch (InterruptedException e)
                 {
                     break;
@@ -393,6 +393,7 @@ public class Drivetrain
                 leftBack.getMotor().setPower  ( forward - strafe - turn);
             }
             
+            /*
             updateCount++;
             if (System.currentTimeMillis() - lastLog > 1000)
             {
@@ -400,6 +401,7 @@ public class Drivetrain
                 updateCount = 0;
                 lastLog = System.currentTimeMillis();
             }
+             */
         }
     
     }

@@ -20,7 +20,7 @@ public class RangeSensor
         this.sensor = sensor;
         daemon = GlobalThreadPool.instance().start(() ->
         {
-            int winsize = 10;
+            int winsize = 5;
             double[] window = new double[winsize];
             int idx = 0;
             while (true)
@@ -37,7 +37,7 @@ public class RangeSensor
                 idx %= winsize;
                 try
                 {
-                    Thread.sleep(7);
+                    Thread.sleep(50);
                 }
                 catch (InterruptedException e)
                 {
