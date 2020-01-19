@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.common.actuators;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.sensors.AMSEncoder;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
@@ -356,7 +357,7 @@ public class Drivetrain
             }
         }
         
-        public void loop()
+        public synchronized void loop()
         {
             double forward = this.forward;
             double strafe = this.strafe;
@@ -372,11 +373,11 @@ public class Drivetrain
                 double fwdError = fwdEnc.getPosition() - fwdTarget;
                 double strafeError = strafeEnc.getPosition() - strafeTarget;
             
-                forward *= -Range.clip(fwdError / 120, -1, 1);
-                strafe *= -Range.clip(strafeError / 100, -1, 1);
+                forward *= -Range.clip(fwdError / 40, -1, 1);
+                strafe *= -Range.clip(strafeError / 40, -1, 1);
                 if (Math.abs(forward) < 0.05 && Math.abs(strafe) < 0.05 && busy)
                 {
-                    log.d("Done");
+                    log.d("Done (error=<%.0f, %.0f> from target <%.0f, %.0f>)", fwdError, strafeError, fwdTarget, strafeTarget);
                     busy = false;
                 }
             }

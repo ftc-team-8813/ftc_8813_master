@@ -24,7 +24,10 @@ public class GlobalThreadPool
         {
             try
             {
-                Thread.sleep(30000);
+                while (true)
+                {
+                    Thread.sleep(30000);
+                }
             }
             catch (InterruptedException e) {}
             finally
