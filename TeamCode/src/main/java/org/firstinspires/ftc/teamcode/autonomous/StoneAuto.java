@@ -53,6 +53,8 @@ public class StoneAuto extends BaseAutonomous
         // control.setMode(ExposureControl.Mode.Manual);
         Robot.instance().imu.setImmediateStart(true);
         Robot.instance().imu.initialize();
+        
+        Robot.instance().newarm.resetArm();
     }
     
     private void pickBlock(int turn, int strafe_dist, int fwd_dist, int back_dist) throws InterruptedException
@@ -63,7 +65,8 @@ public class StoneAuto extends BaseAutonomous
             off = detector.getArea().x + detector.getArea().width/2 - 320;
         }
         // drivetrain.move(0.3, 0, 0, 5);
-        drivetrain.move(0, 0.7, 0, strafe_dist);
+        //
+        drivetrain.move(0, 0.5, 0, strafe_dist);
         Thread.sleep(100);
 
         // drivetrain.move(0.4, 0, 0, strafe_dist);
@@ -86,7 +89,7 @@ public class StoneAuto extends BaseAutonomous
         robot.intake.stopIntake();
         // turnToAngle(0, 0.3);
         Thread.sleep(100);
-        drivetrain.move(0.5, 0, 0, -back_dist  - 8);
+        drivetrain.move(0.4, 0, 0, -back_dist  - 8);
         // drivetrain.move(0, 0, 0.6, -((int)robot.imu.getHeading()) + 50);
     }
     
@@ -119,7 +122,7 @@ public class StoneAuto extends BaseAutonomous
         robot.intake.stopIntake();
         turnToAngle(0, 0.3);
         Thread.sleep(100);
-        drivetrain.move(0.5, 0, 0, -back_dist  - 2);
+        drivetrain.move(0.4, 0, 0, -back_dist  - 2);
 
     }
     
@@ -138,7 +141,12 @@ public class StoneAuto extends BaseAutonomous
         {
             if (detector.found())
             {
-                if (detector.getArea().width > 240 && detector.getCenter().y < 320)
+                /*if (detector.getCenter().x > 450 && detector.getArea().width > 80)
+                {
+                    speed -= (speed - SPD_SLOW * -direction) * 0.4;
+                    drivetrain.drive(0, speed, 0);
+                }
+                else*/ if (detector.getArea().width > 240 && detector.getCenter().y < 320)
                 {
                     drivetrain.drive(SPD_SLOW, 0, 0);
                 }
@@ -148,12 +156,12 @@ public class StoneAuto extends BaseAutonomous
                 }
                 else if (detector.getArea().width > 120)
                 {
-                    speed -= (speed - SPD_SLOW * direction) * 0.4;
+                    speed -= (speed - SPD_SLOW * direction) * 0.6;
                     drivetrain.drive(0, speed, 0);
                 }
                 else
                 {
-                    speed -= (speed - SPD_NORMAL * direction) * 0.4;
+                    speed -= (speed - SPD_NORMAL * direction) * 0.6;
                     drivetrain.drive(0, speed, 0);
                 }
             }
@@ -285,27 +293,44 @@ public class StoneAuto extends BaseAutonomous
         detector.disable(); // Disable until we start detecting
         stream.addListener(detector);
         stream.addModifier(detector);
-        // stream.addListener(new Vlogger("videos/" + Utils.getTimestamp() + ".avi",  640, 480, 10), 1001);
+        stream.addListener(new Vlogger("videos/" + Utils.getTimestamp() + ".avi",  640, 480, 10), 1001);
         drivetrain.enableAngleCorrection();
+        
         
         drivetrain.move(0.4, 0, 0, 100);
         Thread.sleep(300);
         
         int senseDist = senseBlock(-1);
         Thread.sleep(100);
-        pickBlock(0, 30, 0, 20);
+        pickBlock(0, 10, 0, 20);
         
         double[] offs = drivetrain.updateTarget();
         
         // log.d("Drove %.3f, %.3f to target", offs[0], offs[1]);
+        log.d("Sense distance: %d", senseDist);
         
-        drivetrain.move(0, .8, 0, -180 + senseDist);
-        Thread.sleep(100);
-        robot.intake.collectStone(-0.4);
-        Thread.sleep(700);
+        robot.intake.collectStone(0.4);
+        Thread.sleep(500);
         robot.intake.stopIntake();
+        robot.claw.closeClaw();
         
+        drivetrain.move(0, .7, 0, -360 - senseDist);
+        Thread.sleep(500);
+        drivetrain.move(0.4, 0, 0, 42);
+        Thread.sleep(500);
+        drivetrain.stop();
         
+        robot.intakelinkage.moveLinkageIn();
+        Thread.sleep(500);
+        robot.slide.raiseLiftEnc(1, 800);
+        Thread.sleep(100);
+        robot.newarm.moveArm(1);
+        Thread.sleep(1000);
+        robot.newarm.moveArm(0);
+        robot.claw.openClaw();
+        Thread.sleep(100);
+        robot.newarm.moveArmTo(1, 0);
+        robot.slide.raiseLiftEnc(1, -robot.slide.slidemotor.getCurrentPosition());
     }
     
     @Override

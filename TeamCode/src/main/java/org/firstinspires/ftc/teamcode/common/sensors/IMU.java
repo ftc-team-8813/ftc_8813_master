@@ -148,9 +148,9 @@ public class IMU
                         detailStatus = "Initializing";
                         imu.initialize(params);
                         
-                        log.d("Running auto-calibration");
                         while (autoCalibrating)
                         {
+                            log.d("Running auto-calibration");
                             int progress = (imu.getCalibrationStatus().calibrationStatus >> 4) & 3;
                             detailStatus = "Calibrating--Progress: " + progress;
                             if (progress == 3)

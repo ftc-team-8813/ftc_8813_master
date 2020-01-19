@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.sensors.AMSEncoder;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
+import org.firstinspires.ftc.teamcode.common.sensors.Odometry;
 import org.firstinspires.ftc.teamcode.common.sensors.OdometryEncoder;
 import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
@@ -246,8 +247,9 @@ public class Drivetrain
     
     private class SpeedController implements Runnable
     {
-        private IMU imu;
-        private OdometryEncoder fwdEnc, strafeEnc;
+        // private IMU imu;
+        // private OdometryEncoder fwdEnc, strafeEnc;
+        private Odometry odometry;
         private volatile double targetAngle = 0;
         // private volatile double targetPos;
         private volatile double forward, strafe, turn;
@@ -266,14 +268,18 @@ public class Drivetrain
         
         public SpeedController(IMU imu, OdometryEncoder fwdEnc, OdometryEncoder strafeEnc)
         {
-            this.imu = imu;
+            // this.imu = imu;
             this.targetAngle = 0;
             
-            this.fwdEnc = fwdEnc;
-            this.strafeEnc = strafeEnc;
+//            this.fwdEnc = fwdEnc;
+//            this.strafeEnc = strafeEnc;
+//
+//            this.imu.setImmediateStart(true);
+//            this.imu.initialize();
+            imu.setImmediateStart(true);
+            imu.initialize();
             
-            this.imu.setImmediateStart(true);
-            this.imu.initialize();
+            odometry = new Odometry(fwdEnc, strafeEnc, imu);
         }
         
         public synchronized void setAngle(double angle)
@@ -314,11 +320,11 @@ public class Drivetrain
         {
             if (initTarget)
             {
-                fwdTarget = fwdEnc.getPosition();
-                strafeTarget = strafeEnc.getPosition();
+                fwdTarget = odometry.getForwardDistance();
+                strafeTarget = odometry.getStrafeDistance();
                 initTarget = false;
             }
-            moveTo(fwdDist + fwdTarget, fwdPower, strafeDist + strafeEnc.getPosition(), strafePower);
+            moveTo(fwdDist + fwdTarget, fwdPower, strafeDist + strafeTarget, strafePower);
         }
         
         public synchronized void moveTo(double fwdPos, double fwdPower, double strafePos, double strafePower)
@@ -334,10 +340,10 @@ public class Drivetrain
         
         public synchronized double[] updateTarget()
         {
-            double fwdOff = fwdEnc.getPosition() - fwdTarget;
-            double strafeOff = strafeEnc.getPosition() - strafeTarget;
-            fwdTarget = fwdEnc.getPosition();
-            strafeTarget = strafeEnc.getPosition();
+            double fwdOff = odometry.getForwardDistance() - fwdTarget;
+            double strafeOff = odometry.getStrafeDistance() - strafeTarget;
+            fwdTarget = odometry.getForwardDistance();
+            strafeTarget = odometry.getStrafeDistance();
             return new double[] {fwdOff, strafeOff};
         }
     
@@ -352,6 +358,7 @@ public class Drivetrain
                     Thread.sleep(10);
                 } catch (InterruptedException e)
                 {
+                    log.d("Interrupted");
                     break;
                 }
             }
@@ -370,8 +377,8 @@ public class Drivetrain
         
             if (holdPosition)
             {
-                double fwdError = fwdEnc.getPosition() - fwdTarget;
-                double strafeError = strafeEnc.getPosition() - strafeTarget;
+                double fwdError = odometry.getForwardDistance() - fwdTarget;
+                double strafeError = odometry.getStrafeDistance() - strafeTarget;
             
                 forward *= -Range.clip(fwdError / 40, -1, 1);
                 strafe *= -Range.clip(strafeError / 40, -1, 1);

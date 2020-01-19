@@ -60,7 +60,7 @@ public class DummyAutoStones extends BaseAutonomous
         robot.claw.closeClaw();
         Thread.sleep(100);
 
-        robot.slide.raiseLiftEnc(tickstoInches(2));
+        robot.slide.raiseLiftEnc(1, tickstoInches(2));
         Thread.sleep(1000);
 
         robot.drivetrain.move(-0.4, 0, 0, tickstoInches(23));

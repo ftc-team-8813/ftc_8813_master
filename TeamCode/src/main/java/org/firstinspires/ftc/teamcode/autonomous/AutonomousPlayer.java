@@ -94,7 +94,7 @@ public class AutonomousPlayer extends BaseAutonomous
         {
             int pos = params[0];
             if (direction == -1) pos = params[1];
-            robot.slide.raiseLiftEnc(pos);
+            robot.slide.raiseLiftEnc(1, pos);
         }
         else if (op == OP_ARM)
         {

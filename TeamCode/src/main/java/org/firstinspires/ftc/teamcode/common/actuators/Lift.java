@@ -58,9 +58,10 @@ public class Lift {
         }
     }
 
-    public void raiseLiftEnc(int dist) throws InterruptedException {
+    public void raiseLiftEnc(double power, int dist) throws InterruptedException {
         slidemotor.setRunMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        slidemotor.runToPosition(dist, true);
+        slidemotor.setPower(power);
+        slidemotor.runToPosition(slidemotor.getCurrentPosition() + dist, true);
     }
 
     public void resetLift() throws InterruptedException {

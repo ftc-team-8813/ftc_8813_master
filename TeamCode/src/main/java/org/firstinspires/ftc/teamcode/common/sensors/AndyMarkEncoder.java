@@ -29,7 +29,7 @@ public class AndyMarkEncoder implements OdometryEncoder
     public double getPosition()
     {
         long elapsed = System.nanoTime() - prevSample;
-        if (elapsed > 5000000)
+        if (elapsed > 5000000) // = 5 ms
         {
             int pos = motor.getCurrentPosition() - zeroOff;
             prevPos = pos;
