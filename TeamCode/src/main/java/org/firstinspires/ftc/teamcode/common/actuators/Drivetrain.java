@@ -263,6 +263,10 @@ public class Drivetrain
         
         private volatile double angleInfluence = 0;
         
+        private long lastTick;
+        private double acceleration;
+        private volatile double fwdSpeed, strafeSpeed; // Speed factor for acceleration
+        
         private int updateCount;
         private long lastLog;
         
@@ -280,6 +284,7 @@ public class Drivetrain
             imu.initialize();
             
             odometry = new Odometry(fwdEnc, strafeEnc, imu);
+            acceleration = 1;
         }
         
         public synchronized void setAngle(double angle)
@@ -331,6 +336,8 @@ public class Drivetrain
         {
             fwdTarget = fwdPos;
             strafeTarget = strafePos;
+            fwdSpeed = 0;
+            strafeSpeed = 0;
             holdPosition = true;
             busy = true;
             forward = Math.abs(fwdPower);
@@ -350,6 +357,7 @@ public class Drivetrain
         @Override
         public void run()
         {
+            lastTick = System.nanoTime();
             while (true)
             {
                 loop();
@@ -382,13 +390,36 @@ public class Drivetrain
             
                 forward *= -Range.clip(fwdError / 40, -1, 1);
                 strafe *= -Range.clip(strafeError / 40, -1, 1);
+                
                 if (Math.abs(forward) < 0.05 && Math.abs(strafe) < 0.05 && busy)
                 {
                     log.d("Done (error=<%.0f, %.0f> from target <%.0f, %.0f>)", fwdError, strafeError, fwdTarget, strafeTarget);
                     busy = false;
                 }
+                
+                double realFwd = fwdSpeed * Math.signum(forward);
+                double realStrafe = strafeSpeed * Math.signum(strafe);
+                if (Math.abs(realFwd) > Math.abs(forward)) realFwd = forward;
+                if (Math.abs(realStrafe) > Math.abs(strafe)) realStrafe = strafe;
+                
+                /*log.d("Forward: in power=%.3f, cs power=%.3f, ramp power=%.3f, output=%.3f",
+                        this.forward, forward, fwdSpeed, realFwd);*/
+                log.d("Strafe: in power=%.3f, cs power=%.3f, ramp power=%.3f, output=%.3f",
+                        this.strafe, strafe, strafeSpeed, realStrafe);
+    
+                forward = realFwd;
+                strafe = realStrafe;
+                
+                double deltaTime = (System.nanoTime() - lastTick) / 1000000000.0;
+                if (fwdSpeed < Math.abs(this.forward)) fwdSpeed += acceleration * deltaTime;
+                else fwdSpeed = Math.abs(this.forward);
+                
+                if (strafeSpeed < Math.abs(this.strafe)) strafeSpeed += acceleration * deltaTime;
+                else strafeSpeed = Math.abs(this.strafe);
+                
             }
-        
+            lastTick = System.nanoTime();
+            
             if (prevFwd != forward || prevStrafe != strafe || prevTurn != turn)
             {
                 prevFwd = forward;
@@ -446,6 +477,16 @@ public class Drivetrain
     {
         controller.setAngleInfluence(0.65);
         controller.setAngle(imu.getHeading());
+    }
+    
+    public void setTargetAngle(double angle)
+    {
+        controller.setAngle(angle);
+    }
+    
+    public void setAngleInfluence(double power)
+    {
+        controller.setAngleInfluence(power);
     }
     
     public void disableAngleCorrection()

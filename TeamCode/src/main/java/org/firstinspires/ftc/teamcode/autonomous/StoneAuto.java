@@ -51,10 +51,11 @@ public class StoneAuto extends BaseAutonomous
         }
         // ExposureControl control = stream.getInternalCamera().getControl(ExposureControl.class);
         // control.setMode(ExposureControl.Mode.Manual);
-        Robot.instance().imu.setImmediateStart(true);
-        Robot.instance().imu.initialize();
         
         Robot.instance().newarm.resetArm();
+        Robot.instance().imu.initialize();
+        Robot.instance().imu.waitForInit(telemetry);
+        Robot.instance().imu.start();
     }
     
     private void pickBlock(int turn, int strafe_dist, int fwd_dist, int back_dist) throws InterruptedException
@@ -331,6 +332,27 @@ public class StoneAuto extends BaseAutonomous
         Thread.sleep(100);
         robot.newarm.moveArmTo(1, 0);
         robot.slide.raiseLiftEnc(1, -robot.slide.slidemotor.getCurrentPosition());
+        
+        drivetrain.setAngleInfluence(0.2);
+        drivetrain.setTargetAngle(180);
+        Thread.sleep(1500);
+        drivetrain.drive(0, 0, 0.4);
+        Thread.sleep(1300);
+        drivetrain.drive(-0.4, 0, 0);
+        Thread.sleep(200);
+        drivetrain.stop();
+        
+        robot.foundationhook.moveHookDown();
+        Thread.sleep(500);
+        drivetrain.drive(0.7, 0, 0);
+        Thread.sleep(1200);
+        drivetrain.stop();
+        robot.foundationhook.moveHookUp();
+        Thread.sleep(200);
+        
+        drivetrain.drive(0, -1, 0);
+        Thread.sleep(1000);
+        drivetrain.stop();
     }
     
     @Override

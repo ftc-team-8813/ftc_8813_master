@@ -179,6 +179,9 @@ public class IMU
                                 break;
                             }
                         }
+                        
+                        GlobalDataLogger.instance().addChannel("IMU heading", () -> "" + heading);
+                        
                         detailStatus = "Initialized";
                         if (immediateStart) status = STARTED;
                         else status = INITIALIZED;

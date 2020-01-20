@@ -129,7 +129,7 @@ public class Robot
         newarm = new MotorArm(motorArm, backSwitch);
 
 
-        imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+        imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu 1"));
         
         // fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
         // strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
