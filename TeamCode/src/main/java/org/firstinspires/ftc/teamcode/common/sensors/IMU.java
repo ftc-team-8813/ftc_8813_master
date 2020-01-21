@@ -287,7 +287,8 @@ public class IMU
         }
         if (item != null)
         {
-            telemetry.removeItem(item);
+            telemetry.addData("IMU initialization status", worker.getDetailStatus());
+            telemetry.update();
         }
     }
     

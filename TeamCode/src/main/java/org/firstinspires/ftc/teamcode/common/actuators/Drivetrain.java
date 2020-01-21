@@ -404,8 +404,8 @@ public class Drivetrain
                 
                 /*log.d("Forward: in power=%.3f, cs power=%.3f, ramp power=%.3f, output=%.3f",
                         this.forward, forward, fwdSpeed, realFwd);*/
-                log.d("Strafe: in power=%.3f, cs power=%.3f, ramp power=%.3f, output=%.3f",
-                        this.strafe, strafe, strafeSpeed, realStrafe);
+                /* log.d("Strafe: in power=%.3f, cs power=%.3f, ramp power=%.3f, output=%.3f",
+                        this.strafe, strafe, strafeSpeed, realStrafe);*/
     
                 forward = realFwd;
                 strafe = realStrafe;
