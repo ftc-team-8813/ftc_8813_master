@@ -13,6 +13,8 @@ import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
 import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
 
+import java.util.Date;
+
 /**
  * The mecanum drivetrain
  */
@@ -133,6 +135,32 @@ public class Drivetrain
             Thread.sleep(50);
         }
         
+        state = "Idle";
+    }
+
+    public void moveTimeout(double forward, double right, double turn, double distance, long timeout) throws InterruptedException
+    {
+        state = "Move";
+        if (turn != 0 && (forward != 0 || right != 0))
+        {
+            log.e("Arc turns are not supported");
+            return;
+        }
+        if (forward == 0 && right == 0 && (turn == 0 || imu == null))
+        {
+            return;
+        }
+
+        controller.move(distance * Math.signum(forward), forward, distance * Math.signum(right), right);
+        Thread.sleep(1);
+        long startTime = System.currentTimeMillis();
+        long elapsedTime = 0L;
+        while (controller.busy && elapsedTime < timeout)
+        {
+            elapsedTime = System.currentTimeMillis()-startTime;
+            Thread.sleep(50);
+        }
+
         state = "Idle";
     }
     
