@@ -23,8 +23,8 @@ import java.util.concurrent.TimeUnit;
 import static org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage.MED;
 import static org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage.OUT;
 
-@Autonomous(name="Blue Stones")
-public class StoneAuto extends BaseAutonomous
+@Autonomous(name="Red Stones")
+public class RedStoneAuto extends BaseAutonomous
 {
     private Robot robot;
     private WebcamStream stream;
@@ -88,23 +88,23 @@ public class StoneAuto extends BaseAutonomous
         //
         drivetrain.moveTimeout(0, 0.52, 0, strafe_dist, 300);
         Thread.sleep(100);
-
+        
         // drivetrain.move(0.4, 0, 0, strafe_dist);
-        /*  
+        /*
         turnToAngle(-turn, 0.4);
         Thread.sleep(100);
         robot.intake.collectStone(0.4);
         drivetrain.move(0.4, 0, 0, fwd_dist);
         Thread.sleep(400);
          */
-        robot.intakelinkage.moveLinkage(MED, OUT);
-        Thread.sleep(350);
+        robot.intakelinkage.moveLinkage(OUT, MED);
+        Thread.sleep(250);
         robot.intake.collectStone(0.42);
         drivetrain.drive(0.32, 0, 0);
         Thread.sleep(750);
         robot.intakelinkage.moveLinkage(OUT, OUT);
         // curveTurn(0.2, 800);
-        Thread.sleep(400);
+        Thread.sleep(500);
         drivetrain.stop();
         robot.intake.stopIntake();
         // turnToAngle(0, 0.3);
@@ -143,7 +143,7 @@ public class StoneAuto extends BaseAutonomous
         turnToAngle(0, 0.32);
         Thread.sleep(100);
         drivetrain.move(0.42, 0, 0, -back_dist  - 2);
-
+        
     }
     
     private int senseBlock(int direction) throws InterruptedException
@@ -151,17 +151,18 @@ public class StoneAuto extends BaseAutonomous
         detector.enable();
         stream.getInternalCamera().getControl(ExposureControl.class).setMode(ExposureControl.Mode.Manual);
         int startPos = drivetrain.rightBack.getCurrentPosition();
-        drivetrain.drive(0, 0.32, 0);
-        final double SPD_NORMAL = 0.3;
+        drivetrain.drive(0, -0.32, 0);
+        final double SPD_FAST   = 0.35;
+        final double SPD_NORMAL = 0.25;
         final double SPD_SLOW   = 0.12;
         final double SPD_EXSLOW = 0.05;
         double speed = 0;
-    
+        
         while (drivetrain.rightBack.getCurrentPosition() - startPos > -1000)
         {
             if (detector.found())
             {
-                if (detector.getArea().width > 240 && detector.getCenter().y < 300)
+                if (detector.getArea().width > 240 && detector.getCenter().y < 275)
                 {
                     drivetrain.drive(SPD_SLOW, 0, 0);
                 }
@@ -182,11 +183,11 @@ public class StoneAuto extends BaseAutonomous
             }
             else
             {
-                drivetrain.drive(0, 0.5 * direction, 0);
+                drivetrain.drive(0, SPD_FAST * direction, 0);
             }
             Thread.sleep(1);
         }
-    
+        
         drivetrain.stop();
         detector.disable();
         Thread.sleep(100);
@@ -316,22 +317,22 @@ public class StoneAuto extends BaseAutonomous
         Thread.sleep(300);
         
         // Sense block
-        int senseDist = senseBlock(-1);
+        int senseDist = senseBlock(1);
         Thread.sleep(100);
         
         // Pick block
-        pickBlock(0, 31, 0, 17);
+        pickBlock(0, -29, 0, 20);
         
         double[] offs = drivetrain.updateTarget();
         log.d("Sense distance: %d", senseDist);
         
         // Collect stone
-     //   robot.intake.collectStone(0.42);
-     //   Thread.sleep(300);
-     //   robot.intake.stopIntake();
+        //   robot.intake.collectStone(0.42);
+        //   Thread.sleep(300);
+        //   robot.intake.stopIntake();
         
         // Strafe across
-        drivetrain.move(0, .72, 0, -260 - senseDist);
+        drivetrain.move(0, .72, 0, 250 - senseDist);
         
         // Output block
         robot.intake.releaseStone(0.45);
@@ -339,32 +340,32 @@ public class StoneAuto extends BaseAutonomous
         robot.intake.stopIntake();
         
         // Re-line up
-        drivetrain.move(0, 0.72, 0, 265); // Strafe back
-        drivetrain.move(0.45, 0, 0, 23);  // Forward
+        drivetrain.move(0, -0.72, 0, 220); // Strafe back
+        drivetrain.move(0.45, 0, 0, 10);  // Forward
         drivetrain.stop();
         
         // Sense block
-        senseDist = senseBlock(1);
+        senseDist = senseBlock(-1);
         
         // Pick block
-        pickBlock(0, 25, 0, 20);
+        pickBlock(0, -22, 0, 20);
         offs = drivetrain.updateTarget();
         
         // Collect stone
-     //   robot.intake.collectStone(0.42);
-     //   Thread.sleep(300);
-     //   robot.intake.stopIntake();
+        //   robot.intake.collectStone(0.42);
+        //   Thread.sleep(300);
+        //   robot.intake.stopIntake();
         
         // Move over
-        drivetrain.move(0, .82, 0, -300 - senseDist);
+        drivetrain.move(0, .82, 0, 350 + senseDist);
         
-        // Output block500
+        // Output block
         robot.intake.collectStone(-0.45);
         Thread.sleep(700);
         robot.intake.stopIntake();
         
         // Park
-        drivetrain.move(0, .6, 0, 70);
+        drivetrain.move(0, .6, 0, -100);
     }
     
     @Override
