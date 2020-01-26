@@ -130,7 +130,7 @@ public class MecanumDrive extends BaseTeleOp
         // profiler.end();
         
         // profiler.start("arm");
-        robot.newarm.moveArm(-gamepad2.right_stick_y * .8);
+        robot.newarm.moveArm(-gamepad2.right_stick_y * .65);
         if (gamepad2.start && !gamepad2.b){
             robot.newarm.resetArm();
         }

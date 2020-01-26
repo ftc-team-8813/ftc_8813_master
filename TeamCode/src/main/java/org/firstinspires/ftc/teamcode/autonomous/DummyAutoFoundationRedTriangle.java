@@ -35,13 +35,15 @@ public class DummyAutoFoundationRedTriangle extends BaseAutonomous
         robot.foundationhook.moveHookDown();
         Thread.sleep(2000);
 
-        robot.drivetrain.oldMove(0.25, 0, 0, tickToInches(31));
+        robot.drivetrain.oldMove(0.2, 0, 0, tickToInches(31));
         robot.drivetrain.stop();
 
         robot.foundationhook.moveHookUp();
 
         robot.drivetrain.oldMove(0, 0.6, 0, tickToInches(27));
         robot.drivetrain.stop();
+        
+        Thread.sleep(10000);
 
         robot.drivetrain.oldMove(-0.3, 0, 0, tickToInches(10));
 
@@ -49,13 +51,15 @@ public class DummyAutoFoundationRedTriangle extends BaseAutonomous
 
         robot.drivetrain.oldMove(0, 0.4, 0, tickToInches(28));
 
+        robot.drivetrain.oldMove(.2,0,0,4);
+        
         robot.intakelinkage.moveLinkage(OUT, OUT);
 
         robot.drivetrain.oldMove(0,0,-0.2, tickToInches(2));
 
-        robot.drivetrain.oldMove(0,-0.2,0,tickToInches(16)); //WALL PARK
+        //robot.drivetrain.oldMove(0,-0.2,0,tickToInches(16)); //WALL PARK
 
-        //robot.drivetrain.oldMove(0, 0.4, 0, tickToInches(6)); //SKYBRIDGE PARK
+        robot.drivetrain.oldMove(0, 0.4, 0, tickToInches(6)); //SKYBRIDGE PARK
 
         /*obot.foundationhook.moveHookDown();
         Thread.sleep(1000);
