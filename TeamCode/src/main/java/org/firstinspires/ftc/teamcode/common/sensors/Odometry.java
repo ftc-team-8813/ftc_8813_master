@@ -62,10 +62,12 @@ public class Odometry
         
         x += realDx;
         y += realDy;
+        /*
         if (realDx != 0 || realDy != 0)
         {
             log.d("Delta: measured <%.3f,%.3f> -> <%.3f,%.3f>", deltaX, deltaY, realDx, realDy);
         }
+         */
     }
     
     public synchronized double getForwardDistance()

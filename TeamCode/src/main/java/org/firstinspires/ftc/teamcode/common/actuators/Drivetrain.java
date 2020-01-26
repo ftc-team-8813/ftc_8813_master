@@ -295,6 +295,9 @@ public class Drivetrain
         private double acceleration;
         private volatile double fwdSpeed, strafeSpeed; // Speed factor for acceleration
         
+        private volatile double fieldCentrAngle = 0;
+        private volatile boolean useFieldCentric = false;
+        
         private int updateCount;
         private long lastLog;
         
@@ -448,6 +451,15 @@ public class Drivetrain
             }
             lastTick = System.nanoTime();
             
+            if (useFieldCentric)
+            {
+                double angle = Math.toRadians(imu.getHeading() - fieldCentrAngle);
+                double realFwd = forward * Math.cos(angle) - strafe * Math.sin(angle);
+                double realStrafe = strafe * Math.cos(angle) + forward * Math.sin(angle);
+                forward = realFwd;
+                strafe = realStrafe;
+            }
+            
             if (prevFwd != forward || prevStrafe != strafe || prevTurn != turn)
             {
                 prevFwd = forward;
@@ -521,6 +533,22 @@ public class Drivetrain
     {
         correctAngle = false;
         controller.setAngleInfluence(0);
+    }
+    
+    public void enableFieldCentric()
+    {
+        controller.fieldCentrAngle = imu.getHeading();
+        controller.useFieldCentric = true;
+    }
+    
+    public void disableFieldCentric()
+    {
+        controller.useFieldCentric = false;
+    }
+    
+    public boolean isFieldCentric()
+    {
+        return controller.useFieldCentric;
     }
     
     public double[] updateTarget()

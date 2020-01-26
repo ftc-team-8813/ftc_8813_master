@@ -193,6 +193,18 @@ public class MecanumDrive extends BaseTeleOp
         }
         // profiler.end();
         
+        if (buttonHelper.pressing(ButtonHelper.back))
+        {
+            if (robot.drivetrain.isFieldCentric())
+            {
+                robot.drivetrain.disableFieldCentric();
+            }
+            else
+            {
+                robot.drivetrain.enableFieldCentric();
+            }
+        }
+        
         // profiler.start("telemetry");
         if (System.currentTimeMillis() - lastTelemetry > 500)
         {
