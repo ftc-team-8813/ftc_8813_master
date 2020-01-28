@@ -39,32 +39,24 @@ public class DrivetrainMoveTest extends BaseAutonomous
            }
         });
         
-        double[] distancesF = new double[10];
-        double start = Robot.instance().fwdEnc.getPosition();
+        Robot robot = Robot.instance();
         
-        for (int i = 0; i < 3; i++)
-        {
-            drivetrain.move(0.4, 0, 0, 100);
-            Thread.sleep(500);
-            distancesF[i] = Robot.instance().fwdEnc.getPosition() - start;
-            drivetrain.move(0.4, 0, 0, -100);
-            Thread.sleep(500);
-        }
+        double start = drivetrain.rightBack.getCurrentPosition();
+        double startOdo = robot.fwdEnc.getPosition();
+        drivetrain.move(0.3, 0, 0, 100);
+        Thread.sleep(1000);
+        log.i("Distance moved forward: %.0f/%.2f",
+                drivetrain.rightBack.getCurrentPosition() - start,
+                robot.fwdEnc.getPosition() - startOdo);
         
-        
-        double[] distancesS = new double[10];
-        start = Robot.instance().strafeEnc.getPosition();
-        for (int i = 0; i < 3; i++)
-        {
-            drivetrain.move(0, 0.4, 0, 100);
-            Thread.sleep(500);
-            distancesS[i] = Robot.instance().strafeEnc.getPosition() - start;
-            drivetrain.move(0, 0.4, 0, -100);
-            Thread.sleep(500);
-        }
-        
-        log.i("Forward distances: %s", Arrays.toString(distancesF));
-        log.i("Strafe distances: %s", Arrays.toString(distancesS));
+        start = drivetrain.rightBack.getCurrentPosition();
+        startOdo = robot.strafeEnc.getPosition();
+        drivetrain.move(0, 0.3, 0, 100);
+        Thread.sleep(1000);
+        log.i("Distance strafed: %.0f/%.2f",
+                drivetrain.rightBack.getCurrentPosition() - start,
+                robot.strafeEnc.getPosition());
+        drivetrain.stop();
         
         /*
         while (opModeIsActive())

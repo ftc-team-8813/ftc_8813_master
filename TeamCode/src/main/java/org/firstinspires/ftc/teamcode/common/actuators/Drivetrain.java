@@ -298,6 +298,8 @@ public class Drivetrain
         private volatile double fieldCentrAngle = 0;
         private volatile boolean useFieldCentric = false;
         
+        private final double efficiency = 0.9023; // How much slower the drivetrain strafes
+        
         private int updateCount;
         private long lastLog;
         
@@ -462,6 +464,8 @@ public class Drivetrain
             
             if (prevFwd != forward || prevStrafe != strafe || prevTurn != turn)
             {
+                strafe /= efficiency; // Scale up the strafe speed to account for inefficiency
+                
                 prevFwd = forward;
                 prevStrafe = strafe;
                 prevTurn = turn;
