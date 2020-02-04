@@ -28,6 +28,8 @@ public class MecanumDrive extends BaseTeleOp
     private long intakeTime = 0;
     private int timeTrigger = 0;
     
+    private boolean liftTrigger = false;
+    
     private long start;
     
     private int updateCount;
@@ -57,6 +59,15 @@ public class MecanumDrive extends BaseTeleOp
         start = System.currentTimeMillis();
     }
     
+    private void setSpeedMode(int mode)
+    {
+        speed_mode = mode;
+        if (speed_mode == SPEED_SLOW)           robot.rightLed.setColor(64, 0,    255);
+        else if (speed_mode == SPEED_FAST)      robot.rightLed.setColor(0,   255, 0);
+        else if (speed_mode == SPEED_FASTER)    robot.rightLed.setColor(255, 0,   0);
+        else if (speed_mode == SPEED_LUDICROUS) robot.rightLed.setColor(200, 255, 225);
+    }
+    
     @Override
     public void doLoop()
     {
@@ -64,18 +75,32 @@ public class MecanumDrive extends BaseTeleOp
         // profiler.start("speed");
         if (buttonHelper.pressing(ButtonHelper.y))
         {
-            if (speed_mode == SPEED_SLOW) speed_mode = SPEED_FAST;
-            else speed_mode = SPEED_SLOW;
+            if (speed_mode == SPEED_SLOW)
+            {
+                setSpeedMode(SPEED_FAST);
+            }
+            else
+            {
+                setSpeedMode(SPEED_SLOW);
+            }
         }
         if (buttonHelper.pressing(ButtonHelper.x))
         {
-            if (speed_mode == SPEED_FASTER || speed_mode == SPEED_LUDICROUS) speed_mode = SPEED_FAST;
+            if (speed_mode == SPEED_FASTER || speed_mode == SPEED_LUDICROUS)
+            {
+                
+                setSpeedMode(SPEED_FAST);
+            }
             else
             {
                 if (gamepad1.start)
-                    speed_mode = SPEED_LUDICROUS;
+                {
+                    setSpeedMode(SPEED_LUDICROUS);
+                }
                 else
-                    speed_mode = SPEED_FASTER;
+                {
+                    setSpeedMode(SPEED_FASTER);
+                }
             }
         }
         // profiler.end();
@@ -94,7 +119,6 @@ public class MecanumDrive extends BaseTeleOp
         // Automation
         else if (dist < 50)
         {
-            robot.leftLed.setColor(255, 0, 0);
             if (!intakeTrigger)
             {
                 intakeTrigger = true;
@@ -113,17 +137,11 @@ public class MecanumDrive extends BaseTeleOp
         }
         else if (dist < 100)
         {
-            int greenAmt = (int)((dist - 60) * 255 / 80);
-            greenAmt = Range.clip(greenAmt, 0, 255);
-            robot.leftLed.setColor(255, greenAmt, 0);
             robot.intake.collectStone(0.3);
             intakeTime = System.currentTimeMillis();
         }
         else
         {
-            int redAmt = (int)((240 - dist) * 255 / 100);
-            redAmt = Range.clip(redAmt, 0, 255);
-            robot.leftLed.setColor(redAmt, 255, 0);
             robot.intake.stopIntake();
             intakeTrigger = false;
         }
@@ -145,6 +163,16 @@ public class MecanumDrive extends BaseTeleOp
         {
             robot.slide.raiseLift(-gamepad2.left_stick_y);
         }
+        
+        if (speed_mode != SPEED_SLOW && !robot.bottomlimit.pressed())
+        {
+            setSpeedMode(SPEED_SLOW);
+        }
+        if (robot.bottomlimit.pressing())
+        {
+            setSpeedMode(SPEED_FAST);
+        }
+        
         // profiler.end();
 
         // profiler.start("drivetrain");
@@ -153,6 +181,26 @@ public class MecanumDrive extends BaseTeleOp
         else if (speed_mode == SPEED_FAST)   speeds = new double[] {0.5, 0.5, 0.5 }; // FAST
         else if (speed_mode == SPEED_FASTER) speeds = new double[] {0.8, 0.8, 0.8 }; // FASTER
         else                                 speeds = new double[] {1,   1,   1   }; // LUDICROUS
+        
+        // Snap to 90-degree angles
+        if (gamepad1.right_stick_button)
+        {
+            if (robot.drivetrain.getAngleInfluence() == 0)
+            {
+                double currHeading = robot.imu.getHeading();
+                double snapAngle = Math.round(currHeading / 90) * 90;
+                log.i("Snap to %.0f", snapAngle);
+                robot.drivetrain.setTargetAngle(snapAngle);
+                robot.drivetrain.setAngleInfluence(0.5);
+            }
+        }
+        else
+        {
+            if (robot.drivetrain.getAngleInfluence() > 0)
+            {
+                robot.drivetrain.disableAngleCorrection();
+            }
+        }
 
         robot.drivetrain.drive(-gamepad1.left_stick_y * speeds[0],
                                   gamepad1.left_stick_x * speeds[1],
@@ -231,9 +279,9 @@ public class MecanumDrive extends BaseTeleOp
             }
     
             telemetry.addData("Speed Mode", speed_modes[speed_mode]);
-            telemetry.addData("Extender Top Limit", robot.slide.getTopLimit());
-            telemetry.addData("Extender Pos", robot.slide.getCurrentPos());
-            telemetry.addData("Forward Ticks Moved", robot.drivetrain.leftFront.getCurrentPosition());
+            telemetry.addData("Field Centric", robot.drivetrain.isFieldCentric());
+            telemetry.addData("Lift Position", robot.slide.getCurrentPos());
+            telemetry.addData("Bottom limit", robot.bottomlimit.pressed());
             // telemetry.addData("Claw Pos", robot.claw.getExtension().getPosition());
             telemetry.addData("Back Limit", robot.backSwitch.pressed());
             telemetry.addData("Claw Pos", robot.newarm.motorArm.getCurrentPosition());

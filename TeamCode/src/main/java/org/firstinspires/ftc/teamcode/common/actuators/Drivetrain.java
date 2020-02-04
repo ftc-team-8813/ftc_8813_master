@@ -533,6 +533,11 @@ public class Drivetrain
         controller.setAngleInfluence(power);
     }
     
+    public double getAngleInfluence()
+    {
+        return controller.angleInfluence;
+    }
+    
     public void disableAngleCorrection()
     {
         correctAngle = false;
