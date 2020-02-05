@@ -152,7 +152,7 @@ public class StoneAuto extends BaseAutonomous
         stream.getInternalCamera().getControl(ExposureControl.class).setMode(ExposureControl.Mode.Manual);
         int startPos = drivetrain.rightBack.getCurrentPosition();
         drivetrain.drive(0, 0.32, 0);
-        final double SPD_NORMAL = 0.3;
+        final double SPD_NORMAL = 0.2;
         final double SPD_SLOW   = 0.12;
         final double SPD_EXSLOW = 0.05;
         double speed = 0;
@@ -171,12 +171,12 @@ public class StoneAuto extends BaseAutonomous
                 }
                 else if (detector.getArea().width > 120)
                 {
-                    speed -= (speed - SPD_SLOW * direction) * 0.6;
+                    speed -= (speed - SPD_SLOW * direction) * 0.7;
                     drivetrain.drive(0, speed, 0);
                 }
                 else
                 {
-                    speed -= (speed - SPD_NORMAL * direction) * 0.6;
+                    speed -= (speed - SPD_NORMAL * direction) * 0.7;
                     drivetrain.drive(0, speed, 0);
                 }
             }
@@ -192,75 +192,6 @@ public class StoneAuto extends BaseAutonomous
         Thread.sleep(100);
         double[] delta = drivetrain.updateTarget();
         return (int)delta[1];
-    }
-    
-    private void moveToRange(double dist, double speed, int sensor) throws InterruptedException
-    {
-        double origSpeed = speed;
-        drivetrain.drive(speed, 0, 0);
-        RangeSensor sens;
-        if (sensor == LEFT_RANGE) sens = robot.centerRange;
-        else sens = robot.centerRange;
-        
-        double val = sens.getDistance();
-        if (val == 65535)
-        {
-            log.f("Distance sensor not plugged in");
-            telemetry.addData("FAIL", "The robot is blind--the distance sensor isn't plugged in!");
-            telemetry.update();
-            requestOpModeStop();
-            return;
-        }
-        else if (val >= 8190)
-        {
-            log.f("Distance sensor reads 8192");
-            telemetry.addData("FAIL", "The robot is blind--the distance sensor can't see anything");
-            telemetry.update();
-            requestOpModeStop();
-            return;
-        }
-        
-        // dist += 110; // Center range sensor offset
-        int prev_enc = 0;
-        double prev_off = Double.POSITIVE_INFINITY;
-        int count = 0;
-        long lastIter = System.currentTimeMillis();
-        while (true)
-        {
-            double range = sens.getDistance();
-            double off = (range - dist) * Math.signum(origSpeed);
-            if (off <= 0 && off > -50)
-            {
-                drivetrain.stop();
-                int enc = drivetrain.rightBack.getCurrentPosition();
-                // log.v("Overshoot correction: overshoot=%.0f, speed=%.3f, enc delta=%d", -off, speed, enc - prev_enc);
-                if (Math.abs(enc - prev_enc) < 5 && off != prev_off) break;
-                prev_enc = enc;
-                prev_off = off;
-            }
-            else if (off < 0)
-            {
-                speed = origSpeed * (off / 150);
-                if (speed < -0.05) drivetrain.drive(speed, 0, 0);
-            }
-            else if (off < 300)
-            {
-                speed = origSpeed * (off / 300);
-                if (speed > 0.1) drivetrain.drive(speed, 0, 0);
-                else drivetrain.drive(0.12, 0, 0);
-            }
-            count++;
-            if (System.currentTimeMillis() - lastIter > 1000)
-            {
-                lastIter = System.currentTimeMillis();
-                log.d("Loops per second: %d", count);
-                count = 0;
-            }
-            Thread.sleep(1);
-        }
-        drivetrain.stop();
-        log.i("Reached a distance of %.0f mm (%.0f error from %.0f)",
-                sens.getDistance(), Math.abs(dist - sens.getDistance()), dist);
     }
     
     private void turnToAngle(double angle, double speed) throws InterruptedException
@@ -320,51 +251,29 @@ public class StoneAuto extends BaseAutonomous
         Thread.sleep(100);
         
         // Pick block
-        pickBlock(0, 31, 0, 17);
+        pickBlock(0, 28, 0, 17);
+        robot.intake.collectStone(0.4);
+        Thread.sleep(500);
+        robot.intake.stopIntake();
+        robot.claw.closeClaw();
         
         double[] offs = drivetrain.updateTarget();
         log.d("Sense distance: %d", senseDist);
         
-        // Collect stone
-     //   robot.intake.collectStone(0.42);
-     //   Thread.sleep(300);
-     //   robot.intake.stopIntake();
-        
         // Strafe across
-        drivetrain.move(0, .72, 0, -260 - senseDist);
-        
-        // Output block
-        robot.intake.releaseStone(0.45);
-        Thread.sleep(700);
-        robot.intake.stopIntake();
-        
-        // Re-line up
-        drivetrain.move(0, 0.72, 0, 265); // Strafe back
-        drivetrain.move(0.45, 0, 0, 23);  // Forward
+        drivetrain.move(0, .72, 0, -340 - senseDist);
+        robot.intakelinkage.moveLinkageIn();
+        Thread.sleep(1000);
+        robot.slide.raiseLiftAsync(0.7, 1000);
+        drivetrain.drive(0.35, 0, 0);
+        Thread.sleep(1000);
         drivetrain.stop();
         
-        // Sense block
-        senseDist = senseBlock(1);
+        robot.newarm.moveArmTo(1, 90);
         
-        // Pick block
-        pickBlock(0, 25, 0, 20);
-        offs = drivetrain.updateTarget();
-        
-        // Collect stone
-     //   robot.intake.collectStone(0.42);
-     //   Thread.sleep(300);
-     //   robot.intake.stopIntake();
-        
-        // Move over
-        drivetrain.move(0, .82, 0, -300 - senseDist);
-        
-        // Output block500
-        robot.intake.collectStone(-0.45);
-        Thread.sleep(700);
-        robot.intake.stopIntake();
-        
-        // Park
-        drivetrain.move(0, .6, 0, 70);
+        robot.slide.raiseLift(0, -1);
+        Thread.sleep(1000);
+        robot.foundationhook.moveHookDown();
     }
     
     @Override

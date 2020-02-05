@@ -129,12 +129,15 @@ public class Robot
         newarm = new MotorArm(motorArm, backSwitch);
 
 
-        imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu 1"));
+        imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
         
         // fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
         // strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
         fwdEnc = new AndyMarkEncoder(leftIntake);
         strafeEnc = new AndyMarkEncoder(rightIntake);
+        
+        ((AndyMarkEncoder)fwdEnc).setDirection(DcMotorSimple.Direction.REVERSE);
+        ((AndyMarkEncoder)strafeEnc).setDirection(DcMotorSimple.Direction.REVERSE);
         // fwdEnc = null;
         // strafeEnc = null;
         
