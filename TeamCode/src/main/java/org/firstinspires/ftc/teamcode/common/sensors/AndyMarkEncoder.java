@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.sensors;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 /**
  * Uses a regular AndyMark/REV motor encoder for position input
@@ -12,6 +13,8 @@ public class AndyMarkEncoder implements OdometryEncoder
     
     private int prevPos;
     private long prevSample;
+    
+    private boolean direction;
     
     public AndyMarkEncoder(DcMotor motor)
     {
@@ -34,12 +37,22 @@ public class AndyMarkEncoder implements OdometryEncoder
             int pos = motor.getCurrentPosition() - zeroOff;
             prevPos = pos;
             prevSample = System.nanoTime();
-            return pos;
+            return pos * (direction ? -1 : 1);
         }
         else
         {
-            return prevPos;
+            return prevPos * (direction ? -1 : 1);
         }
+    }
+    
+    public void setDirection(DcMotorSimple.Direction direction)
+    {
+        this.direction = direction == DcMotorSimple.Direction.REVERSE;
+    }
+    
+    public DcMotorSimple.Direction getDirection()
+    {
+        return direction ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD;
     }
     
     @Override

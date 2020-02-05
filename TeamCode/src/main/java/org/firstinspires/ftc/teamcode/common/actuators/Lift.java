@@ -63,6 +63,12 @@ public class Lift {
         slidemotor.setPower(power);
         slidemotor.runToPosition(slidemotor.getCurrentPosition() + dist, true);
     }
+    
+    public void raiseLiftAsync(double power, int dist)
+    {
+        slidemotor.setPower(power);
+        slidemotor.hold(slidemotor.getCurrentPosition() + dist);
+    }
 
     public void resetLift() throws InterruptedException {
         slidemotor.setRunMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
