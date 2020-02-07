@@ -29,6 +29,11 @@ public class Lift {
         GlobalDataLogger.instance().addChannel("Lift Target", () -> Integer.toString(this.slidemotor.getTargetPosition()));
         GlobalDataLogger.instance().addChannel("Lift Power", () -> Double.toString(this.slidemotor.getPower()));
         GlobalDataLogger.instance().addChannel("Lift Limit State", () -> this.bottomswitch.pressed() ? "1" : "0");
+        
+        double[] constants = slidemotor.getPIDConstants(DcMotor.RunMode.RUN_USING_ENCODER);
+        constants[1] = 0; // Disable the integrator
+        slidemotor.setPIDFConstants(DcMotor.RunMode.RUN_USING_ENCODER,
+                constants[0], constants[1], constants[2], constants[3]);
     }
     
     public void raiseLift(double power)
@@ -51,9 +56,9 @@ public class Lift {
             slidemotor.getMotor().setPower(power);
         } else {
             if (!slidemotor.isHolding()) {
-                slidemotor.getMotor().setPower(0);
-                slidemotor.setPower(0.5);
-                slidemotor.hold(slidemotor.getCurrentPosition() + 35);
+                slidemotor.getMotor().setPower(0.0001);
+                slidemotor.setPower(0.6);
+                slidemotor.hold((int)(slidemotor.getCurrentPosition() * 1.024) + 70);
             }
         }
     }
