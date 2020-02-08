@@ -119,7 +119,7 @@ public class StoneAuto extends BaseAutonomous
          */
         robot.intakelinkage.moveLinkage(MED, OUT);
         Thread.sleep(350);
-        robot.intake.collectStone(0.5);
+        robot.intake.collectStone(0.55);
         drivetrain.drive(0.4, 0, 0);
         Thread.sleep(750);
         robot.intakelinkage.moveLinkage(OUT, OUT);
@@ -280,7 +280,7 @@ public class StoneAuto extends BaseAutonomous
         Thread.sleep(100);
         
         // Pick block
-        pickBlock(0, 28, 0, 5);
+        pickBlock(0, 30, 0, -10);
         
         double[] offs = drivetrain.updateTarget();
         log.d("Sense distance: %d", senseDist);
@@ -294,7 +294,7 @@ public class StoneAuto extends BaseAutonomous
         Thread.sleep(1000);
         // Now it is completely across and adjusted
         drivetrain.drive(0.3, 0, 0);
-        Thread.sleep(1000);
+        Thread.sleep(600);
         drivetrain.stop();
         
         robot.foundationhook.moveHookDown();
@@ -311,14 +311,16 @@ public class StoneAuto extends BaseAutonomous
         robot.slide.raiseLift(0, -1);
         Thread.sleep(700);
         robot.claw.openClaw();
-        
+        robot.slide.raiseLiftAsync(.5,250);
         robot.foundationhook.moveHookUp();
         Thread.sleep(500);
-        drivetrain.drive(0, -0.3, 0);
+        drivetrain.drive(0, -0.5, 0);
         Thread.sleep(350);
-        drivetrain.move(0.16, 0.3, 0, 200);
+        robot.slide.raiseLift(0,-1);
+        drivetrain.move(0.1, 0.3, 0, 220);
         Thread.sleep(250);
-        drivetrain.drive(0.1, 0, 0);
+        drivetrain.drive(0.05, 0, 0);
+        Thread.sleep(1000);
     }
     
     @Override
