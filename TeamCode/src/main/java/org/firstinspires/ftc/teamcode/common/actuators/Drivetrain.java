@@ -101,7 +101,7 @@ public class Drivetrain
     {
         if (correctAngle)
         {
-            if (turn == 0 && controller.getAngleInfluence() != 0) internalEnableCorrection();
+            if (turn == 0 && controller.getAngleInfluence() == 0) internalEnableCorrection();
             else if (turn != 0) controller.setAngleInfluence(0);
         }
         controller.drive(forward, right, turn);
@@ -313,11 +313,13 @@ public class Drivetrain
 //
 //            this.imu.setImmediateStart(true);
 //            this.imu.initialize();
-            imu.setImmediateStart(true);
-            imu.initialize();
             
             odometry = new Odometry(fwdEnc, strafeEnc, imu);
             acceleration = 1;
+            
+            GlobalDataLogger.instance().addChannel("Target Angle", () -> "" + targetAngle);
+            GlobalDataLogger.instance().addChannel("Forward Target", () -> "" + fwdTarget);
+            GlobalDataLogger.instance().addChannel("Strafe Target", () -> "" + strafeTarget);
         }
         
         public synchronized void setAngle(double angle)
@@ -421,8 +423,21 @@ public class Drivetrain
                 double fwdError = odometry.getForwardDistance() - fwdTarget;
                 double strafeError = odometry.getStrafeDistance() - strafeTarget;
             
-                forward *= -Range.clip(fwdError / 40, -1, 1);
-                strafe *= -Range.clip(strafeError / 40, -1, 1);
+                double fwdGain = 1.0 / 40;
+                double strafeGain = 1.0 / 40;
+                
+                if (forward >= 0.5)
+                {
+                    fwdGain = 1.0 / 70;
+                }
+                
+                if (strafe >= 0.5)
+                {
+                    strafeGain = 1.0 / 70;
+                }
+                
+                forward *= -Range.clip(fwdError * fwdGain, -1, 1);
+                strafe *= -Range.clip(strafeError * strafeGain, -1, 1);
                 
                 if (Math.abs(forward) < 0.05 && Math.abs(strafe) < 0.05 && busy)
                 {

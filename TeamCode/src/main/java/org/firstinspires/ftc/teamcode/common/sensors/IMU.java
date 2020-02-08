@@ -26,8 +26,8 @@ public class IMU
     public static final int PRE_INIT = 0;
     public static final int INITIALIZED = 1;
     public static final int STARTED = 2;
-    public static final int CLOSED = 4;
-    public static final int ERROR = 5;
+    public static final int CLOSED = -2;
+    public static final int ERROR = -1;
     
     //The IMU
     private BNO055IMU imu;
@@ -114,7 +114,7 @@ public class IMU
         public void run()
         {
             log = new Logger("IMU Worker Thread");
-            while (status < CLOSED)
+            while (status > CLOSED)
             {
                 switch (status)
                 {
@@ -180,7 +180,7 @@ public class IMU
                             }
                         }
                         
-                        GlobalDataLogger.instance().addChannel("IMU heading", () -> "" + heading);
+                        GlobalDataLogger.instance().addChannel("IMU heading", () -> "" + getHeading());
                         
                         detailStatus = "Initialized";
                         if (immediateStart) status = STARTED;
@@ -352,7 +352,7 @@ public class IMU
     
     public void stop()
     {
-        if (worker.getStatus() < CLOSED)
+        if (worker.getStatus() > CLOSED)
         {
             if (worker.getStatus() > PRE_INIT) workerThread.interrupt();
             worker.setStatus(CLOSED);

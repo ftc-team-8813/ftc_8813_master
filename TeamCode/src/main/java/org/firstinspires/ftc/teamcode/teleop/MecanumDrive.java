@@ -38,6 +38,7 @@ public class MecanumDrive extends BaseTeleOp
     private long lastTelemetry;
     
     private Profiler profiler;
+    private static final boolean PROFILE = false;
     
     @Override
     public void init()
@@ -45,12 +46,19 @@ public class MecanumDrive extends BaseTeleOp
         super.init();
         buttonHelper = new ButtonHelper(gamepad1);
         robot.newarm.resetArm();
+        
         robot.slide.slidemotor.setPower(0.5);
         // robot.imu.stop();
         // robot.drivetrain.enableAngleCorrection();
+        robot.imu.setImmediateStart(true);
+        robot.imu.initialize();
         robot.drivetrain.enableAsyncLoop();
         
         profiler = new Profiler();
+        
+        // Bulk caching is broken internally for digital channels
+        // robot.leftHub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        // robot.rightHub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
     }
     
     public void start()
@@ -71,8 +79,8 @@ public class MecanumDrive extends BaseTeleOp
     @Override
     public void doLoop()
     {
-        // profiler.start("loop()");
-        // profiler.start("speed");
+        if (PROFILE) profiler.start("loop()");
+        if (PROFILE) profiler.start("speed");
         if (buttonHelper.pressing(ButtonHelper.y))
         {
             if (speed_mode == SPEED_SLOW)
@@ -103,9 +111,9 @@ public class MecanumDrive extends BaseTeleOp
                 }
             }
         }
-        // profiler.end();
-        
-        // profiler.start("intake");
+        if (PROFILE) profiler.end();
+    
+        if (PROFILE) profiler.start("intake");
         double dist = robot.centerRange.getDistance();
         if (gamepad1.right_bumper)
         {
@@ -145,16 +153,16 @@ public class MecanumDrive extends BaseTeleOp
             robot.intake.stopIntake();
             intakeTrigger = false;
         }
-        // profiler.end();
-        
-        // profiler.start("arm");
-        robot.newarm.moveArm(-gamepad2.right_stick_y * .65);
+        if (PROFILE) profiler.end();
+    
+        if (PROFILE) profiler.start("arm");
+        robot.newarm.moveArm(-gamepad2.right_stick_y);
         if (gamepad2.start && !gamepad2.b){
             robot.newarm.resetArm();
         }
-        // profiler.end();
+        if (PROFILE) profiler.end();
     
-        // profiler.start("lift");
+        if (PROFILE) profiler.start("lift");
         if (gamepad2.dpad_down)
         {
             robot.slide.raiseLift(0, -1);
@@ -172,16 +180,16 @@ public class MecanumDrive extends BaseTeleOp
         {
             setSpeedMode(SPEED_FAST);
         }
-        
-        // profiler.end();
-
-        // profiler.start("drivetrain");
+        if (PROFILE) profiler.end();
+    
+        if (PROFILE) profiler.start("drivetrain");
         double[] speeds;
         if (speed_mode == SPEED_SLOW)        speeds = new double[] {0.3, 0.3, 0.15}; // SLOW
         else if (speed_mode == SPEED_FAST)   speeds = new double[] {0.5, 0.5, 0.5 }; // FAST
         else if (speed_mode == SPEED_FASTER) speeds = new double[] {0.8, 0.8, 0.8 }; // FASTER
         else                                 speeds = new double[] {1,   1,   1   }; // LUDICROUS
         
+        if (PROFILE) profiler.start("snap");
         // Snap to 90-degree angles
         if (gamepad1.right_stick_button)
         {
@@ -201,15 +209,18 @@ public class MecanumDrive extends BaseTeleOp
                 robot.drivetrain.disableAngleCorrection();
             }
         }
+        if (PROFILE) profiler.end();
+        if (PROFILE) profiler.start("drive");
 
         robot.drivetrain.drive(-gamepad1.left_stick_y * speeds[0],
                                   gamepad1.left_stick_x * speeds[1],
                                  -gamepad1.right_stick_y * speeds[2]);
-        // profiler.end();
+        if (PROFILE) profiler.end();
+        if (PROFILE) profiler.end();
         // robot.drivetrain.manualLoop(); // Manually update the drivetrain
-
-
-        // profiler.start("claw");
+    
+    
+        if (PROFILE) profiler.start("claw");
         if (gamepad2.a)
         {
             robot.claw.closeClaw();
@@ -222,24 +233,24 @@ public class MecanumDrive extends BaseTeleOp
         {
             robot.claw.setClawUp();
         }
-        // profiler.end();
+        if (PROFILE) profiler.end();
     
     
-        // profiler.start("hook");
+        if (PROFILE) profiler.start("hook");
         if (gamepad2.x){
             robot.foundationhook.moveHookDown();
         }else if (gamepad2.b){
             robot.foundationhook.moveHookUp();
         }
-        // profiler.end();
-
-        // profiler.start("linkage");
+        if (PROFILE) profiler.end();
+    
+        if (PROFILE) profiler.start("linkage");
         if (gamepad1.dpad_up){
             robot.intakelinkage.moveLinkageOut();
         } else if (gamepad1.dpad_down){
             robot.intakelinkage.moveLinkageIn();
         }
-        // profiler.end();
+        if (PROFILE) profiler.end();
         
         if (buttonHelper.pressing(ButtonHelper.back))
         {
@@ -252,9 +263,9 @@ public class MecanumDrive extends BaseTeleOp
                 robot.drivetrain.enableFieldCentric();
             }
         }
-        
-        // profiler.start("telemetry");
-        if (System.currentTimeMillis() - lastTelemetry > 500)
+    
+        if (PROFILE) profiler.start("telemetry");
+        if (System.currentTimeMillis() - lastTelemetry > 750)
         {
             lastTelemetry = System.currentTimeMillis();
             telemetry.addData("Time", Utils.elapsedTime(System.currentTimeMillis() - start));
@@ -264,14 +275,17 @@ public class MecanumDrive extends BaseTeleOp
             {
                 timeTrigger = 1;
                 log.i("1 minute remaining");
+                telemetry.speak("One minute remaining");
             } else if (remaining < 30000 && timeTrigger <= 1)
             {
                 timeTrigger = 2;
                 log.i("30 seconds remaining");
+                telemetry.speak("Thirty seconds remaining");
             } else if (remaining < 10000 && timeTrigger <= 2)
             {
                 timeTrigger = 3;
                 log.i("10 seconds remaining");
+                telemetry.speak("Ten seconds remaining");
             } else if (remaining < 0 && timeTrigger <= 3)
             {
                 timeTrigger = 4;
@@ -279,6 +293,7 @@ public class MecanumDrive extends BaseTeleOp
             }
     
             telemetry.addData("Speed Mode", speed_modes[speed_mode]);
+            telemetry.addData("IMU status", robot.imu.getDetailStatus());
             telemetry.addData("Field Centric", robot.drivetrain.isFieldCentric());
             telemetry.addData("Lift Position", robot.slide.getCurrentPos());
             telemetry.addData("Bottom limit", robot.bottomlimit.pressed());
@@ -287,9 +302,9 @@ public class MecanumDrive extends BaseTeleOp
             telemetry.addData("Claw Pos", robot.newarm.motorArm.getCurrentPosition());
             telemetry.addData("Heading", robot.imu.getHeading());
         }
-        // profiler.end();
+        if (PROFILE) profiler.end();
         
-        // profiler.finish();
+        if (PROFILE) profiler.finish();
     
         updateCount++;
         if (System.currentTimeMillis() - lastLog > 1000)

@@ -40,6 +40,7 @@ public class MotorDriver extends OpMode
         }
         chooser.choose();
         motor = hardwareMap.dcMotor.get((String)chooser.getSelected());
+        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     @Override

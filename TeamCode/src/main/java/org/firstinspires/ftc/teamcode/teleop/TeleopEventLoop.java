@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.teleop.event.listener.AxisEventListener;
 import org.firstinspires.ftc.teamcode.teleop.event.listener.ButtonEventListener;
 import org.firstinspires.ftc.teamcode.teleop.event.listener.EventListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,13 +33,26 @@ public class TeleopEventLoop
     
     public void subscribe(ButtonEventListener listener, String... buttons)
     {
+        EventListenerHandler<ButtonEventListener> handler = new EventListenerHandler<>(listener, buttons);
+        gamepadHandler.buttonListeners.add(handler);
+    }
     
+    public void subscribe(AxisEventListener listener, String... axes)
+    {
+        EventListenerHandler<AxisEventListener> handler = new EventListenerHandler<>(listener, axes);
+        gamepadHandler.axisListeners.add(handler);
     }
     
     private class GamepadEventHandler
     {
         private List<EventListenerHandler<ButtonEventListener>> buttonListeners;
         private List<EventListenerHandler<AxisEventListener>> axisListeners;
+        
+        GamepadEventHandler()
+        {
+            buttonListeners = new ArrayList<>();
+            axisListeners = new ArrayList<>();
+        }
         
         public void processEvent(GamepadEvent ev)
         {

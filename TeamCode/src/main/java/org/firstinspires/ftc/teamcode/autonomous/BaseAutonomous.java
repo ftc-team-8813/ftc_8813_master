@@ -203,9 +203,12 @@ public abstract class BaseAutonomous extends LinearOpMode
 
             if (!opModeIsActive()) return;
             Logger.startTimer();
+            long start = System.currentTimeMillis();
             // Run the robot code
             run();
             log.i("Finished main robot thread; waiting for OpMode to finish");
+            telemetry.addData("Completion Time", (double)(System.currentTimeMillis() - start) / 1000);
+            telemetry.update();
             interrupterThread.join();
         }
         catch (InterruptedException | RuntimeException | IOException | Error e)

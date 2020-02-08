@@ -28,6 +28,7 @@ import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataStorage;
 import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
+import org.firstinspires.ftc.teamcode.common.util.Persistent;
 import org.firstinspires.ftc.teamcode.common.util.RevHubLED;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
 
@@ -71,6 +72,8 @@ public class Robot
     // Other
     public final Config config;
     public final HardwareMap hardwareMap;
+    
+    public final LynxModule leftHub, rightHub;
     
     public final RevHubLED leftLed, rightLed;
 
@@ -129,7 +132,9 @@ public class Robot
         newarm = new MotorArm(motorArm, backSwitch);
 
 
-        imu = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+        IMU imu_ = (IMU)Persistent.get("imu");
+        if (imu_ == null) imu_ = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+        imu = imu_;
         
         // fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");
         // strafeEnc = hardwareMap.get(AMSEncoder.class, "strafe enc");
@@ -171,8 +176,10 @@ public class Robot
 
         
         // Other
-        leftLed = new RevHubLED(hardwareMap.get(LynxModule.class, "Expansion Hub left"));
-        rightLed = new RevHubLED(hardwareMap.get(LynxModule.class, "Expansion Hub right"));
+        leftHub = hardwareMap.get(LynxModule.class, "Expansion Hub left");
+        rightHub = hardwareMap.get(LynxModule.class, "Expansion Hub right");
+        leftLed = new RevHubLED(leftHub);
+        rightLed = new RevHubLED(rightHub);
         
         // Reverse motors as necessary
         
