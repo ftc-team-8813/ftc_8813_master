@@ -282,13 +282,13 @@ public class RedStoneAuto extends BaseAutonomous
         Thread.sleep(100);
 
         // Pick block
-        pickBlock(0, 30, 0, -13);
+        pickBlock(0, 30, 0, 13);
 
         double[] offs = drivetrain.updateTarget();
         log.d("Sense distance: %d", senseDist);
 
         // Strafe across
-        drivetrain.move(0, .6, 0, 410 + senseDist);
+        drivetrain.move(0, .6, 0, 425 + senseDist);
         // Now it is "pretty much across"
         robot.intakelinkage.moveLinkageIn();
         robot.foundationhook.moveHookUp();
@@ -302,7 +302,7 @@ public class RedStoneAuto extends BaseAutonomous
         robot.foundationhook.moveHookDown();
         Thread.sleep(500);
 
-        drivetrain.move(-.3,0,0,10);
+        drivetrain.move(-.3,0,0,7);
         drivetrain.setAngleInfluence(0.3);
         drivetrain.setTargetAngle(-95);
         drivetrain.drive(-0.3, 0.1, 0);
