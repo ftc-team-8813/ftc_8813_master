@@ -15,7 +15,7 @@ public class DummyAutoFoundationBlueTriangle extends BaseAutonomous
         robot.intakelinkage.moveLinkageIn();
         robot.imu.setImmediateStart(true);
         robot.imu.initialize();
-        robot.foundationhook.moveHookUp();
+        robot.foundationhook.moveHookFullDown();
     }
 
     @Override
@@ -23,41 +23,46 @@ public class DummyAutoFoundationBlueTriangle extends BaseAutonomous
     {
         Robot robot = Robot.instance();
 
-        robot.drivetrain.oldMove(-0.5, 0, 0, tickToInches(17));
+        robot.foundationhook.moveHookUp();
+
+        robot.drivetrain.oldMove(0.5, 0, 0, tickToInches(17));
         robot.drivetrain.stop();
 
-        robot.drivetrain.oldMove(0, 0.3, 0, tickToInches(23));
+        robot.drivetrain.oldMove(0, -0.3, 0, tickToInches(20));
         robot.drivetrain.stop();
 
-        robot.drivetrain.oldMove(-0.2, 0, 0, tickToInches(6));
+        robot.drivetrain.oldMove(0.2, 0, 0, tickToInches(6));
         robot.drivetrain.stop();
 
         robot.foundationhook.moveHookDown();
         Thread.sleep(2000);
 
-        robot.drivetrain.oldMove(0.2, 0, 0, tickToInches(31));
+        robot.drivetrain.oldMove(-0.2, 0, 0, tickToInches(20));
         robot.drivetrain.stop();
+
+        robot.drivetrain.setAngleInfluence(.3);
+        robot.drivetrain.setTargetAngle(90);
+        Thread.sleep(3000);
+        robot.drivetrain.setAngleInfluence(0);
+        Thread.sleep(40);
 
         robot.foundationhook.moveHookUp();
 
-        robot.drivetrain.oldMove(0, -0.6, 0, tickToInches(28));
-        robot.drivetrain.stop();
+        robot.drivetrain.oldMove(.2,0,0, tickToInches(15));
 
-        robot.drivetrain.oldMove(-0.3, 0, 0, tickToInches(15));
-
-        robot.drivetrain.oldMove(0, 0.4, 0, tickToInches(30));
+        robot.drivetrain.oldMove(-.2,0, 0, tickToInches(8));
 
         robot.intakelinkage.moveLinkage(OUT, OUT);
         
-        //robot.drivetrain.oldMove(.3, 0, 0, tickToInches(27));
+        robot.drivetrain.oldMove(0,-.3,0, tickToInches(10));
 
-        robot.drivetrain.oldMove(0, -0.4, 0, tickToInches(27));
+        Thread.sleep(6000);
 
-        robot.drivetrain.oldMove(0,0,0.2, tickToInches(2));
-        
-        robot.drivetrain.oldMove(0, 0.2, 0, tickToInches(16)); //WALL PARK
+        robot.drivetrain.oldMove(-.3, 0, 0, tickToInches(30));
 
-        //robot.drivetrain.oldMove(0,-0.3,0,tickToInches(4)); //SKYBRIDGE PARK
+        robot.drivetrain.oldMove(0,-.2,0,tickToInches(10));
+
+        //robot.drivetrain.oldMove(0,-0.3,0,tickToInches(24)); //SKYBRIDGE PARK
 
         /*robot.drivetrain.move(-0.5, 0, 0, tickToInches(25));
         robot.drivetrain.stop();

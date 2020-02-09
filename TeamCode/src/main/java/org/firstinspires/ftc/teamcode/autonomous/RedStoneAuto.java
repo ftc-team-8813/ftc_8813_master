@@ -14,6 +14,8 @@ import org.firstinspires.ftc.teamcode.common.sensors.vision.Webcam;
 import org.firstinspires.ftc.teamcode.common.sensors.vision.WebcamStream;
 import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
 import org.firstinspires.ftc.teamcode.common.util.Logger;
+import org.firstinspires.ftc.teamcode.common.util.Persistent;
+import org.firstinspires.ftc.teamcode.common.util.Profiler;
 import org.firstinspires.ftc.teamcode.common.util.Utils;
 import org.firstinspires.ftc.teamcode.common.util.Vlogger;
 import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
@@ -23,22 +25,34 @@ import java.util.concurrent.TimeUnit;
 import static org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage.MED;
 import static org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage.OUT;
 
-@Autonomous(name="Red Stones")
+/*
+    IDEAS BIN
+
+    Curve turn to pick up block
+    Enable field centric drive
+
+ */
+
+
+@Autonomous(name="Red Stones-StoneAuto")
 public class RedStoneAuto extends BaseAutonomous
 {
     private Robot robot;
     private WebcamStream stream;
     private SkystoneDetector detector;
     private Drivetrain drivetrain;
-    
+
     private Logger log = new Logger("Stone Autonomous");
-    
+
     private static final int LEFT_RANGE = 1;
     private static final int RIGHT_RANGE = 2;
-    
+
+    private Profiler profiler;
+
     @Override
     public void initialize() throws InterruptedException
     {
+        Robot.instance().foundationhook.moveHookFullDown();
         Robot.instance().intakelinkage.moveLinkageIn();
         Robot.instance().claw.openClaw();
         CameraStream rawStream = getCameraStream();
@@ -52,11 +66,15 @@ public class RedStoneAuto extends BaseAutonomous
         }
         // ExposureControl control = stream.getInternalCamera().getControl(ExposureControl.class);
         // control.setMode(ExposureControl.Mode.Manual);
-        
+
         Robot.instance().newarm.resetArm();
         Robot.instance().imu.initialize();
         Robot.instance().imu.waitForInit(telemetry);
         Robot.instance().imu.start();
+        Persistent.put("imu", Robot.instance().imu);
+
+        profiler = new Profiler();
+
         /*
         GlobalThreadPool.instance().start(() ->
         {
@@ -65,18 +83,20 @@ public class RedStoneAuto extends BaseAutonomous
                 try
                 {
                     telemetry.addData("IMU heading", robot.imu.getHeading());
+                    log.d("IMU heading", robot.imu.getHeading());
                     telemetry.update();
-                    Thread.sleep(300);
+                    Thread.sleep(1000);
                 }
                 catch (InterruptedException e)
                 {
+                    log.d("Logger interrupted!");
                     break;
                 }
             }
         });
          */
     }
-    
+
     private void pickBlock(int turn, int strafe_dist, int fwd_dist, int back_dist) throws InterruptedException
     {
         int off = 0;
@@ -86,9 +106,9 @@ public class RedStoneAuto extends BaseAutonomous
         }
         // drivetrain.move(0.3, 0, 0, 5);
         //
-        drivetrain.moveTimeout(0, 0.52, 0, strafe_dist, 300);
+        drivetrain.moveTimeout(0, 0.35, 0, strafe_dist, 400);
         Thread.sleep(100);
-        
+
         // drivetrain.move(0.4, 0, 0, strafe_dist);
         /*
         turnToAngle(-turn, 0.4);
@@ -98,21 +118,29 @@ public class RedStoneAuto extends BaseAutonomous
         Thread.sleep(400);
          */
         robot.intakelinkage.moveLinkage(OUT, MED);
-        Thread.sleep(250);
-        robot.intake.collectStone(0.42);
-        drivetrain.drive(0.32, 0, 0);
+        Thread.sleep(350);
+        robot.intake.collectStone(0.55);
+        drivetrain.drive(0.4, 0, 0);
         Thread.sleep(750);
         robot.intakelinkage.moveLinkage(OUT, OUT);
         // curveTurn(0.2, 800);
-        Thread.sleep(500);
+        Thread.sleep(400);
         drivetrain.stop();
+        Thread.sleep(600);
         robot.intake.stopIntake();
         // turnToAngle(0, 0.3);
         Thread.sleep(100);
-        drivetrain.move(0.42, 0, 0, -back_dist  - 8);
+        drivetrain.move(0.42, 0, 0, -back_dist  - 7);
+        robot.intake.collectStone(.55);
+        Thread.sleep(400);
+        robot.intake.stopIntake();
+        robot.claw.closeClaw();
+        //  Thread.sleep(400);
+        //  robot.intake.stopIntake();
+        //  robot.claw.closeClaw();
         // drivetrain.move(0, 0, 0.6, -((int)robot.imu.getHeading()) + 50);
     }
-    
+
     private void pickBlock2(int turn, int strafe_dist, int fwd_dist, int back_dist) throws InterruptedException
     {
         int off = 0;
@@ -120,7 +148,7 @@ public class RedStoneAuto extends BaseAutonomous
         {
             off = detector.getArea().x + detector.getArea().width/2 - 320;
         }
-        
+
         drivetrain.move(0, 0.52, 0, off - 75 - strafe_dist);
         // drivetrain.move(0.4, 0, 0, strafe_dist);
         /*
@@ -142,27 +170,27 @@ public class RedStoneAuto extends BaseAutonomous
         robot.intake.stopIntake();
         turnToAngle(0, 0.32);
         Thread.sleep(100);
-        drivetrain.move(0.42, 0, 0, -back_dist  - 2);
-        
+        drivetrain.move(0.25, 0, 0, -back_dist);
+        Thread.sleep(500);
+
     }
-    
+
     private int senseBlock(int direction) throws InterruptedException
     {
         detector.enable();
         stream.getInternalCamera().getControl(ExposureControl.class).setMode(ExposureControl.Mode.Manual);
         int startPos = drivetrain.rightBack.getCurrentPosition();
-        drivetrain.drive(0, -0.32, 0);
-        final double SPD_FAST   = 0.35;
-        final double SPD_NORMAL = 0.25;
+        drivetrain.drive(0, 0.32, 0);
+        final double SPD_NORMAL = 0.14;
         final double SPD_SLOW   = 0.12;
         final double SPD_EXSLOW = 0.05;
         double speed = 0;
-        
+
         while (drivetrain.rightBack.getCurrentPosition() - startPos > -1000)
         {
             if (detector.found())
             {
-                if (detector.getArea().width > 240 && detector.getCenter().y < 275)
+                if (detector.getArea().width > 240 && detector.getCenter().y < 300)
                 {
                     drivetrain.drive(SPD_SLOW, 0, 0);
                 }
@@ -172,98 +200,29 @@ public class RedStoneAuto extends BaseAutonomous
                 }
                 else if (detector.getArea().width > 120)
                 {
-                    speed -= (speed - SPD_SLOW * direction) * 0.6;
+                    speed = SPD_SLOW * direction;
                     drivetrain.drive(0, speed, 0);
                 }
                 else
                 {
-                    speed -= (speed - SPD_NORMAL * direction) * 0.6;
+                    speed = SPD_NORMAL * direction;
                     drivetrain.drive(0, speed, 0);
                 }
             }
             else
             {
-                drivetrain.drive(0, SPD_FAST * direction, 0);
+                drivetrain.drive(0, SPD_NORMAL * direction, 0);
             }
             Thread.sleep(1);
         }
-        
+
         drivetrain.stop();
         detector.disable();
         Thread.sleep(100);
         double[] delta = drivetrain.updateTarget();
         return (int)delta[1];
     }
-    
-    private void moveToRange(double dist, double speed, int sensor) throws InterruptedException
-    {
-        double origSpeed = speed;
-        drivetrain.drive(speed, 0, 0);
-        RangeSensor sens;
-        if (sensor == LEFT_RANGE) sens = robot.centerRange;
-        else sens = robot.centerRange;
-        
-        double val = sens.getDistance();
-        if (val == 65535)
-        {
-            log.f("Distance sensor not plugged in");
-            telemetry.addData("FAIL", "The robot is blind--the distance sensor isn't plugged in!");
-            telemetry.update();
-            requestOpModeStop();
-            return;
-        }
-        else if (val >= 8190)
-        {
-            log.f("Distance sensor reads 8192");
-            telemetry.addData("FAIL", "The robot is blind--the distance sensor can't see anything");
-            telemetry.update();
-            requestOpModeStop();
-            return;
-        }
-        
-        // dist += 110; // Center range sensor offset
-        int prev_enc = 0;
-        double prev_off = Double.POSITIVE_INFINITY;
-        int count = 0;
-        long lastIter = System.currentTimeMillis();
-        while (true)
-        {
-            double range = sens.getDistance();
-            double off = (range - dist) * Math.signum(origSpeed);
-            if (off <= 0 && off > -50)
-            {
-                drivetrain.stop();
-                int enc = drivetrain.rightBack.getCurrentPosition();
-                // log.v("Overshoot correction: overshoot=%.0f, speed=%.3f, enc delta=%d", -off, speed, enc - prev_enc);
-                if (Math.abs(enc - prev_enc) < 5 && off != prev_off) break;
-                prev_enc = enc;
-                prev_off = off;
-            }
-            else if (off < 0)
-            {
-                speed = origSpeed * (off / 150);
-                if (speed < -0.05) drivetrain.drive(speed, 0, 0);
-            }
-            else if (off < 300)
-            {
-                speed = origSpeed * (off / 300);
-                if (speed > 0.1) drivetrain.drive(speed, 0, 0);
-                else drivetrain.drive(0.12, 0, 0);
-            }
-            count++;
-            if (System.currentTimeMillis() - lastIter > 1000)
-            {
-                lastIter = System.currentTimeMillis();
-                log.d("Loops per second: %d", count);
-                count = 0;
-            }
-            Thread.sleep(1);
-        }
-        drivetrain.stop();
-        log.i("Reached a distance of %.0f mm (%.0f error from %.0f)",
-                sens.getDistance(), Math.abs(dist - sens.getDistance()), dist);
-    }
-    
+
     private void turnToAngle(double angle, double speed) throws InterruptedException
     {
         IMU imu = robot.imu;
@@ -286,17 +245,18 @@ public class RedStoneAuto extends BaseAutonomous
         }
         drivetrain.stop();
     }
-    
+
     private void curveTurn(double speed, long msecs) throws InterruptedException
     {
         drivetrain.drive(speed*1.4, 0, -speed*0.9);
         Thread.sleep(msecs);
         drivetrain.stop();
     }
-    
+
     @Override
     public void run() throws InterruptedException
     {
+        profiler.start("run");
         /////////////////
         // Initialization
         // Robot
@@ -311,66 +271,63 @@ public class RedStoneAuto extends BaseAutonomous
         stream.addModifier(detector);
         stream.addListener(new Vlogger("videos/" + Utils.getTimestamp() + ".avi",  640, 480, 10), 1001);
         drivetrain.enableAngleCorrection();
-        
+        drivetrain.enableFieldCentric();
+
         // Initial forward
-        drivetrain.move(0.4, 0, 0, 95);
+        drivetrain.move(0.37, 0, 0, 95);
         Thread.sleep(300);
-        
+
         // Sense block
-        int senseDist = senseBlock(1);
+        int senseDist = senseBlock(-1);
         Thread.sleep(100);
-        
+
         // Pick block
-        pickBlock(0, -29, 0, 20);
-        
+        pickBlock(0, 30, 0, -13);
+
         double[] offs = drivetrain.updateTarget();
         log.d("Sense distance: %d", senseDist);
-        
-        // Collect stone
-        //   robot.intake.collectStone(0.42);
-        //   Thread.sleep(300);
-        //   robot.intake.stopIntake();
-        
+
         // Strafe across
-        drivetrain.move(0, .72, 0, 250 - senseDist);
-        
-        // Output block
-        robot.intake.releaseStone(0.45);
+        drivetrain.move(0, .6, 0, 410 + senseDist);
+        // Now it is "pretty much across"
+        robot.intakelinkage.moveLinkageIn();
+        robot.foundationhook.moveHookUp();
+        robot.slide.raiseLiftAsync(0.7, 800);
+        Thread.sleep(1000);
+        // Now it is completely across and adjusted
+        drivetrain.drive(0.3, 0, 0);
         Thread.sleep(700);
-        robot.intake.stopIntake();
-        
-        // Re-line up
-        drivetrain.move(0, -0.72, 0, 220); // Strafe back
-        drivetrain.move(0.45, 0, 0, 10);  // Forward
         drivetrain.stop();
-        
-        // Sense block
-        senseDist = senseBlock(-1);
-        
-        // Pick block
-        pickBlock(0, -22, 0, 20);
-        offs = drivetrain.updateTarget();
-        
-        // Collect stone
-        //   robot.intake.collectStone(0.42);
-        //   Thread.sleep(300);
-        //   robot.intake.stopIntake();
-        
-        // Move over
-        drivetrain.move(0, .82, 0, 350 + senseDist);
-        
-        // Output block
-        robot.intake.collectStone(-0.45);
+
+        robot.foundationhook.moveHookDown();
+        Thread.sleep(500);
+
+        drivetrain.move(-.3,0,0,10);
+        drivetrain.setAngleInfluence(0.3);
+        drivetrain.setTargetAngle(-95);
+        drivetrain.drive(-0.3, 0.1, 0);
+        Thread.sleep(1200);
+        drivetrain.stop();
+
+        robot.newarm.moveArmTo(1, 650);
+        robot.slide.raiseLift(0, -1);
         Thread.sleep(700);
-        robot.intake.stopIntake();
-        
-        // Park
-        drivetrain.move(0, .6, 0, -100);
+        robot.claw.openClaw();
+        robot.slide.raiseLiftAsync(.5,250);
+        robot.foundationhook.moveHookUp();
+        Thread.sleep(500);
+        drivetrain.drive(0, 0.5, 0);
+        Thread.sleep(350);
+        robot.slide.raiseLift(0,-1);
+        drivetrain.move(-0.1, -0.3, 0, 238);
+        Thread.sleep(250);
+        drivetrain.drive(-0.05, 0, 0);
+        Thread.sleep(1000);
     }
-    
+
     @Override
     public void finish() throws InterruptedException
     {
-    
+
     }
 }

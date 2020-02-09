@@ -13,9 +13,9 @@ public class DummyAutoFoundationRedTriangle extends BaseAutonomous
     public void initialize(){
         Robot robot = Robot.instance();
         robot.intakelinkage.moveLinkageIn();
-        robot.foundationhook.moveHookUp();
         robot.imu.setImmediateStart(true);
         robot.imu.initialize();
+        robot.foundationhook.moveHookFullDown();
     }
 
     @Override
@@ -23,73 +23,73 @@ public class DummyAutoFoundationRedTriangle extends BaseAutonomous
     {
         Robot robot = Robot.instance();
 
-        robot.drivetrain.oldMove(-0.5, 0, 0, tickToInches(20));
+        robot.foundationhook.moveHookUp();
+
+        robot.drivetrain.oldMove(0.5, 0, 0, tickToInches(17));
         robot.drivetrain.stop();
 
-        robot.drivetrain.oldMove(0, -0.3, 0, tickToInches(27));
+        robot.drivetrain.oldMove(0, 0.3, 0, tickToInches(19));
         robot.drivetrain.stop();
 
-        robot.drivetrain.oldMove(-0.2, 0, 0, tickToInches(5));
+        robot.drivetrain.oldMove(0.2, 0, 0, tickToInches(6));
         robot.drivetrain.stop();
 
         robot.foundationhook.moveHookDown();
         Thread.sleep(2000);
 
-        robot.drivetrain.oldMove(0.2, 0, 0, tickToInches(31));
+        robot.drivetrain.oldMove(-0.2, 0, 0, tickToInches(20));
         robot.drivetrain.stop();
+
+        robot.drivetrain.setAngleInfluence(.4);
+        robot.drivetrain.setTargetAngle(-95);
+        Thread.sleep(3000);
+        robot.drivetrain.setAngleInfluence(0);
+        Thread.sleep(40);
 
         robot.foundationhook.moveHookUp();
 
-        robot.drivetrain.oldMove(0, 0.6, 0, tickToInches(27));
-        robot.drivetrain.stop();
-        
-        Thread.sleep(10000);
+        robot.drivetrain.oldMove(.2,0,0, tickToInches(15));
 
-        robot.drivetrain.oldMove(-0.3, 0, 0, tickToInches(10));
+        robot.drivetrain.oldMove(-.2,0,0, tickToInches(8));
 
-        robot.drivetrain.oldMove(0, -0.4, 0, tickToInches(15));
-
-        robot.drivetrain.oldMove(0, 0.4, 0, tickToInches(28));
-
-        robot.drivetrain.oldMove(.2,0,0,4);
-        
         robot.intakelinkage.moveLinkage(OUT, OUT);
 
-        robot.drivetrain.oldMove(0,0,-0.2, tickToInches(2));
+        robot.drivetrain.oldMove(0,.3,0, tickToInches(10));
 
-        //robot.drivetrain.oldMove(0,-0.2,0,tickToInches(16)); //WALL PARK
+        Thread.sleep(6000);
 
-        robot.drivetrain.oldMove(0, 0.4, 0, tickToInches(6)); //SKYBRIDGE PARK
+        robot.drivetrain.oldMove(-.3, 0, 0, tickToInches(34));
 
-        /*obot.foundationhook.moveHookDown();
-        Thread.sleep(1000);
-        robot.foundationhook.moveHookUp();
+        robot.drivetrain.oldMove(0,.2,0, tickToInches(10));//WALL PARK
 
+        //robot.drivetrain.oldMove(0,-0.3,0,tickToInches(4)); //SKYBRIDGE PARK
 
-        robot.drivetrain.move(-0.5, 0, 0, tickToInches(25));
+        /*robot.drivetrain.move(-0.5, 0, 0, tickToInches(25));
+        robot.drivetrain.stop();
 
-        robot.drivetrain.oldMove(0, -0.3, 0, tickToInches(28));
+        robot.drivetrain.oldMove(0, 0.3, 0, tickToInches(21));
+        robot.drivetrain.stop();
 
-        robot.drivetrain.move(-0.2, 0, 0, tickToInches(4));
+        robot.drivetrain.move(-0.2, 0, 0, tickToInches(2));
+        robot.drivetrain.stop();
 
         robot.foundationhook.moveHookDown();
         Thread.sleep(2000);
 
-        robot.drivetrain.move(0.25, 0, 0, tickToInches(35));
-        Thread.sleep(1);
-
-        robot.drivetrain.oldMove( 0, 0.1, 0, tickToInches(3));
+        robot.drivetrain.move(0.25, 0, 0, tickToInches(32.5));
+        robot.drivetrain.stop();
 
         robot.foundationhook.moveHookUp();
+        Thread.sleep(2000);
 
         robot.drivetrain.oldMove(0, 0.6, 0, tickToInches(30));
-        Thread.sleep(1000);
+        robot.drivetrain.stop();
 
         robot.drivetrain.move(-0.3, 0, 0, tickToInches(16));
 
-        robot.drivetrain.oldMove(0, -0.4, 0, tickToInches(18));
+        robot.drivetrain.oldMove(0, 0.4, 0, tickToInches(18));
 
-        robot.drivetrain.move(0, 0.3, 0, tickToInches(25));*/
+        robot.drivetrain.move(0, -0.3, 0, tickToInches(25));*/
     }
 
     public int tickToInches(double dist){
