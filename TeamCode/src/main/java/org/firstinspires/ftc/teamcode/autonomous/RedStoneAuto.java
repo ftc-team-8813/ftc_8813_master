@@ -123,6 +123,7 @@ public class RedStoneAuto extends BaseAutonomous
         drivetrain.drive(0.4, 0, 0);
         Thread.sleep(750);
         robot.intakelinkage.moveLinkage(OUT, OUT);
+        //robot.intake.collectStone(0.55);
         // curveTurn(0.2, 800);
         Thread.sleep(400);
         drivetrain.stop();
@@ -274,7 +275,7 @@ public class RedStoneAuto extends BaseAutonomous
         drivetrain.enableFieldCentric();
 
         // Initial forward
-        drivetrain.move(0.37, 0, 0, 95);
+        drivetrain.move(0.37, 0, 0, 90);
         Thread.sleep(300);
 
         // Sense block
@@ -288,41 +289,42 @@ public class RedStoneAuto extends BaseAutonomous
         log.d("Sense distance: %d", senseDist);
 
         // Strafe across
-        drivetrain.move(0, .6, 0, 425 + senseDist);
+        drivetrain.move(0, .6, 0, 350 - senseDist);
         // Now it is "pretty much across"
         robot.intakelinkage.moveLinkageIn();
+        robot.foundationhook.moveHookFullDown();
         robot.foundationhook.moveHookUp();
         robot.slide.raiseLiftAsync(0.7, 800);
-        Thread.sleep(1000);
+        Thread.sleep(700);
         // Now it is completely across and adjusted
         drivetrain.drive(0.3, 0, 0);
-        Thread.sleep(700);
+        Thread.sleep(900);
         drivetrain.stop();
 
         robot.foundationhook.moveHookDown();
-        Thread.sleep(500);
+        Thread.sleep(400);
 
-        drivetrain.move(-.3,0,0,7);
+        drivetrain.move(-.3,0,0,3);
         drivetrain.setAngleInfluence(0.3);
         drivetrain.setTargetAngle(-95);
         drivetrain.drive(-0.3, 0.1, 0);
-        Thread.sleep(1200);
+        Thread.sleep(400);
         drivetrain.stop();
 
         robot.newarm.moveArmTo(1, 650);
         robot.slide.raiseLift(0, -1);
-        Thread.sleep(700);
+        Thread.sleep(400);
         robot.claw.openClaw();
-        robot.slide.raiseLiftAsync(.5,250);
+        robot.slide.raiseLiftAsync(.8,500);
         robot.foundationhook.moveHookUp();
-        Thread.sleep(500);
-        drivetrain.drive(0, 0.5, 0);
-        Thread.sleep(350);
+        drivetrain.drive(0,.5,0);
+        Thread.sleep(400);
         robot.slide.raiseLift(0,-1);
-        drivetrain.move(-0.1, -0.3, 0, 238);
+        drivetrain.move(-0.1, -0.45, 0, 235);
         Thread.sleep(250);
-        drivetrain.drive(-0.05, 0, 0);
+        drivetrain.drive(0, .1, 0);
         Thread.sleep(1000);
+        drivetrain.stop();
     }
 
     @Override

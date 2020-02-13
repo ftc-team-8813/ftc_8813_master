@@ -34,7 +34,7 @@ import static org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage.OUT;
  */
 
 
-@Autonomous(name="Blue Stones")
+@Autonomous(name="Blue Stone-Stone Auto")
 public class StoneAuto extends BaseAutonomous
 {
     private Robot robot;
@@ -123,6 +123,7 @@ public class StoneAuto extends BaseAutonomous
         drivetrain.drive(0.4, 0, 0);
         Thread.sleep(750);
         robot.intakelinkage.moveLinkage(OUT, OUT);
+        //robot.intake.collectStone(0.55);
         // curveTurn(0.2, 800);
         Thread.sleep(400);
         drivetrain.stop();
@@ -130,12 +131,14 @@ public class StoneAuto extends BaseAutonomous
         robot.intake.stopIntake();
         // turnToAngle(0, 0.3);
         Thread.sleep(100);
-        robot.claw.closeClaw();
         drivetrain.move(0.42, 0, 0, -back_dist  - 7);
-      //  robot.intake.collectStone(.4);
-      //  Thread.sleep(400);
-      //  robot.intake.stopIntake();
-      //  robot.claw.closeClaw();
+        robot.intake.collectStone(.55);
+        Thread.sleep(400);
+        robot.intake.stopIntake();
+        robot.claw.closeClaw();
+        //  Thread.sleep(400);
+        //  robot.intake.stopIntake();
+        //  robot.claw.closeClaw();
         // drivetrain.move(0, 0, 0.6, -((int)robot.imu.getHeading()) + 50);
     }
     
@@ -183,8 +186,8 @@ public class StoneAuto extends BaseAutonomous
         final double SPD_SLOW   = 0.12;
         final double SPD_EXSLOW = 0.05;
         double speed = 0;
-    
-        while (drivetrain.rightBack.getCurrentPosition() - startPos > -1000)
+
+        while (Math.abs(drivetrain.rightBack.getCurrentPosition() - startPos) < 1000)
         {
             if (detector.found())
             {
@@ -262,8 +265,7 @@ public class StoneAuto extends BaseAutonomous
         robot.intakelinkage.moveLinkageOut();
         // Drivetrain
         drivetrain = robot.drivetrain;
-        // Vision
-        detector = new SkystoneDetector();
+        // Vision        detector = new SkystoneDetector();
         detector.disable(); // Disable until we start detecting
         stream.addListener(detector);
         stream.addModifier(detector);
@@ -276,51 +278,54 @@ public class StoneAuto extends BaseAutonomous
         Thread.sleep(300);
         
         // Sense block
-        int senseDist = senseBlock(-1);
+        int senseDist = senseBlock(1);
         Thread.sleep(100);
         
         // Pick block
-        pickBlock(0, 30, 0, -10);
+        pickBlock(0, 22, 0, 10);
         
         double[] offs = drivetrain.updateTarget();
         log.d("Sense distance: %d", senseDist);
         
         // Strafe across
-        drivetrain.move(0, .6, 0, -420 - senseDist);
+        drivetrain.move(0, .6, 0, -340 - senseDist);
         // Now it is "pretty much across"
         robot.intakelinkage.moveLinkageIn();
+        robot.foundationhook.moveHookFullDown();
         robot.foundationhook.moveHookUp();
         robot.slide.raiseLiftAsync(0.7, 800);
         Thread.sleep(1000);
         // Now it is completely across and adjusted
         drivetrain.drive(0.3, 0, 0);
-        Thread.sleep(600);
+        Thread.sleep(850);
         drivetrain.stop();
-        
+
         robot.foundationhook.moveHookDown();
-        Thread.sleep(500);
-        
-        drivetrain.move(-.3,0,0,7);
+        Thread.sleep(400);
+
+        drivetrain.move(-.3,0,0,13);
         drivetrain.setAngleInfluence(0.3);
-        drivetrain.setTargetAngle(90);
+        drivetrain.setTargetAngle(95);
         drivetrain.drive(-0.3, 0.1, 0);
-        Thread.sleep(1200);
+        Thread.sleep(400);
         drivetrain.stop();
         
         robot.newarm.moveArmTo(1, 650);
         robot.slide.raiseLift(0, -1);
-        Thread.sleep(700);
+        Thread.sleep(400);
         robot.claw.openClaw();
-        robot.slide.raiseLiftAsync(.5,250);
+        robot.slide.raiseLiftAsync(.8,500);
         robot.foundationhook.moveHookUp();
-        Thread.sleep(500);
         drivetrain.drive(0, -0.5, 0);
-        Thread.sleep(350);
+        Thread.sleep(400);
         robot.slide.raiseLift(0,-1);
-        drivetrain.move(0.1, 0.3, 0, 220);
-        Thread.sleep(250);
-        drivetrain.drive(0.05, 0, 0);
-        Thread.sleep(1000);
+        drivetrain.move(-0.17, 0.45, 0, 210);
+        Thread.sleep(500);
+    //    drivetrain.stop();
+    //    robot.newarm.resetArm();
+        drivetrain.drive(0, -0.1, 0);
+        Thread.sleep(500);
+        drivetrain.stop();
     }
     
     @Override
