@@ -265,7 +265,8 @@ public class StoneAuto extends BaseAutonomous
         robot.intakelinkage.moveLinkageOut();
         // Drivetrain
         drivetrain = robot.drivetrain;
-        // Vision        detector = new SkystoneDetector();
+        // Vision
+        detector = new SkystoneDetector();
         detector.disable(); // Disable until we start detecting
         stream.addListener(detector);
         stream.addModifier(detector);

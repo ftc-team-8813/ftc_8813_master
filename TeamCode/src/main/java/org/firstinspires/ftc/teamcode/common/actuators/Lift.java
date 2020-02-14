@@ -58,7 +58,14 @@ public class Lift {
             if (!slidemotor.isHolding()) {
                 slidemotor.getMotor().setPower(0.0001);
                 slidemotor.setPower(0.6);
-                slidemotor.hold((int)(slidemotor.getCurrentPosition() * 1.024) + 70);
+                if (bottomswitch.pressed())
+                {
+                    slidemotor.hold(slidemotor.getCurrentPosition());
+                }
+                else
+                {
+                    slidemotor.hold((int) (slidemotor.getCurrentPosition() * 1.024) + 70);
+                }
             }
         }
     }

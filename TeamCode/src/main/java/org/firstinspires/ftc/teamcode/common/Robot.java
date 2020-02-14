@@ -133,7 +133,7 @@ public class Robot
 
 
         IMU imu_ = (IMU)Persistent.get("imu");
-        if (imu_ == null) imu_ = new IMU(hardwareMap.get(BNO055IMU.class, "imu"));
+        if (imu_ == null) imu_ = new IMU(hardwareMap.get(BNO055IMU.class, "imu 1"));
         imu = imu_;
         
         // fwdEnc = hardwareMap.get(AMSEncoder.class, "fwd enc");

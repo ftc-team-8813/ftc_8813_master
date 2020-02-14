@@ -156,7 +156,7 @@ public class MecanumDrive extends BaseTeleOp
         if (PROFILE) profiler.end();
     
         if (PROFILE) profiler.start("arm");
-        robot.newarm.moveArm(-gamepad2.right_stick_y);
+        robot.newarm.moveArm(-gamepad2.right_stick_y * 0.6);
         if (gamepad2.start && !gamepad2.b){
             robot.newarm.resetArm();
         }
@@ -184,7 +184,7 @@ public class MecanumDrive extends BaseTeleOp
     
         if (PROFILE) profiler.start("drivetrain");
         double[] speeds;
-        if (speed_mode == SPEED_SLOW)        speeds = new double[] {0.3, 0.3, 0.15}; // SLOW
+        if (speed_mode == SPEED_SLOW)        speeds = new double[] {0.3, 0.2, 0.15}; // SLOW
         else if (speed_mode == SPEED_FAST)   speeds = new double[] {0.5, 0.5, 0.5 }; // FAST
         else if (speed_mode == SPEED_FASTER) speeds = new double[] {0.8, 0.8, 0.8 }; // FASTER
         else                                 speeds = new double[] {1,   1,   1   }; // LUDICROUS
@@ -275,32 +275,32 @@ public class MecanumDrive extends BaseTeleOp
             {
                 timeTrigger = 1;
                 log.i("1 minute remaining");
-                telemetry.speak("One minute remaining");
+                // telemetry.speak("One minute remaining");
             } else if (remaining < 30000 && timeTrigger <= 1)
             {
                 timeTrigger = 2;
                 log.i("30 seconds remaining");
-                telemetry.speak("Thirty seconds remaining");
+                // telemetry.speak("Thirty seconds remaining");
             } else if (remaining < 10000 && timeTrigger <= 2)
             {
                 timeTrigger = 3;
                 log.i("10 seconds remaining");
-                telemetry.speak("Ten seconds remaining");
+                // telemetry.speak("Ten seconds remaining");
             } else if (remaining < 0 && timeTrigger <= 3)
             {
                 timeTrigger = 4;
-                log.e("Time!!!");
+                log.w("Time!!!");
             }
     
             telemetry.addData("Speed Mode", speed_modes[speed_mode]);
             telemetry.addData("IMU status", robot.imu.getDetailStatus());
             telemetry.addData("Field Centric", robot.drivetrain.isFieldCentric());
+            telemetry.addData("Heading", robot.imu.getHeading());
             telemetry.addData("Lift Position", robot.slide.getCurrentPos());
             telemetry.addData("Bottom limit", robot.bottomlimit.pressed());
             // telemetry.addData("Claw Pos", robot.claw.getExtension().getPosition());
             telemetry.addData("Back Limit", robot.backSwitch.pressed());
             telemetry.addData("Claw Pos", robot.newarm.motorArm.getCurrentPosition());
-            telemetry.addData("Heading", robot.imu.getHeading());
         }
         if (PROFILE) profiler.end();
         

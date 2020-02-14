@@ -60,6 +60,17 @@ public class IMU
         private Logger log;
         private File calibrationFile = new File(Config.storageDir + "imu_calibration.json");
         
+        private final String[] internalStatus =
+                {"Idle", "Error", "Initializing peripherals", "Initializing system", "Self-test",
+                        "Running w/fusion", "Running"};
+        
+        private final String[] errors =
+                {"[none]", "Peripheral error", "System error", "Self-test", "Register map value out of range",
+                "Register map address out of range", "Register map write error", "Low-power mode not available",
+                "Accel power mode not available", "Fusion config error", "Sensor config error"};
+        
+        private int prevStatus, prevError;
+        
         private volatile boolean inRadians;
     
         private float lastAngle;
@@ -84,6 +95,24 @@ public class IMU
     
         private void update()
         {
+            BNO055IMU.SystemStatus status = imu.getSystemStatus();
+            if (prevStatus != (int)status.bVal)
+            {
+                prevStatus = (int)status.bVal;
+                detailStatus = internalStatus[prevStatus];
+                
+                if (prevStatus == 1) // status == ERROR
+                {
+                    BNO055IMU.SystemError error = imu.getSystemError();
+                    if (prevError != (int)error.bVal)
+                    {
+                        prevError = (int)error.bVal;
+                        detailStatus = internalStatus[prevStatus] + ": " + errors[prevError];
+                    }
+                }
+                log.d("Status: %s", detailStatus);
+            }
+            
             Orientation o = imu.getAngularOrientation();
             float h = o.firstAngle;
             float r = o.secondAngle;
