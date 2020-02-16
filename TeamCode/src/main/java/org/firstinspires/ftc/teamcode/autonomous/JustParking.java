@@ -6,12 +6,20 @@ import org.firstinspires.ftc.teamcode.common.Robot;
 
 @Autonomous(name="Just Parking")
 public class JustParking extends BaseAutonomous {
+    public void initialize()
+    {
+        Robot robot = Robot.instance();
+        robot.intakelinkage.moveLinkageIn();
+        robot.foundationhook.moveHookFullDown();
+        robot.newarm.resetArm();
+    }
     @Override
     public void run() throws InterruptedException {
         Robot robot = Robot.instance();
-        Thread.sleep(15000);
+//        Thread.sleep(15000);
 
-        robot.drivetrain.move(0.4, 0, 0, tickToInches(25));
+        robot.intakelinkage.moveLinkageOut();
+        robot.drivetrain.move(0.4, 0, 0, 100);
         robot.drivetrain.stop();
     }
 

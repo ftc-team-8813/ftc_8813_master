@@ -58,9 +58,11 @@ public class DummyAutoFoundationRedTriangle extends BaseAutonomous
 
         Thread.sleep(6000);
 
-        robot.drivetrain.oldMove(-.3, 0, 0, tickToInches(34));
+        //robot.drivetrain.oldMove(-.3, 0, 0, tickToInches(34));
 
-        robot.drivetrain.oldMove(0,.2,0, tickToInches(10));//WALL PARK
+        robot.drivetrain.oldMove(0,.2,0, tickToInches(10));
+
+        robot.drivetrain.oldMove(-.3,0,0, tickToInches(30));//WALL PARK
 
         //robot.drivetrain.oldMove(0,-0.3,0,tickToInches(4)); //SKYBRIDGE PARK
 

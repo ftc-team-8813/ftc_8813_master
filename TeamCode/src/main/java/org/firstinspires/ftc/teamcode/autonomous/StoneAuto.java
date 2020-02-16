@@ -298,7 +298,7 @@ public class StoneAuto extends BaseAutonomous
         Thread.sleep(1000);
         // Now it is completely across and adjusted
         drivetrain.drive(0.3, 0, 0);
-        Thread.sleep(850);
+        Thread.sleep(775);
         drivetrain.stop();
 
         robot.foundationhook.moveHookDown();
@@ -315,16 +315,16 @@ public class StoneAuto extends BaseAutonomous
         robot.slide.raiseLift(0, -1);
         Thread.sleep(400);
         robot.claw.openClaw();
-        robot.slide.raiseLiftAsync(.8,500);
+        robot.slide.raiseLiftAsync(.8,650);
         robot.foundationhook.moveHookUp();
         drivetrain.drive(0, -0.5, 0);
         Thread.sleep(400);
         robot.slide.raiseLift(0,-1);
-        drivetrain.move(-0.17, 0.45, 0, 210);
+        drivetrain.move(0, 0.45, 0, 210);
         Thread.sleep(500);
     //    drivetrain.stop();
     //    robot.newarm.resetArm();
-        drivetrain.drive(0, -0.1, 0);
+        drivetrain.drive(0, 0.05, 0);
         Thread.sleep(500);
         drivetrain.stop();
     }

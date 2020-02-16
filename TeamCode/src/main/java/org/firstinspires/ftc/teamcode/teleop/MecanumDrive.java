@@ -34,7 +34,7 @@ public class MecanumDrive extends BaseTeleOp
     
     private int updateCount;
     private long lastLog;
-    
+
     private long lastTelemetry;
     
     private Profiler profiler;
