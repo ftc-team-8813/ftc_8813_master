@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.common.actuators;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
@@ -89,6 +90,14 @@ public class Drivetrain
     public Drivetrain(PIDMotor leftFront, PIDMotor rightFront, PIDMotor leftBack, PIDMotor rightBack)
     {
         this(leftFront, rightFront, leftBack, rightBack, null, null, null);
+    }
+    
+    public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior)
+    {
+        leftFront.getMotor().setZeroPowerBehavior(behavior);
+        rightFront.getMotor().setZeroPowerBehavior(behavior);
+        leftBack.getMotor().setZeroPowerBehavior(behavior);
+        rightBack.getMotor().setZeroPowerBehavior(behavior);
     }
     
     /**
@@ -362,6 +371,7 @@ public class Drivetrain
             {
                 fwdTarget = odometry.getForwardDistance();
                 strafeTarget = odometry.getStrafeDistance();
+                log.d("move fwdDist=%.0f strfDist=%.0f", fwdTarget, strafeTarget);
                 initTarget = false;
             }
             moveTo(fwdDist + fwdTarget, fwdPower, strafeDist + strafeTarget, strafePower);
@@ -579,5 +589,14 @@ public class Drivetrain
     {
         return controller.updateTarget();
     }
-    
+
+    public void moveDiag(double fwdDist, double fwdPow, double strafeDist, double strafePow) throws InterruptedException
+    {
+        controller.move(fwdDist,fwdPow,strafeDist,strafePow);
+        Thread.sleep(1);
+        while (controller.busy)
+        {
+            Thread.sleep(50);
+        }
+    }
 }
