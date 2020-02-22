@@ -371,6 +371,7 @@ public class Drivetrain
             {
                 fwdTarget = odometry.getForwardDistance();
                 strafeTarget = odometry.getStrafeDistance();
+                log.d("move fwdDist=%.0f strfDist=%.0f", fwdTarget, strafeTarget);
                 initTarget = false;
             }
             moveTo(fwdDist + fwdTarget, fwdPower, strafeDist + strafeTarget, strafePower);
@@ -588,5 +589,14 @@ public class Drivetrain
     {
         return controller.updateTarget();
     }
-    
+
+    public void moveDiag(double fwdDist, double fwdPow, double strafeDist, double strafePow) throws InterruptedException
+    {
+        controller.move(fwdDist,fwdPow,strafeDist,strafePow);
+        Thread.sleep(1);
+        while (controller.busy)
+        {
+            Thread.sleep(50);
+        }
+    }
 }

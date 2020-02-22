@@ -176,7 +176,7 @@ public class StoneAuto extends BaseAutonomous
         Thread.sleep(500);
 
     }
-    
+
     private int senseBlock(int direction) throws InterruptedException
     {
         detector.enable();
@@ -277,7 +277,7 @@ public class StoneAuto extends BaseAutonomous
         drivetrain.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         
         // Initial forward
-        drivetrain.move(0.37, 0, 0, 95);
+    /*    drivetrain.move(0.37, 0, 0, 95);
         Thread.sleep(300);
         
         // Sense block
@@ -291,22 +291,49 @@ public class StoneAuto extends BaseAutonomous
         log.d("Sense distance: %d", senseDist);
         
         // Strafe across
+        robot.intakelinkage.moveLinkageIn();
         drivetrain.move(0, .6, 0, -340 - senseDist);
         // Now it is "pretty much across"
+        robot.slide.raiseLiftAsync(0.7, 800);
+        Thread.sleep(300);
+        // Now it is completely across and adjusted
+        drivetrain.move(.3,0,0,50);
+        robot.newarm.moveArmTo(1, 650);
+        drivetrain.stop();
+        robot.slide.raiseLift(0,-1);
+        robot.claw.openClaw();
+        robot.newarm.moveArmTo(.9,0);
+        drivetrain.move(.3,0,0,-50);
+        drivetrain.stop();
+
+        drivetrain.move(0,.6,0, 350 + senseDist);
+
+        senseBlock(1);
+        Thread.sleep(100);
+
+        // Pick block
+        pickBlock(0, 22, 0, 10);
+
+        drivetrain.updateTarget();
+        log.d("Sense distance: %d", senseDist);
+
+        // Strafe across
+        drivetrain.move(0, .6, 0, -400 - senseDist);
+
         robot.intakelinkage.moveLinkageIn();
         robot.foundationhook.moveHookFullDown();
         robot.foundationhook.moveHookUp();
         robot.slide.raiseLiftAsync(0.7, 800);
         Thread.sleep(1000);
         // Now it is completely across and adjusted
-        drivetrain.drive(0.3, 0, 0);
-        Thread.sleep(775);
+        drivetrain.drive(0.35, 0, 0);
+        Thread.sleep(750);
         drivetrain.stop();
 
         robot.foundationhook.moveHookDown();
         Thread.sleep(400);
 
-        drivetrain.move(-.3,0,0,13);
+        drivetrain.move(.3,0,0,-13);
         drivetrain.setAngleInfluence(0.3);
         drivetrain.setTargetAngle(95);
         drivetrain.drive(-0.3, 0.1, 0);
@@ -319,7 +346,7 @@ public class StoneAuto extends BaseAutonomous
         robot.claw.openClaw();
         robot.slide.raiseLiftAsync(.8,650);
         robot.foundationhook.moveHookUp();
-        drivetrain.drive(0, -0.5, 0);
+        drivetrain.drive(0, -0.3, 0);
         Thread.sleep(400);
         robot.slide.raiseLift(0,-1);
         drivetrain.move(0, 0.45, 0, 210);
@@ -328,7 +355,115 @@ public class StoneAuto extends BaseAutonomous
     //    robot.newarm.resetArm();
         drivetrain.drive(0, 0.05, 0);
         Thread.sleep(500);
+        drivetrain.stop(); */
+
+        drivetrain.move(.37,0,0,92);
+
+        int senseDist = senseBlock(1);
+        Thread.sleep(100);
+        drivetrain.move(0.4,.3,0,12);
+
+        robot.newarm.moveArmEnc(1,800);
+        Thread.sleep(800);
+        robot.claw.closeClaw();
+        Thread.sleep(400);
+        robot.intake.collectStone(.5);
+        robot.newarm.moveArmEnc(1,-800);
+        Thread.sleep(450);
+        robot.claw.openClaw();
+        Thread.sleep(500);
+        robot.intakelinkage.moveLinkageIn();
+        Thread.sleep(400);
+        robot.intake.stopIntake();
+        robot.claw.closeClaw();
+
+        drivetrain.moveDiag(-20,.4,-320 - senseDist,.75);
         drivetrain.stop();
+
+        robot.slide.raiseLiftAsync(.7,800);
+        robot.foundationhook.moveHookUp();
+        drivetrain.move(.23,0,0,38);
+        robot.newarm.moveArmEnc(1,550);
+        Thread.sleep(400);
+        robot.foundationhook.moveHookDown();
+        robot.slide.raiseLift(0,-1);
+        robot.claw.openClaw();
+        robot.newarm.moveArmEnc(1,-550);
+
+        drivetrain.move(.5,0,0,-35);
+        drivetrain.setAngleInfluence(0.4);
+        drivetrain.setTargetAngle(90);
+        drivetrain.drive(-0.3, 0.2, 0);
+        Thread.sleep(1400);
+        robot.foundationhook.moveHookUp();
+        drivetrain.stop();
+
+        drivetrain.drive(-.08,.9,0);
+        Thread.sleep( 1370);
+        drivetrain.setAngleInfluence(0.4);
+        drivetrain.setTargetAngle(-5);
+        drivetrain.drive(0.3, 0.1, 0);
+        Thread.sleep(1000);
+        drivetrain.stop();
+
+        //drivetrain.move(0.3,.3,0,12);
+
+        robot.intakelinkage.moveLinkageOut();
+        robot.newarm.moveArmEnc(1,950);
+        Thread.sleep(800);
+        robot.claw.closeClaw();
+        Thread.sleep(400);
+        robot.newarm.moveArmEnc(1,-1100);
+        robot.intake.collectStone(.5);
+        Thread.sleep(1000);
+        robot.claw.openClaw();
+        Thread.sleep(300);
+        robot.intakelinkage.moveLinkageIn();
+        robot.foundationhook.moveHookDown();
+        Thread.sleep(300);
+        robot.intake.stopIntake();
+        robot.claw.closeClaw();
+
+        drivetrain.updateTarget();
+        robot.newarm.moveArmEnc(1,-1100);
+        drivetrain.drive(-.2,-.8,0);
+        Thread.sleep(2750);
+        drivetrain.updateTarget();
+        drivetrain.moveDiag(-5,.4,175,.6);
+        drivetrain.stop();
+
+
+
+       /* drivetrain.drive(-.2,.8,0);
+        Thread.sleep(2200);
+        drivetrain.updateTarget();
+        drivetrain.move(.3,0,0,12);
+
+        senseBlock(1);
+        Thread.sleep(100);
+
+        drivetrain.move(0.2,.3,0,17);
+        robot.intakelinkage.moveLinkageOut();
+        robot.newarm.moveArmEnc(.8,725);
+        Thread.sleep(800);
+        robot.claw.closeClaw();
+        Thread.sleep(400);
+        robot.intake.collectStone(.5);
+        robot.newarm.moveArmEnc(1,-800);
+        Thread.sleep(450);
+        robot.claw.openClaw();
+        Thread.sleep(500);
+        robot.intakelinkage.moveLinkageIn();
+        Thread.sleep(400);
+        robot.intake.stopIntake();
+        robot.claw.closeClaw();
+
+        drivetrain.drive(-.1,-.8,0);
+        Thread.sleep(2500);
+        drivetrain.stop(); */
+
+
+
     }
     
     @Override
