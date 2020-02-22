@@ -35,11 +35,11 @@ public class MovementTest extends OpMode{
     @Override
     public void loop(){
         if (gamepad1.dpad_up){
-            robot.slide.raiseLift(0.05);
+            robot.slide.oldRaiseLift(0.05);
         } else if (gamepad1.dpad_down){
-            robot.slide.raiseLift(-0.05);
+            robot.slide.oldRaiseLift(-0.05);
         } else {
-            robot.slide.raiseLift(0);
+            robot.slide.oldRaiseLift(0);
         }
         telemetry.addData("Mode", robot.slide.slidemotor.getMotor().getMode());
         telemetry.addData("Power", robot.slide.slidemotor.getMotor().getPower());

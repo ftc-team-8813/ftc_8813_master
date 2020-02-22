@@ -17,7 +17,7 @@ import java.io.IOException;
 
 @TeleOp(name = "LiftPositioner")
 public class LiftPositioner extends OpMode {
-    DataStorage text2 = new DataStorage(new File(Config.storageDir + "liftencoderpos.txt"));
+    DataStorage text = new DataStorage(new File(Config.storageDir + "liftencoderpos.txt"));
     DcMotor lift;
 
     @Override
@@ -31,7 +31,7 @@ public class LiftPositioner extends OpMode {
         telemetry.addData("", "Using Left Joystick Y-Axis, Move Lift to Highest Position");
         telemetry.addData("", "Press B to Save Highest Position");
         if (gamepad1.b){
-            text2.addNumber("Highest Position", lift.getCurrentPosition());
+            text.addNumber("Highest Position", lift.getCurrentPosition());
         }
 
         if (gamepad1.left_stick_y != 0){
@@ -42,6 +42,6 @@ public class LiftPositioner extends OpMode {
 
     @Override
     public void stop(){
-        text2.save();
+        text.save();
     }
 }

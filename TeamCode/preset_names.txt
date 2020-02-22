@@ -1,5 +1,5 @@
-claw:fullUp,open,closed
-intake\ l:in,med,out
-intake\ r:in,med,out
 hook\ l:up,down,fullDown
 hook\ r:up,down,fullDown
+intake\ l:in,med,out
+intake\ r:in,med,out
+claw:fullUp,open,closed

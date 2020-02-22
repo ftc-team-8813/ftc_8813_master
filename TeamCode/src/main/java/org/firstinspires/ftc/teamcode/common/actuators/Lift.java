@@ -35,11 +35,24 @@ public class Lift {
         slidemotor.setPIDFConstants(DcMotor.RunMode.RUN_USING_ENCODER,
                 constants[0], constants[1], constants[2], constants[3]);
     }
-    
-    public void raiseLift(double power)
-    {
+
+    public void oldRaiseLift(double power){
         if (power <= 0) raiseLift(0.01, (int)Math.floor(power));
         else raiseLift(power, 1);
+    }
+
+    public void raiseLift(double power, boolean fast_down){
+        if (power < 0 && !bottomswitch.pressed()) {
+            if (fast_down){
+                slidemotor.getMotor().setPower(0);
+            }else{
+                slidemotor.getMotor().setPower(0.4 * power);
+            }
+        }else if (power > 0 && slidemotor.getCurrentPosition() <= toplimit){
+            slidemotor.getMotor().setPower(power);
+        }else{
+            slidemotor.getMotor().setPower(0.2);
+        }
     }
 
     public void raiseLift(double power, int direction){
@@ -64,7 +77,7 @@ public class Lift {
                 }
                 else
                 {
-                    slidemotor.hold((int) (slidemotor.getCurrentPosition() * 1.024) + 70);
+                    slidemotor.hold((int) (slidemotor.getCurrentPosition()));
                 }
             }
         }
@@ -88,6 +101,7 @@ public class Lift {
             slidemotor.setPower(0.1);
             Thread.sleep(100);
         }
+        slidemotor.setRunMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slidemotor.setPower(0);
     }
 
