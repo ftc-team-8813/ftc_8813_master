@@ -172,12 +172,14 @@ public class MecanumDrive extends BaseTeleOp
             robot.slide.raiseLift(-gamepad2.left_stick_y);
         }
         
-        if (speed_mode != SPEED_SLOW && !robot.bottomlimit.pressed())
+        if (speed_mode != SPEED_SLOW && !robot.bottomlimit.pressed() && !liftTrigger)
         {
+            liftTrigger = true;
             setSpeedMode(SPEED_SLOW);
         }
         if (robot.bottomlimit.pressing())
         {
+            liftTrigger = false;
             setSpeedMode(SPEED_FAST);
         }
         if (PROFILE) profiler.end();

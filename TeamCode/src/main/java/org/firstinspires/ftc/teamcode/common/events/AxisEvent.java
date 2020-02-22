@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.teleop.event;
+package org.firstinspires.ftc.teamcode.common.events;
 
 public class AxisEvent extends GamepadEvent
 {
@@ -13,11 +13,13 @@ public class AxisEvent extends GamepadEvent
     
     public final int axis;
     public final double value;
+    public final String mapping;
     
-    public AxisEvent(int gamepad, int axis, double value)
+    public AxisEvent(int gamepad, int axis, double value, String map)
     {
         super("AxisEvent", gamepad);
         this.axis = axis;
         this.value = value;
+        this.mapping = map;
     }
 }

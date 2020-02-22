@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
@@ -273,6 +274,7 @@ public class StoneAuto extends BaseAutonomous
         stream.addListener(new Vlogger("videos/" + Utils.getTimestamp() + ".avi",  640, 480, 10), 1001);
         drivetrain.enableAngleCorrection();
         drivetrain.enableFieldCentric();
+        drivetrain.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         
         // Initial forward
         drivetrain.move(0.37, 0, 0, 95);

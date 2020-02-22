@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.teleop.event;
+package org.firstinspires.ftc.teamcode.common.events;
 
 public abstract class GamepadEvent extends Event
 {

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.common.actuators;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
@@ -89,6 +90,14 @@ public class Drivetrain
     public Drivetrain(PIDMotor leftFront, PIDMotor rightFront, PIDMotor leftBack, PIDMotor rightBack)
     {
         this(leftFront, rightFront, leftBack, rightBack, null, null, null);
+    }
+    
+    public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior)
+    {
+        leftFront.getMotor().setZeroPowerBehavior(behavior);
+        rightFront.getMotor().setZeroPowerBehavior(behavior);
+        leftBack.getMotor().setZeroPowerBehavior(behavior);
+        rightBack.getMotor().setZeroPowerBehavior(behavior);
     }
     
     /**
