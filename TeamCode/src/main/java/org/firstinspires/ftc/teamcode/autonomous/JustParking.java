@@ -21,10 +21,13 @@ public class JustParking extends BaseAutonomous {
         robot.intakelinkage.moveLinkageOut();
         robot.drivetrain.move(0.4, 0, 0, 100);
         robot.drivetrain.stop();
+
+        robot.slide.raiseLiftAsync(0.9, 800);
     }
 
     public int tickToInches(double dist){
         final double CIRCUMFERENCE = 3.14*(100/25.4);
+
         double ticks = (dist/CIRCUMFERENCE)*537.6;
         return (int) ticks;
     }

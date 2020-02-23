@@ -29,6 +29,8 @@ public class Lift {
         GlobalDataLogger.instance().addChannel("Lift Target", () -> Integer.toString(this.slidemotor.getTargetPosition()));
         GlobalDataLogger.instance().addChannel("Lift Power", () -> Double.toString(this.slidemotor.getPower()));
         GlobalDataLogger.instance().addChannel("Lift Limit State", () -> this.bottomswitch.pressed() ? "1" : "0");
+
+        slidemotor.setRunMode(DcMotor.RunMode.RUN_USING_ENCODER);
         
         double[] constants = slidemotor.getPIDConstants(DcMotor.RunMode.RUN_USING_ENCODER);
         constants[1] = 0; // Disable the integrator

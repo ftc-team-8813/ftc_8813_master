@@ -53,6 +53,7 @@ public class StoneAuto extends BaseAutonomous
     @Override
     public void initialize() throws InterruptedException
     {
+        Robot.instance().centerRange.disable();
         Robot.instance().foundationhook.moveHookFullDown();
         Robot.instance().intakelinkage.moveLinkageIn();
         Robot.instance().claw.openClaw();
@@ -186,7 +187,7 @@ public class StoneAuto extends BaseAutonomous
             if (detector.found())
             {
                 double xError = detector.getCenter().x - 320;
-                drivetrain.drive(0.35, xError * 0.001, 0);
+                drivetrain.drive(0.35, xError * 0.0025, 0);
             }
             else
             {
@@ -288,7 +289,7 @@ public class StoneAuto extends BaseAutonomous
         // Initialization
         // Robot
         robot = Robot.instance();
-        robot.intakelinkage.moveLinkageOut();
+        robot.intakelinkage.moveLinkage(MED,MED);
         // Drivetrain
         drivetrain = robot.drivetrain;
         // Vision
@@ -382,16 +383,17 @@ public class StoneAuto extends BaseAutonomous
         Thread.sleep(500);
         drivetrain.stop(); */
 
-        int senseDist = senseBlock2(75);
-        Thread.sleep(300);
-        drivetrain.moveDiag(7,0.3,12,.3);
+        int senseDist = senseBlock2(80);
+        Thread.sleep(100);
+        drivetrain.moveDiag(7,0.3,19,.9);
 
-        robot.newarm.moveArmEnc(1,775);
+        robot.newarm.moveArmEnc(1,800);
         Thread.sleep(800);
         robot.claw.closeClaw();
         Thread.sleep(400);
-        robot.intake.collectStone(.5);
-        robot.newarm.moveArmEnc(1,-775);
+        robot.intake.collectStone(.65);
+        robot.intakelinkage.moveLinkageOut();
+        robot.newarm.moveArmEnc(1,-800);
         Thread.sleep(450);
         robot.claw.openClaw();
         Thread.sleep(500);
@@ -400,12 +402,12 @@ public class StoneAuto extends BaseAutonomous
         robot.intake.stopIntake();
         robot.claw.closeClaw();
 
-        drivetrain.moveDiag(-20,.4,-332 - senseDist,.75);
+        drivetrain.moveDiag(-17,.4,-325 - senseDist,.75);
         drivetrain.stop();
 
         robot.slide.raiseLiftAsync(.9,800);
         robot.foundationhook.moveHookUp();
-        drivetrain.move(.23,0,0,35);
+        drivetrain.move(.23,0,0,39);
         robot.newarm.moveArmEnc(1,550);
         Thread.sleep(400);
         robot.foundationhook.moveHookDown();
@@ -413,7 +415,7 @@ public class StoneAuto extends BaseAutonomous
         robot.claw.openClaw();
         robot.newarm.moveArmEnc(1,-550);
 
-        drivetrain.move(.5,0,0,-35);
+        drivetrain.move(.5,0,0,-50);
         drivetrain.setAngleInfluence(0.4);
         drivetrain.setTargetAngle(90);
         drivetrain.drive(-0.3, 0.2, 0);
@@ -422,7 +424,7 @@ public class StoneAuto extends BaseAutonomous
         drivetrain.stop();
 
         drivetrain.updateTarget();
-        drivetrain.moveDiag(-3,.05,-370 ,.9);
+        drivetrain.moveDiag(-15,.05,370 ,.9);
         drivetrain.setAngleInfluence(0.4);
         drivetrain.setTargetAngle(-5);
         drivetrain.drive(0.3, 0.1, 0);
@@ -430,8 +432,10 @@ public class StoneAuto extends BaseAutonomous
         drivetrain.stop();
 
         //drivetrain.move(0.3,.3,0,12);
+        senseBlock(1);
+        robot.drivetrain.moveDiag(3,.3,17,.8);
 
-     /*   robot.intakelinkage.moveLinkageOut();
+        robot.intakelinkage.moveLinkageOut();
         robot.newarm.moveArmEnc(1,950);
         Thread.sleep(800);
         robot.claw.closeClaw();
@@ -453,7 +457,7 @@ public class StoneAuto extends BaseAutonomous
         Thread.sleep(2750);
         drivetrain.updateTarget();
         drivetrain.moveDiag(-5,.4,175,.6);
-        drivetrain.stop(); */
+        drivetrain.stop();
 
 
 
