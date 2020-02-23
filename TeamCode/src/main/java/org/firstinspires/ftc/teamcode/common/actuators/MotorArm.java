@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.common.actuators;
 
+import com.qualcomm.hardware.lynx.LynxDcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
@@ -8,10 +9,13 @@ import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 public class MotorArm {
     public DcMotor motorArm;
     public Switch backLimit;
+    private LynxDcMotorController controller;
+    private int port;
 
     public MotorArm(DcMotor motorArm, Switch backLimit){
         this.motorArm = motorArm;
         this.backLimit = backLimit;
+        this.port = motorArm.getPortNumber();
         motorArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
@@ -36,6 +40,12 @@ public class MotorArm {
         motorArm.setTargetPosition(pos + motorArm.getCurrentPosition());
         motorArm.setPower(power);
         motorArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public void moveArmAsync(double power, int pos){
+        controller.setMotorTargetPosition(port, pos);
+        controller.setMotorMode(port, DcMotor.RunMode.RUN_TO_POSITION);
+        motorArm.setPower(power);
     }
     
     public void moveArmTo(double power, int pos) throws InterruptedException

@@ -196,7 +196,7 @@ public class AutoDesigner extends BaseTeleOp
                 }
                 else if (op == OP_LIFT)
                 {
-                    robot.slide.raiseLift(-gamepad1.left_stick_y * 0.3);
+                    robot.slide.oldRaiseLift(-gamepad1.left_stick_y * 0.3);
                 }
                 else if (op == OP_ARM)
                 {

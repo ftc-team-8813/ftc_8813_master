@@ -156,21 +156,28 @@ public class MecanumDrive extends BaseTeleOp
         if (PROFILE) profiler.end();
     
         if (PROFILE) profiler.start("arm");
-        robot.newarm.moveArm(-gamepad2.right_stick_y * 0.6);
+        robot.newarm.moveArm(-gamepad2.right_stick_y * 0.9);
         if (gamepad2.start && !gamepad2.b){
             robot.newarm.resetArm();
         }
         if (PROFILE) profiler.end();
     
         if (PROFILE) profiler.start("lift");
-        if (gamepad2.dpad_down)
-        {
-            robot.slide.raiseLift(0, -1);
+
+        if (gamepad2.dpad_down){
+            robot.slide.raiseLift(-1, true);
+        }else{
+            robot.slide.raiseLift(-gamepad2.left_stick_y, false);
         }
-        else
-        {
-            robot.slide.raiseLift(-gamepad2.left_stick_y);
-        }
+
+//        if (gamepad2.dpad_down)
+//        {
+//            robot.slide.raiseLift(0, -1);
+//        }
+//        else
+//        {
+//            robot.slide.raiseLift(-gamepad2.left_stick_y);
+//        }
         
         if (speed_mode != SPEED_SLOW && !robot.bottomlimit.pressed() && !liftTrigger)
         {
@@ -293,12 +300,13 @@ public class MecanumDrive extends BaseTeleOp
                 timeTrigger = 4;
                 log.w("Time!!!");
             }
-    
+
             telemetry.addData("Speed Mode", speed_modes[speed_mode]);
             telemetry.addData("IMU status", robot.imu.getDetailStatus());
             telemetry.addData("Field Centric", robot.drivetrain.isFieldCentric());
             telemetry.addData("Heading", robot.imu.getHeading());
             telemetry.addData("Lift Position", robot.slide.getCurrentPos());
+            telemetry.addData("Lift Power", -gamepad2.left_stick_y);
             telemetry.addData("Bottom limit", robot.bottomlimit.pressed());
             // telemetry.addData("Claw Pos", robot.claw.getExtension().getPosition());
             telemetry.addData("Back Limit", robot.backSwitch.pressed());
