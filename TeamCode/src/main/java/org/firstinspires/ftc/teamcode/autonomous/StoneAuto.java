@@ -77,6 +77,8 @@ public class StoneAuto extends BaseAutonomous
         
         profiler = new Profiler();
         
+        Robot.instance().odometry.reset();
+        
         /*
         GlobalThreadPool.instance().start(() ->
         {
@@ -187,7 +189,7 @@ public class StoneAuto extends BaseAutonomous
             if (detector.found())
             {
                 double xError = detector.getCenter().x - 320;
-                drivetrain.drive(0.35, xError * 0.0025, 0);
+                drivetrain.drive(0.3, xError * 0.0015, 0);
             }
             else
             {
@@ -303,85 +305,6 @@ public class StoneAuto extends BaseAutonomous
         drivetrain.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         
         // Initial forward
-    /*    drivetrain.move(0.37, 0, 0, 95);
-        Thread.sleep(300);
-        
-        // Sense block
-        int senseDist = senseBlock(1);
-        Thread.sleep(100);
-        
-        // Pick block
-        pickBlock(0, 22, 0, 10);
-        
-        double[] offs = drivetrain.updateTarget();
-        log.d("Sense distance: %d", senseDist);
-        
-        // Strafe across
-        robot.intakelinkage.moveLinkageIn();
-        drivetrain.move(0, .6, 0, -340 - senseDist);
-        // Now it is "pretty much across"
-        robot.slide.raiseLiftAsync(0.7, 800);
-        Thread.sleep(300);
-        // Now it is completely across and adjusted
-        drivetrain.move(.3,0,0,50);
-        robot.newarm.moveArmTo(1, 650);
-        drivetrain.stop();
-        robot.slide.raiseLift(0,-1);
-        robot.claw.openClaw();
-        robot.newarm.moveArmTo(.9,0);
-        drivetrain.move(.3,0,0,-50);
-        drivetrain.stop();
-
-        drivetrain.move(0,.6,0, 350 + senseDist);
-
-        senseBlock(1);
-        Thread.sleep(100);
-
-        // Pick block
-        pickBlock(0, 22, 0, 10);
-
-        drivetrain.updateTarget();
-        log.d("Sense distance: %d", senseDist);
-
-        // Strafe across
-        drivetrain.move(0, .6, 0, -400 - senseDist);
-
-        robot.intakelinkage.moveLinkageIn();
-        robot.foundationhook.moveHookFullDown();
-        robot.foundationhook.moveHookUp();
-        robot.slide.raiseLiftAsync(0.7, 800);
-        Thread.sleep(1000);
-        // Now it is completely across and adjusted
-        drivetrain.drive(0.35, 0, 0);
-        Thread.sleep(750);
-        drivetrain.stop();
-
-        robot.foundationhook.moveHookDown();
-        Thread.sleep(400);
-
-        drivetrain.move(.3,0,0,-13);
-        drivetrain.setAngleInfluence(0.3);
-        drivetrain.setTargetAngle(95);
-        drivetrain.drive(-0.3, 0.1, 0);
-        Thread.sleep(400);
-        drivetrain.stop();
-        
-        robot.newarm.moveArmTo(1, 650);
-        robot.slide.raiseLift(0, -1);
-        Thread.sleep(400);
-        robot.claw.openClaw();
-        robot.slide.raiseLiftAsync(.8,650);
-        robot.foundationhook.moveHookUp();
-        drivetrain.drive(0, -0.3, 0);
-        Thread.sleep(400);
-        robot.slide.raiseLift(0,-1);
-        drivetrain.move(0, 0.45, 0, 210);
-        Thread.sleep(500);
-    //    drivetrain.stop();
-    //    robot.newarm.resetArm();
-        drivetrain.drive(0, 0.05, 0);
-        Thread.sleep(500);
-        drivetrain.stop(); */
 
         int senseDist = senseBlock2(80);
         Thread.sleep(100);
@@ -402,7 +325,7 @@ public class StoneAuto extends BaseAutonomous
         robot.intake.stopIntake();
         robot.claw.closeClaw();
 
-        drivetrain.moveDiag(-17,.4,-325 - senseDist,.75);
+        drivetrain.moveDiag(-17,.4,-350 - senseDist,.75);
         drivetrain.stop();
 
         robot.slide.raiseLiftAsync(.9,800);
@@ -416,6 +339,7 @@ public class StoneAuto extends BaseAutonomous
         robot.newarm.moveArmEnc(1,-550);
 
         drivetrain.move(.5,0,0,-50);
+        drivetrain.stop();
         drivetrain.setAngleInfluence(0.4);
         drivetrain.setTargetAngle(90);
         drivetrain.drive(-0.3, 0.2, 0);
@@ -458,9 +382,7 @@ public class StoneAuto extends BaseAutonomous
         drivetrain.updateTarget();
         drivetrain.moveDiag(-5,.4,175,.6);
         drivetrain.stop();
-
-
-
+        
        /* drivetrain.drive(-.2,.8,0);
         Thread.sleep(2200);
         drivetrain.updateTarget();

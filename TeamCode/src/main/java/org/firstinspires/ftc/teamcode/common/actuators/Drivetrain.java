@@ -28,12 +28,8 @@ public class Drivetrain
     
     private IMU imu;
     
-    private OdometryEncoder fwdEnc, strafeEnc;
-    
     private volatile String state = "Idle";
     private volatile double angleOffset = 0;
-    
-    private double acceleration;
     
     private SpeedController controller;
     private boolean controllerEnabled;
@@ -57,18 +53,16 @@ public class Drivetrain
         this.rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
         this.imu = imu;
         
-        this.fwdEnc = fwdEnc;
-        this.strafeEnc = strafeEnc;
-        
         this.leftFront.setDeadband(20);
         this.rightFront.setDeadband(20);
         this.leftBack.setDeadband(20);
         this.rightBack.setDeadband(20);
+        /*
         GlobalDataLogger.instance().addChannel("Left Front position", () -> Integer.toString(this.leftFront.getCurrentPosition()));
         GlobalDataLogger.instance().addChannel("Right Front position", () -> Integer.toString(this.rightFront.getCurrentPosition()));
         GlobalDataLogger.instance().addChannel("Left Rear position", () -> Integer.toString(this.leftBack.getCurrentPosition()));
         GlobalDataLogger.instance().addChannel("Right Rear position", () -> Integer.toString(this.rightBack.getCurrentPosition()));
-        
+         */
         GlobalDataLogger.instance().addChannel("Drivetrain Power", () ->
         {
             double power = Math.abs(this.leftFront.getPower()) + Math.abs(this.rightFront.getPower())
@@ -189,9 +183,9 @@ public class Drivetrain
                 forward - right - turn,
                 forward + right + turn
         };
-
+    
         PIDMotor[] motors = {leftFront, rightFront, leftBack, rightBack};
-
+    
         // Start the motors
         for (int i = 0; i < 4; i++)
         {
@@ -201,7 +195,7 @@ public class Drivetrain
             }
             Thread.sleep(6);
         }
-
+    
         double angleOrig;
         if (imu != null)
             angleOrig = imu.getHeading();
@@ -216,7 +210,7 @@ public class Drivetrain
          */
         PIDMotor encMotor = rightBack;
         int origPos = encMotor.getCurrentPosition();
-
+    
         // Wait for the motors to finish
         boolean busy = true;
         double prevPowerOff = 0;
@@ -230,8 +224,8 @@ public class Drivetrain
                 busy = false;
             else
                 busy = true;
-
-
+    
+    
             // TODO TEST EXPERIMENTAL CODE
             // Adjust speed to correct for any rotation
             /*
@@ -268,10 +262,6 @@ public class Drivetrain
         motors[3].getMotor().setPower(0);
         angleOffset = 0;
         state = "Idle";
-    }
-
-    public OdometryEncoder getfrwEnc(){
-        return fwdEnc;
     }
 
     public void stop(){

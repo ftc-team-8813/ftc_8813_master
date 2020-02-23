@@ -79,4 +79,10 @@ public class Odometry
     {
         return -y;
     }
+    
+    public synchronized void reset()
+    {
+        x = 0;
+        y = 0;
+    }
 }

@@ -12,6 +12,8 @@ public class Intake {
         this.rightIntake = rightIntake;
         leftIntake.setDirection(DcMotorSimple.Direction.REVERSE);
         rightIntake.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftIntake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightIntake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void collectStone(double power){

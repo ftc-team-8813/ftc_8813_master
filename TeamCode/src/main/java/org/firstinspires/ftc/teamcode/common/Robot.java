@@ -189,8 +189,8 @@ public class Robot
         
         // Logging
         
-        GlobalDataLogger.instance().addChannel("Encoder abs. distance (fwd)", () -> "" + fwdEnc.getPosition());
-        GlobalDataLogger.instance().addChannel("Encoder abs. distance (strafe)", () -> "" + strafeEnc.getPosition());
+        GlobalDataLogger.instance().addChannel("Forward Distance", () -> "" + odometry.getForwardDistance());
+        GlobalDataLogger.instance().addChannel("Strafe Distance", () -> "" + odometry.getStrafeDistance());
         
         // GlobalDataLogger.instance().addChannel("Left Range", () -> String.format("%.4f", leftRange.getDistance()));
         GlobalDataLogger.instance().addChannel("Center Range", () -> String.format("%.4f", centerRange.getDistance()));
