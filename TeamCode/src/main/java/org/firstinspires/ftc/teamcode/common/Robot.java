@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.common.motor_control.PIDMotor;
 import org.firstinspires.ftc.teamcode.common.sensors.AMSEncoder;
 import org.firstinspires.ftc.teamcode.common.sensors.AndyMarkEncoder;
 import org.firstinspires.ftc.teamcode.common.sensors.IMU;
+import org.firstinspires.ftc.teamcode.common.sensors.Odometry;
 import org.firstinspires.ftc.teamcode.common.sensors.OdometryEncoder;
 import org.firstinspires.ftc.teamcode.common.sensors.RangeSensor;
 import org.firstinspires.ftc.teamcode.common.sensors.Switch;
@@ -58,6 +59,7 @@ public class Robot
     public final Switch bottomlimit;
     public final Switch backSwitch;
     public final IMU imu;
+    public final Odometry odometry;
     
     public final OdometryEncoder fwdEnc;
     public final OdometryEncoder strafeEnc;
@@ -155,10 +157,11 @@ public class Robot
         */
         
         // Non-AccelMotor drivetrain
+        odometry = new Odometry(fwdEnc, strafeEnc, imu);
         drivetrain = new Drivetrain(new PIDMotor(hardwareMap.dcMotor.get("lf")),
                                     new PIDMotor(hardwareMap.dcMotor.get("rf")),
                                     new PIDMotor(hardwareMap.dcMotor.get("lb")),
-                                    new PIDMotor(hardwareMap.dcMotor.get("rb")), imu, fwdEnc, strafeEnc);
+                                    new PIDMotor(hardwareMap.dcMotor.get("rb")), imu, odometry);
     
         claw = new Claw(hardwareMap.servo.get("claw"), servo_positions);
         

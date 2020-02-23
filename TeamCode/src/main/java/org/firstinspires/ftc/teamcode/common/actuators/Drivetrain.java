@@ -46,7 +46,7 @@ public class Drivetrain
      * @param leftBack   The left rear motor
      * @param rightBack  The right rear motor
      */
-    public Drivetrain(PIDMotor leftFront, PIDMotor rightFront, PIDMotor leftBack, PIDMotor rightBack, IMU imu, OdometryEncoder fwdEnc, OdometryEncoder strafeEnc)
+    public Drivetrain(PIDMotor leftFront, PIDMotor rightFront, PIDMotor leftBack, PIDMotor rightBack, IMU imu, Odometry odometry)
     {
         this.leftFront  = leftFront;
         this.rightFront = rightFront;
@@ -77,7 +77,7 @@ public class Drivetrain
         });
         
         GlobalDataLogger.instance().addChannel("Drivetrain State", () -> state);
-        controller = new SpeedController(imu, fwdEnc, strafeEnc);
+        controller = new SpeedController(imu, odometry);
     }
     
     /**
@@ -89,7 +89,7 @@ public class Drivetrain
      */
     public Drivetrain(PIDMotor leftFront, PIDMotor rightFront, PIDMotor leftBack, PIDMotor rightBack)
     {
-        this(leftFront, rightFront, leftBack, rightBack, null, null, null);
+        this(leftFront, rightFront, leftBack, rightBack, null, null);
     }
     
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior)
@@ -312,7 +312,7 @@ public class Drivetrain
         private int updateCount;
         private long lastLog;
         
-        public SpeedController(IMU imu, OdometryEncoder fwdEnc, OdometryEncoder strafeEnc)
+        public SpeedController(IMU imu, Odometry odometry)
         {
             // this.imu = imu;
             this.targetAngle = 0;
@@ -323,7 +323,7 @@ public class Drivetrain
 //            this.imu.setImmediateStart(true);
 //            this.imu.initialize();
             
-            odometry = new Odometry(fwdEnc, strafeEnc, imu);
+            this.odometry = odometry;
             acceleration = 1;
             
             GlobalDataLogger.instance().addChannel("Target Angle", () -> "" + targetAngle);
