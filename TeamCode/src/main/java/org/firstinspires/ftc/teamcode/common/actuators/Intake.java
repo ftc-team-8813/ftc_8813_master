@@ -16,6 +16,12 @@ public class Intake {
         rightIntake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
+    public void intake(double left, double right)
+    {
+        leftIntake.setPower(left);
+        rightIntake.setPower(-right);
+    }
+
     public void collectStone(double power){
         leftIntake.setPower(power);
         rightIntake.setPower(-power);

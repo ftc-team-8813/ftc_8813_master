@@ -22,6 +22,8 @@ public class JustParking extends BaseAutonomous {
         robot.drivetrain.move(0.4, 0, 0, 100);
         robot.drivetrain.stop();
 
+        robot.claw.closeClaw();
+
         robot.slide.raiseLiftAsync(0.9, 800);
     }
 

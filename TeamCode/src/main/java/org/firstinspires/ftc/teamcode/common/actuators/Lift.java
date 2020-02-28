@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.common.sensors.Switch;
 import org.firstinspires.ftc.teamcode.common.util.Config;
 import org.firstinspires.ftc.teamcode.common.util.DataStorage;
 import org.firstinspires.ftc.teamcode.common.util.GlobalDataLogger;
+import org.firstinspires.ftc.teamcode.common.util.Logger;
 
 import java.io.File;
 
@@ -17,6 +18,8 @@ public class Lift {
     private Switch bottomswitch;
     DataStorage topswitch;
     private int toplimit;
+
+    private Logger log;
 
     public Lift(PIDMotor slidemotor, Switch bottomswitch){
         this.slidemotor = slidemotor;

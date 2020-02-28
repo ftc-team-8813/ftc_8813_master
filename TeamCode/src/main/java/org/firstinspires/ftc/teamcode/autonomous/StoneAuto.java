@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.common.util.concurrent.GlobalThreadPool;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage.IN;
 import static org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage.MED;
 import static org.firstinspires.ftc.teamcode.common.actuators.IntakeLinkage.OUT;
 
@@ -188,14 +189,35 @@ public class StoneAuto extends BaseAutonomous
         {
             if (detector.found())
             {
+
                 double xError = detector.getCenter().x - 320;
-                drivetrain.drive(0.3, xError * 0.0015, 0);
+                drivetrain.drive(0.4, xError * 0.0015, 0);
             }
             else
             {
                 drivetrain.stop();
             }
             if (robot.odometry.getForwardDistance() - fwdStart > distance) break;
+            Thread.sleep(5);
+        }
+        drivetrain.stop();
+        detector.disable();
+        Thread.sleep(100);
+        double[] delta = drivetrain.updateTarget();
+        return (int)delta[1];
+    }
+
+    private int senseBlock3(double distance) throws InterruptedException {
+        double rgtStart = robot.odometry.getStrafeDistance();
+        detector.enable();
+        while (opModeIsActive()) {
+            if (detector.found()) {
+                double yError = detector.getCenter().x - 320;
+                drivetrain.drive(-yError * 0.003, .38, 0);
+            } else {
+                drivetrain.stop();
+            }
+            if (robot.odometry.getStrafeDistance() - rgtStart > distance) break;
             Thread.sleep(5);
         }
         drivetrain.stop();
@@ -286,7 +308,8 @@ public class StoneAuto extends BaseAutonomous
     @Override
     public void run() throws InterruptedException
     {
-        profiler.start("run");
+        profiler.start("r" +
+                "un");
         /////////////////
         // Initialization
         // Robot
@@ -306,39 +329,39 @@ public class StoneAuto extends BaseAutonomous
         
         // Initial forward
 
-        int senseDist = senseBlock2(80);
+        int senseDist = senseBlock2(81);
         Thread.sleep(100);
-        drivetrain.moveDiag(7,0.3,19,.9);
+        drivetrain.moveDiag(7,0.3,17,.9);
 
-        robot.newarm.moveArmEnc(1,800);
+        robot.newarm.moveArmEnc(1,650);
         Thread.sleep(800);
         robot.claw.closeClaw();
         Thread.sleep(400);
         robot.intake.collectStone(.65);
         robot.intakelinkage.moveLinkageOut();
-        robot.newarm.moveArmEnc(1,-800);
+        robot.newarm.moveArmEnc(1,-750);
         Thread.sleep(450);
         robot.claw.openClaw();
         Thread.sleep(500);
         robot.intakelinkage.moveLinkageIn();
-        Thread.sleep(400);
+        Thread.sleep(500);
         robot.intake.stopIntake();
         robot.claw.closeClaw();
 
-        drivetrain.moveDiag(-17,.4,-350 - senseDist,.75);
+        drivetrain.moveDiag(-21,.4,-340 - senseDist,.75);
         drivetrain.stop();
 
-        robot.slide.raiseLiftAsync(.9,800);
+        robot.slide.raiseLiftAsync(1,1100);
         robot.foundationhook.moveHookUp();
         drivetrain.move(.23,0,0,39);
-        robot.newarm.moveArmEnc(1,550);
-        Thread.sleep(400);
+        robot.newarm.moveArmEnc(.9,550);
+        Thread.sleep(125);
         robot.foundationhook.moveHookDown();
         robot.slide.raiseLift(0,-1);
         robot.claw.openClaw();
-        robot.newarm.moveArmEnc(1,-550);
+        robot.newarm.moveArmEnc(1,-900);
 
-        drivetrain.move(.5,0,0,-50);
+       drivetrain.move(.5,0,0,-50);
         drivetrain.stop();
         drivetrain.setAngleInfluence(0.4);
         drivetrain.setTargetAngle(90);
@@ -348,16 +371,47 @@ public class StoneAuto extends BaseAutonomous
         drivetrain.stop();
 
         drivetrain.updateTarget();
-        drivetrain.moveDiag(-15,.05,370 ,.9);
-        drivetrain.setAngleInfluence(0.4);
-        drivetrain.setTargetAngle(-5);
-        drivetrain.drive(0.3, 0.1, 0);
+        robot.drivetrain.drive(0,.5,0);
+        Thread.sleep(300);
+        robot.foundationhook.moveHookDown();
+        robot.drivetrain.setTargetAngle(-40);
+        robot.drivetrain.moveDiag(5, .5, 340 - senseDist, .8);
+
+        robot.drivetrain.drive(.3,.25,0);
+        robot.intakelinkage.moveLinkage(OUT,MED);
+        robot.intake.collectStone(.7);
         Thread.sleep(1000);
         drivetrain.stop();
+        robot.claw.closeClaw();
+        robot.intake.stopIntake();
 
-        //drivetrain.move(0.3,.3,0,12);
-        senseBlock(1);
-        robot.drivetrain.moveDiag(3,.3,17,.8);
+        drivetrain.updateTarget();
+        robot.drivetrain.drive(-.4,-.6,0);
+        Thread.sleep(300);
+        robot.drivetrain.updateTarget();
+        drivetrain.setAngleInfluence(.5);
+        robot.drivetrain.setTargetAngle(90);
+        Thread.sleep(500);
+
+        robot.drivetrain.updateTarget();
+        drivetrain.moveDiag(-10,.65,-150,0.9);
+        Thread.sleep(300);
+        robot.drivetrain.drive(0,-.5,0);
+        Thread.sleep(600);
+        drivetrain.stop();
+        robot.drivetrain.updateTarget();
+        robot.drivetrain.moveDiag(3,.1,130,.9);
+    /*    drivetrain.moveDiag(-20,.05,320 ,.9);
+        robot.foundationhook.moveHookDown();
+        drivetrain.setAngleInfluence(0.4);
+        drivetrain.setTargetAngle(-5);
+        drivetrain.drive(-0.3, 0.1, 0);
+        Thread.sleep(1000);
+        drivetrain.stop();
+    */
+   //     robot.drivetrain.moveDiag(-45,.45,370,.8);
+
+  /*      robot.drivetrain.moveDiag(7,.3,12,.8);
 
         robot.intakelinkage.moveLinkageOut();
         robot.newarm.moveArmEnc(1,950);
@@ -370,20 +424,17 @@ public class StoneAuto extends BaseAutonomous
         robot.claw.openClaw();
         Thread.sleep(300);
         robot.intakelinkage.moveLinkageIn();
-        robot.foundationhook.moveHookDown();
         Thread.sleep(300);
         robot.intake.stopIntake();
         robot.claw.closeClaw();
 
         drivetrain.updateTarget();
-        robot.newarm.moveArmEnc(1,-1100);
-        drivetrain.drive(-.2,-.8,0);
-        Thread.sleep(2750);
-        drivetrain.updateTarget();
-        drivetrain.moveDiag(-5,.4,175,.6);
+        senseBlock3(15);
+       // drivetrain.updateTarget();
+      //  drivetrain.moveDiag(-5,.4,175,.6);
         drivetrain.stop();
         
-       /* drivetrain.drive(-.2,.8,0);
+        drivetrain.drive(-.2,.8,0);
         Thread.sleep(2200);
         drivetrain.updateTarget();
         drivetrain.move(.3,0,0,12);
@@ -408,8 +459,8 @@ public class StoneAuto extends BaseAutonomous
         robot.claw.closeClaw();
 
         drivetrain.drive(-.1,-.8,0);
-        Thread.sleep(2500);
-        drivetrain.stop(); */
+        Thread.sleep(2500); */
+        drivetrain.stop();
 
 
 
