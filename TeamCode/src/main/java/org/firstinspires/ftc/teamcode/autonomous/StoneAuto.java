@@ -401,69 +401,6 @@ public class StoneAuto extends BaseAutonomous
         drivetrain.stop();
         robot.drivetrain.updateTarget();
         robot.drivetrain.moveDiag(3,.1,130,.9);
-    /*    drivetrain.moveDiag(-20,.05,320 ,.9);
-        robot.foundationhook.moveHookDown();
-        drivetrain.setAngleInfluence(0.4);
-        drivetrain.setTargetAngle(-5);
-        drivetrain.drive(-0.3, 0.1, 0);
-        Thread.sleep(1000);
-        drivetrain.stop();
-    */
-   //     robot.drivetrain.moveDiag(-45,.45,370,.8);
-
-  /*      robot.drivetrain.moveDiag(7,.3,12,.8);
-
-        robot.intakelinkage.moveLinkageOut();
-        robot.newarm.moveArmEnc(1,950);
-        Thread.sleep(800);
-        robot.claw.closeClaw();
-        Thread.sleep(400);
-        robot.newarm.moveArmEnc(1,-1100);
-        robot.intake.collectStone(.5);
-        Thread.sleep(1000);
-        robot.claw.openClaw();
-        Thread.sleep(300);
-        robot.intakelinkage.moveLinkageIn();
-        Thread.sleep(300);
-        robot.intake.stopIntake();
-        robot.claw.closeClaw();
-
-        drivetrain.updateTarget();
-        senseBlock3(15);
-       // drivetrain.updateTarget();
-      //  drivetrain.moveDiag(-5,.4,175,.6);
-        drivetrain.stop();
-        
-        drivetrain.drive(-.2,.8,0);
-        Thread.sleep(2200);
-        drivetrain.updateTarget();
-        drivetrain.move(.3,0,0,12);
-
-        senseBlock(1);
-        Thread.sleep(100);
-
-        drivetrain.move(0.2,.3,0,17);
-        robot.intakelinkage.moveLinkageOut();
-        robot.newarm.moveArmEnc(.8,725);
-        Thread.sleep(800);
-        robot.claw.closeClaw();
-        Thread.sleep(400);
-        robot.intake.collectStone(.5);
-        robot.newarm.moveArmEnc(1,-800);
-        Thread.sleep(450);
-        robot.claw.openClaw();
-        Thread.sleep(500);
-        robot.intakelinkage.moveLinkageIn();
-        Thread.sleep(400);
-        robot.intake.stopIntake();
-        robot.claw.closeClaw();
-
-        drivetrain.drive(-.1,-.8,0);
-        Thread.sleep(2500); */
-        drivetrain.stop();
-
-
-
     }
     
     @Override
