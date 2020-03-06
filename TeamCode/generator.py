@@ -18,7 +18,7 @@ class ServoPositionProcessor:
         self.positions[servo].append(name)
 
     def finish(self, adb):
-        with open('preset_names.txt', 'w') as f:
+        with open('build/preset_names.txt', 'w') as f:
             for servo in self.positions.keys():
                 servo_esc = servo.replace(' ', '\\ ')
                 f.write(servo_esc + ':')
@@ -33,7 +33,7 @@ class ServoPositionProcessor:
             print("No devices connected; not uploading servo positions")
             return
 
-        adb.push_file('preset_names.txt', '/sdcard/Team8813/')
+        adb.push_file('build/preset_names.txt', '/sdcard/Team8813/')
 
 class Adb:
     def __init__(self, command='adb'):

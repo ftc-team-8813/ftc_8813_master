@@ -1,5 +1,0 @@
-intake\ l:in,med,out
-intake\ r:in,med,out
-hook\ l:up,down,fullDown
-hook\ r:up,down,fullDown
-claw:fullUp,open,closed
